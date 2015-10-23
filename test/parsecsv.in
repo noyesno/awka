@@ -1,0 +1,8 @@
+a,b,c,d
+a,"b",c,d
+a,",commas,surrounded,",d
+a,"a fine ""quoted"" and ,comma, word ""doubledquoted""",d
+"one","two","three","""four"""
+"one","",empty,,field,"""",or,,more
+an "invalid" line,will come out how you'd expect
+another,",invalid one (two fields; second one's closing quote lost)

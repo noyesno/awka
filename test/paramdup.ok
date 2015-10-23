@@ -1,0 +1,2 @@
+mawk: paramdup.awk: line 3: b is duplicated in argument list
+mawk: paramdup.awk: line 3: a is duplicated in argument list

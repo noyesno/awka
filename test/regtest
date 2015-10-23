@@ -1,0 +1,20 @@
+#! /bin/sh
+
+echo CC=$CC
+echo MATHLIB=$MATHLIB
+
+for i in reg/*.awk
+do
+        it=`basename $i .awk`
+        echo "testing $it..."
+        ../awka/awka -f $i >x.c
+        $CC -g x.c -L../lib -I../lib -lawka $MATHLIB -o xx
+        ./xx <reg/$it.in >reg/$it.out 2>&1
+        if cmp -s reg/$it.out reg/$it.good
+        then
+                rm -f reg/$it.out
+                echo "regtest: $it ok"
+        else
+                echo "regtest: $it fails"
+        fi
+done

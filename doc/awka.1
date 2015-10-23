@@ -1,0 +1,546 @@
+.TH AWKA 1  "Aug 8 2000" "Version 0.7.x" "USER COMMANDS"
+.\" strings
+.ds ex \fIexpr\fR
+'\" .CS   - begin code excerpt
+.de CS
+'\" .TP -2
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\" .CE   - end code excerpt
+.de CE
+.fi
+.RE
+..
+'\" .DS   - start indented
+.de DS
+.TP -2
+.RS
+.nf
+.sp
+..
+'\" .DE   - end indented
+.de DE
+.fi
+.RE
+.sp
+..
+
+.SH NAME
+awka \- AWK language to ANSI C translator and library
+.SH SYNOPSIS
+.B awka
+[\-\fBc
+.IR fn ]
+[\-\fBX\fR]
+[\-\fBx\fR]
+[\-\fBt\fR]
+[\-\fBo
+.IR filename ]
+[\-\fBa
+.IR args ]
+[\-\fBw
+.IR args ]
+[\-\fBI
+.IR include-dir ]
+[\-\fBi
+.IR include-file ]
+[\-\fBL
+.IR lib-dir ]
+[\-\fBl
+.IR lib-file ]
+[\-\fBf
+.IR progname ]
+[\-\fBd\fR]
+[program] [\-\|\-\] [exe-args]
+.br
+.B awka
+[\-\fBversion\fR]
+[\-\fBhelp\fR]
+.SH DESCRIPTION
+.B Awka
+is two products - a translator of AWK language programs to ANSI-C, and
+a library of essential functions against which the translated code must
+be linked.
+.PP
+The
+.I AWK
+language is useful for maniplation of datafiles, text retrieval and processing,
+and for prototyping and experimenting with algorithms.  Usually AWK is
+implemented as an interpretive language - there are several good free 
+interpreters available, notably \fBgawk\fR, \fBmawk\fR and 'The One True Awk'
+maintained by Brian Kernighan.
+.PP
+This manpage does not explain how AWK works - refer to the SEE ALSO section
+at the end of this page for references.
+.PP
+.B Awka
+is a \fInew awk\fR meaning it implements the AWK language as defined in Aho, 
+Kernighan and Weinberger, \fIThe AWK Programming Language\fR, Addison-Wesley
+Publishing 1988.
+.B Awka
+includes features from the Posix 1003.2 (draft 11.3) definition of the AWK
+language, but does not necessarily conform in entirety to Posix standards.
+.B Awka
+also provides a number of extensions not found in other implementations of
+AWK.
+.PP
+.SH AWKA OPTIONS
+.TP \w'\-\fBW'u+\w'\fRsprintf=\fInum\fR'u+2n
+\-\fBc \fIfn
+Instead of producing a 'main' function, \fBawka\fR will instead
+generate '\fIfn\fR' as a controlling function.  This is useful where
+the compiled C code is to be linked in with a larger 
+application.  The -\fBc\fR argument is not compatible with the
+-\fBX\fR and -\fBx\fR arguments.  See the section \fBUSING awka -c\fR
+below for more details on how to use this option.
+.TP
+\-\fBX
+\fBawka\fR will generate C code, which will then be compiled
+into an executable, using the C compiler and intallation
+paths defined when \fBAwka\fR was installed.  The C code will be
+stored in 'awka_out.c' and the executable in 'awka.out' or 'awka_out.exe'.
+.TP
+\-\fBx
+The same as -\fBX\fR, except that the compiled program will
+also be executed using arguments following the '--' option on
+the command-line.
+.TP
+\-\fBt
+To be used in conjunction with -\fBx\fR.  The C file and the
+executable will be removed following execution of the 
+program.
+.TP
+\-\fBo \fRfilename
+To be used in conjunction with -\fBx\fR and -\fBX\fR.  The generated
+executable will be called 'filename' rather than the default 'awka.out'.
+.TP
+\-\fBa \fRargs
+This embeds executable command-line arguments within the translated
+code itself.  For example, \fIawka -X -a "-We" file.awk\fR will create
+an awka.out that will already have -We in its command-line when it is
+run.  To see what arguments have been embedded in an executable, 
+use -showarg at runtime.
+.TP
+\-\fBw \fRargs
+Prints various warnings to stderr, useful in debugging large, complex
+AWK programs.  None of these are errors \- all are acceptable uses of the AWK
+language.  Depending on your programming style, however, they could
+be useful in narrowing down where problems may be occuring.
+\fIargs\fR can contain the following characters:-
+
+\fBa\fR \- prints a list of all global variables.
+
+\fBb\fR \- warns about variables set to a value but not referenced.
+
+\fBc\fR \- warns about variables referenced but not set to a value.
+
+\fBd\fR \- reports use of global vars within a function.
+
+\fBe\fR \- reports use of global vars within just one function.
+
+\fBf\fR \- requires declaration of global variables.
+
+\fBg\fR \- warns about assignments used as truth expressions.
+
+NOTE: As at version 0.5.8 only a, b and c are implemented.
+.TP
+\-\fBI \fRinclude-dir
+Specifies a directory in which include files required by awka, or
+defined by the user, reside.  You may use as many -I options as you
+like.
+.TP
+\-\fBi \fRinclude-file
+Specifies an include filename to be inserted in the translated code.
+.TP
+\-\fBL \fRlib-dir
+Specifies a directory containing libraries that may be required by
+awka, or defined for linking by the user.  See the \fIawka-elm\fR manpage
+for more details.
+.TP
+\-\fBl \fRlib-file
+Specifies a library file to be linked to the translated code generated
+by awka at compile time (this only really makes sense if using awka -x).
+The lib-file is specified in the same way as C compilers, that is, the
+library libmystuff.a would be referred to as "-l mystuff".
+
+Again, see the \fIawka-elm\fR manpage for details on awka extension
+libraries.  Like the three previous options, you can use this as often
+as you like on a commandline.
+.TP
+\-\fBf \fRprogname
+Specifies the name of an AWK language program to be 
+translated to C.  Multiple -\fBf\fR arguments may be specified.
+.TP
+.I program
+An AWK language program on the command-line, usually surrounded by single
+quotes (').
+.TP
+\-\|\-
+All arguments following this will be passed to the compiled
+executable when it is executed.  This argument only makes
+sense when -x has been specified.
+.TP
+\fBexe-args
+Arguments to be passed directly to the executable when it
+is run.  
+.TP
+\-\fBh
+Prints a short summary of command-line options.
+.TP
+\-\fBv
+Prints version information then quits.
+.PP
+.SH EXECUTABLE OPTIONS
+.PP
+An executable formed by compiling Awka-generated code against libawka.a
+will also understand several command-line arguments.
+.TP \w'\-\fBW'u+\w'\fRsprintf=\fInum\fR'u+2n
+\-\fBhelp
+Prints a short summary of executable command-line options, then exits.
+.TP
+\-\fBWe
+Following command-line arguments will be stored in the ARGV
+array, and not parsed as options.
+.TP
+\-\fBWi
+Sets unbuffered writes to stdout and line buffered reads from stdin.
+.TP
+\-\fBv var=value
+Sets variable 'var' to 'value'.  'var' must be a defined scalar variable
+within the original AWK program else an error message will be generated.  
+.TP
+\-\fBF value
+Sets FS to value.
+.TP
+\-\fBshowarg
+Displays any embedded command-line arguments, then exits.
+.TP
+\-\fBawkaversion
+Shows which version of awka generated the .c code for the executable.
+.PP
+.SH ADDITIONAL FEATURES
+.PP
+\fBawka\fR contains a number of builtin functions may or may not presently be
+found in standard AWK implementations.  The functions have been added to
+extend functionality, or to provide a faster method of performing tasks that
+AWK could otherwise undertake in an inefficient way.
+.PP
+The new functions are:-
+.TP \w'\-\fBW'u+\w'\fRsprintf=\fInum\fR'u+2n
+totitle(\fIs\fR)
+converts a string to Title or Proper case, with the first letter of each
+word uppercased, the remainder lowercased.
+.TP
+abort()
+Exits the AWK program immediately without running the END section.  Originally
+from TAWK, Gawk now supports abort() as well.
+.TP
+alength(\fIa\fR)
+returns the number of elements stored in array variable \fIa\fR.
+.TP
+asort(\fIsrc\fR [,\fIdest\fR])
+The function introduced in Gawk 3.1.0.  From Gawk's manpage, this "returns the 
+number of elements in the source
+array
+.IR src .
+The contents of
+.I src
+are sorted using
+.IR awka\^ "'s"
+normal rules for
+comparing values, and the indexes of the
+sorted values of
+.I src
+are replaced with sequential
+integers starting with 1. If the optional
+destination array
+.I dest
+is specified, then
+.I src
+is first duplicated into
+.IR dest ,
+and then
+.I dest
+is sorted, leaving the indexes of the
+source array
+.I src
+unchanged."
+.TP
+ascii(\fIs,n\fR)
+Returns the ascii value of character \fIn\fR in string \fIs\fR.  If \fIn\fR is omitted, the
+value of the first character will be returned.  If \fIn\fR is longer than the string,
+the last character will be returned.  A Null string will result in a return
+value of zero.
+.TP
+char(\fIn\fR)
+Returns the character associated with the ascii value of \fIn\fR.  In effect, this is the
+complement of the ascii function above.
+.TP
+left(\fIs,n\fR)
+Returns the leftmost \fIn\fR characters of string \fIs\fR.  This is more efficient than
+a call to substr.
+.TP
+right(\fIs,n\fR)
+Returns the rightmost \fIn\fR characters of string \fIs\fR.
+.TP
+ltrim(\fIs, c\fR)
+Returns a string with the preceding characters in \fIc\fR removed from the left of \fIs\fR.
+For instance, ltrim(" hello", "h ") will return "ello".  If \fIc\fR is not specified,
+whitespace will be trimmed.
+.TP
+rtrim(\fIs, c\fR)
+Returns a string with the preceding characters in \fIc\fR removed from the right of \fIs\fR.
+For instance, ltrim(" hello", "ol") will return " he".  If \fIc\fR is not specified,
+whitespace will be trimmed.
+.TP
+trim(\fIs, c\fR)
+Returns a string with the preceding characters in \fIc\fR removed from each end of \fIs\fR.
+For instance, trim(" hello", "oh ") will return "ell".  If \fIc\fR is not specified,
+whitespace will be trimmed.  The three trim functions are considerably more efficient than
+calls to sub or gsub.
+.TP
+min(\fIx1,x2,...,xn\fR)
+Returns the lowest number in the series \fIx1\fR to \fIxn\fR.  A minimum of
+two and a maximum of 255 numbers may be passed as arguments to Min.
+.TP
+max(\fIx1,x2,...,xn\fR)
+Returns the highest number in the series \fIx1\fR to \fIxn\fR.  A minimum of
+two and a maximum of 255 numbers may be passed as arguments to Max.
+.TP
+time(\fIyear,mon,day,hour,sec\fR)  time()
+returns a number representing the date & time in seconds since the Epoch, 00:00:00GMT 1 Jan 1970.  The arguments allow specification of a date/time, while no arguments
+will return the current time.
+.TP
+systime()
+returns a number representing the current date & time in seconds since the Epoch, 00:00:00
+GMT 1 Jan 1970.  This function was included to increase compatibility with Gawk.
+.TP
+strftime(\fIformat, n\fR)
+returns a string containing the time indicated by \fIn\fR formatted according to \fIformat\fR.
+See strftime(3) for more details on format specification.  This function was included to 
+increase compatibility with Gawk.
+.TP
+gmtime(\fIn\fR)  gmtime()
+returns a string containing Greenwich Mean Time, in the form:-
+
+    Fri Jan  8 01:23:56 1999
+
+\fIn\fR is a number specifying seconds since 1 Jan 1970, while a call with no arguments
+will return a string containing the current time.
+.TP
+localtime(\fIn\fR)  localtime()
+returns a string containing the date & time adjusted for the local timezone,
+including daylight savings.  Output format & arguments are the same as gmtime.
+.TP
+mktime(\fIstr\fR)
+The same as mktime() introduced in Gawk 3.1.0.  See Gawk's manpage for a detailed
+description of what this function does.
+.TP
+and(\fIy,x\fR)
+Returns the output of '\fIy\fR & \fIx\fR'.
+.TP
+or(\fIy,x\fR)
+Returns the output of '\fIy\fR | \fIx\fR'.
+.TP
+xor(\fIy,x\fR)
+Returns the output of '\fIy\fR ^ \fIx\fR'.
+.TP
+compl(\fIy\fR)
+Returns the output of '~\fIy\fR'.
+.TP
+lshift(\fIy,x\fR)
+Returns the output of '\fIy\fR << \fIx\fR'.
+.TP
+rshift(\fIy,x\fR)
+Returns the output of '\fIy\fR >> \fIx\fR'. 
+.TP
+argcount()
+When called from within a function, returns the number of arguments that
+were passed to that function.
+.TP
+argval(\fIn[, arg, arg...]\fR)
+When called from within a function, returns the value of variable \fIn\fR
+in the argument list.  The optional \fIarg\fR parameters are index elements
+used if variable \fIn\fR is an array.  You may not specify values for \fIn\fR
+that are larger than \fBargcount()\fR.
+.TP
+getawkvar(\fIname[, arg, arg...]\fR)
+Returns the value of global variable "\fIname\fR".  The optional \fIarg\fR
+parameters work in the same as for \fBargval\fR.  The variable specified by
+\fIname\fR must actually exist.
+.TP
+gensub(\fIr,s,f[,v]\fR)
+Implementation of Gawk's gensub function.  It should perform exactly the same
+as it does in Gawk.  See Gawk's documentation for details on how to use gensub.
+.PP
+.PP
+The \fBSORTTYPE\fR variable controls if and how arrays are sorted when accessed using 'for (i in j)'.
+The value of this variable is a bitmask, which may be set to a combination of the following values:-
+.DS
+  0  No Sorting
+1  Alphabetical Sorting
+2  Numeric Sorting
+4  Reverse Order
+.DE
+A value for \fBSORTTYPE\fR of 5, therefore, indicates that the array is to be sorted Alphabetically,
+in Reverse order.
+.PP
+Awka also supports the \fBFIELDWIDTHS\fR variable, which works exactly as it does in Gawk.
+.PP
+If the \fBFIELDWIDTHS\fR variable is set to a space separated list of positive numbers, each field is expected to have fixed width, and awka will split up the record using the widths specified in \fBFIELDWIDTHS\fR.  The value of \fBFS\fR is ignored.  Assigning a value to \fBFS\fR overrides the use of \fBFIELDWIDTHS\fR, and restores the default behaviour.
+.PP
+Awka also introduces the \fBSAVEWIDTHS\fR variable.  This applies when \fBFIELDWIDTHS\fR is in use, and \fB$0\fR is being rebuilt following a change to a \fB$1..$n\fR field variable.
+.PP
+If the \fBSAVEWIDTHS\fR variable is set to a space separated list of positive numbers, each output field will be given a fixed width to match these numbers.  \fB$n\fR values shorter than their specified width will be padded with spaces; if they are longer than their specified width they will be truncated.  Additional values to those specified in \fBSAVEWIDTHS\fR will be separated using \fBOFS\fR.
+.PP
+Awka 0.7.5 supports the inet/coprocessing features introduced in Gawk 3.1.0.  See the documentation
+accompanying the Gawk source, or visit \fBhttp://home.vr-web.de/Juergen.Kahrs/gawk/gawkinet.html\fR
+for details on how these work.
+.RE
+.RS
+.nf
+.PP
+.SH EXAMPLES
+.PP
+The command-line arguments above provide a range of ways in which \fBawka\fR may
+be used, from output of C code to stdout, through to an automatic translation
+compile and execution of the AWK program.
+.PP
+(a) Producing C code:-
+.DS
+  1. awka -f myprog.awk >myprog.c
+2. awka -c main_one -f myprog.awk -f other.awk >myprog.c
+.DE
+(b) Producing C code and an executable:-
+.DS
+  awka -X -f myprog.awk -f other.awk
+.DE
+(c) Producing the C and Executable, run the executable:-
+.DS
+  awka -x -f myprog.awk -f other.awk -- input.txt
+.DE
+Afterwards, you could run the executable directly, as in:-
+.DS 
+  awka.out input.txt
+.DE
+Running the same program using an interpreter such as
+\fBmawk\fR would be done as follows:-
+.DS
+  mawk -f myprog.awk -f other.awk input.txt
+.DE
+The following will run the program, passing it -v on the
+command-line without it being interpreted as an 'option':-
+.DS
+  awka.out -We -v input.txt, OR
+awka -x -f myprog.awk -- -We -v input.txt
+.DE
+(d) Producing and running the executable, ensuring it
+    and the C program file are automatically removed:-
+.DS
+  awka -x -t -f myprog.awk -f other.awk -- input.txt
+.DE
+(e) A simplistic example of how awka might be used in a Makefile:-
+.DS
+  myprog:  myprog.o
+       gcc myprog.o -lawka -lm -o myprog
+
+myprog.o:  myprog.c
+
+myprog.c:  myprog.awk
+       awka -f myprog.awk >myprog.c
+.DE
+.SH LINKING AWKA-GENERATED CODE
+.PP
+The C programs produced by \fBawka\fR call many functions in \fBlibawka.a\fR.
+This library needs to be linked with your program for a workable executable to be
+produced.  
+.PP
+Note that when using the -\fBx\fR and -\fBX\fR arguments this is automatically taken care
+of for you, so linking is only an issue when you use Awka to produce C code,
+which you then compile yourself.  Many people many only wish to use Awka in
+this way, and never use \fBawka\fR-generated code as part of larger applications.
+If this is you, you needn't worry too much about this section.
+.PP
+As well as linking to \fBlibawka.a\fR, your program will also need to be linked to
+your system's math library, typically \fBlibm.a\fR or \fBlibm.so\fR.
+.PP
+Typical compiler commands to link an \fBawka\fR executable might be as follows:-
+.PP
+  gcc myprog.c -L/usr/local/lib -I/usr/local/include -lawka -lm -o myprog
+.PP
+  OR
+.PP
+  awka -c my_main -f myprog.awk >myprog.c
+  gcc -c myprog.c -I/usr/local/include -o myprog.o
+  gcc -c other.c -o other.o
+  gcc myprog.o other.o -L/usr/local/lib -lawka -lm -o myapp
+.PP
+If you are not sure of how your compiler works you should consult the manpage
+for the compiler.  In release 0.7.5 Awka introduced Gawk-3.1.0's inet and coprocess
+features.  On some platforms this may require you to link to the socket and nsl
+libraries (-lsocket -lnsl).  To check this, look at config.h after running the
+configure script.  The #define awka_SOCKET_LIBS indicate what, if any, extra 
+libraries are required on your system.
+.PP
+.SH USING awka -c
+.PP
+The -c option, as described previously, replaces the main() function with a function
+name of your choosing.  You may then link this code to other C or C++ code, and thus
+add AWK functionality to a larger application.  
+.PP
+The command line "awka -c matrix 'BEGIN { print "what is the matrix?" }'" will produce
+in its output the function "int matrix(int argc, char *argv[])".  Obviously, this replaces
+the main() function, and the argc and argv variables are used the same way - they handle
+what awka thinks are command-line arguments.  Hence argv is an array of pointers to char *'s, and argc is the number of elements in this array.  argv[0], from the command-line, holds the name of the running program.  You can populate as many argv[] elements as you like to pass as input to your AWK program.  Just remember this array is managed by your calling function, not by awka.
+.PP
+That's just about it.  You should be able to call your awka function (eg matrix()) as many times as you like.  It will grab a little bit of memory for itself, but you should see no growing memory use with each call, as I've taken quite some time to eliminate any potential memory leaks from awka code.
+.PP
+Oh, one more thing,  \fIexit\fR and \fIabort\fR statements in your AWK program code will still exit your program altogether, so be careful of where & how you use them.
+.PP
+.SH GOING FURTHER
+.PP
+Awka also allows you to create your own C functions and have them accessible in your AWK
+programs as if they were built-in to the AWK language.  See the \fBawka-elm\fR and \fBawka-elmref\fR manpages for details on how this is done.
+.PP
+.SH FILES
+.PP
+\fBlibawka.a\fR, \fBlibawka.so\fR, \fBawka\fR, \fBlibawka.h\fR, \fBlibdfa.a\fR, \fBdfa.h\fR
+.PP
+.SH SEE ALSO
+.PP
+\fBawk\fR(1), \fBmawk\fR(1), \fBgawk\fR(1), \fBawka-elm\fR(5) \fBawka-elmref\fR(5), \fBcc\fR(1), \fBgcc\fR(1)
+.PP
+Aho, Kernighan and Weinberger, The AWK Programming Language, Addison-Wesley
+Publishing, 1988, (the AWK book), defines the language, opening with a
+tutorial and advancing to many interesting programs that delve into issues
+of software design and analysis relevant to programming in any language.
+.PP
+The GAWK Manual, The Free Software Foundation, 1991, is a tutorial and
+language reference that does not attempt the depth of the AWK book and
+assumes the reader may be a novice programmer. The section on AWK arrays is
+excellent.  It also discusses Posix requirements for AWK.
+.PP
+Like you, I should probably buy & read these books some day.
+.PP
+.SH MISSING FEATURES
+.PP
+\fBawka\fR does not implement \fBgawk\fR's internal variable \fIIGNORECASE\fR.
+\fBGawk\fR's /dev/pid functions are also absent.
+.PP
+Nextfile and next may not be used within functions.  This will never be supported, 
+unlike the previous features, which may be added to \fBawka\fR over time.  Well,
+so I thought.  As of release 0.7.3 you _can_ use these from within functions.
+.PP
+.SH AUTHOR
+.PP
+Andrew Sumner (andrewsumner@yahoo.com)
+.PP
+The \fBawka\fR homepage is at \fIhttp://awka.sourceforge.net\fR.
+The latest version of \fBawka\fR, along with development 'snapshot' releases, are available from
+this page.  All major releases will be announced in comp.lang.awk.  If you
+would like to be notified of new releases, please send me an email to that
+effect.  Make sure you preface any email messages with the word "awka" in the
+title so I know its not spam.
+

@@ -1,0 +1,34 @@
+FUTURE GOALS
+------------
+Listed in order of priority :-
+
+* Continue eliminating bugs.  If you find one, make sure you report it
+  as maybe no-one else will!
+
+* Improvements to library performance, based on real usage as reported
+  by users.  If you find your code is running slower than Mawk/Gawk,
+  why not forward me an example.  I have no idea how fast Awka is 
+  compared to Tawk.
+
+  There are several benchmark tests in the benchmark directory (where 
+  else?) - more & better ones would be useful.
+  
+  At present regular expressions are quite slow.  This is a complex issue
+  to solve, but I'm working on a solution as & when I get time to do so.
+
+* Useful debug warning messages to tell you if you've got common bugs in
+  your AWK program, such as the old typo error with variable names.
+  
+  The framework data structures for these are now present in the translator;
+  I just need time to implement them.
+
+* Gawk extensions to regular expressions and printf format specifiers.
+
+* More efficient, complete and elegant C language generation, including
+  nice things like generation of commented code, and preservation of
+  AWK program comments.
+
+* More platforms, maybe including a Windoze DLL compile of the library.
+  As both Cygnus and DJGPP are supported, I'm not currently too concerned
+  about doing a native Windows version.
+

@@ -1,0 +1,22 @@
+/*------------------------------------------------------------*
+ | libawka.h                                                  |
+ | copyright 1999,  Andrew Sumner (andrewsumner@yahoo.com)    |
+ |                                                            |
+ | This is a source file for the awka package, a translator   |
+ | of the AWK programming language to ANSI C.                 |
+ |                                                            |
+ | This library is free software; you can redistribute it     |
+ | and/or modify it under the terms of the GNU General        |
+ | Public License (GPL).                                      |
+ |                                                            |
+ | This library is distributed in the hope that it will be    |
+ | useful, but WITHOUT ANY WARRANTY; without even the implied |
+ | warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR    |
+ | PURPOSE.                                                   |
+ *------------------------------------------------------------*/
+
+/*------------------------------------------------------------*
+ | Warning: this file was automatically generated.            |
+ | Any changes should be made to libawka.h.in or other        |
+ | files that it references.                                  |
+ *------------------------------------------------------------*/

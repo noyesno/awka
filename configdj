@@ -1,0 +1,3 @@
+#!/bin/sh
+./configure --prefix='$(DJDIR)' --exec-prefix='$(DJDIR)'
+

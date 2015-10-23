@@ -1,0 +1,45 @@
+dnl configure.in for awka
+dnl
+dnl Log: configure.in
+dnl
+dnl Revision 1.1  1998/01/12  16:23:03  andrew
+dnl initial write, borrowing heavily from mawk
+dnl
+dnl
+
+AC_INIT(lib/libawka.h.in)
+builtin(include,awka.ac.m4)
+dnl AC_ARG_ENABLE(portals, [  --enable-portals      Enable /p as path prefix for portals], AC_DEFINE(HAVE_PORTALS))
+AC_ARG_ENABLE(portals, [  --enable-portals      Enable /p as path prefix for portals], [HAVE_PORTALS=1])
+GET_USER_DEFAULTS
+PROG_CC_NO_MINUS_G_NONSENSE
+AC_PROG_CPP
+NOTSET_THEN_DEFAULT(CFLAGS,-O)
+LOOK_FOR_MATH_LIBRARY
+GOT_INLINE
+WHICH_AWK
+WHICH_SH
+WHICH_YACC
+WHICH_AR
+WHICH_RANLIB
+WHICH_CMP
+COMPILER_ATTRIBUTES
+WHERE_SIZE_T
+CHECK_HEADERS(fcntl.h,errno.h, time.h,stdarg.h,netdb.h,netinet/in.h,sys/socket.h,unistd.h)
+CHECK_FUNCTIONS(memcpy,strchr,strstr,strerror,vfprintf,fmod,matherr)
+FPRINTF_IN_STDIO
+FIND_OR_COMPUTE_MAX__INT
+AWKA_AC_LIB_SOCKETS
+dnl DREADED_FPE_TESTS
+
+dnl checks for structure members
+AC_HEADER_TIME
+AC_STRUCT_TM
+AC_STRUCT_TIMEZONE
+CHECK_FUNCTIONS(time,mktime,asctime,localtime,gmtime)
+EXE_EXTENSION
+
+DO_CONFIG_H
+AC_OUTPUT(Makefile lib/Makefile awka/Makefile test/Makefile)
+
+

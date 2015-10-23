@@ -1,0 +1,361 @@
+.TH AWKA-ELM 5  "Aug 8 2000" "Version 0.7.x" "AWKA EXTENDED LIBRARY METHODS"
+.\" strings
+.ds ex \fIexpr\fR
+'\" .CS   - begin code excerpt
+.de CS
+.TP -2
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\" .CE   - end code excerpt
+.de CE
+.fi
+.RE
+..
+'\" .DS   - start indented
+.de DS
+.TP -2
+.RS
+.nf
+.sp
+..
+'\" .DE   - end indented
+.de DE
+.fi
+.RE
+.sp
+..
+
+.SH NAME
+.PP
+awka-elm - Awka Extended Library Methods
+
+.SH DESCRIPTION
+\fBAwka\fR is a translator of AWK programs to ANSI-C code, and a library
+(\fIlibawka.a\fR) against which the code is linked to create executables.
+Awka is described in the \fIawka\fR manpage.
+.PP
+The Extended Library Methods (ELM) provide a way of adding new functions
+to the AWK language, so that they appear in your AWK code as if they were
+builtin functions such as substr() or index().
+.PP
+ELM code interfaces with the internal Awka variable structures and functions,
+and is suitable for anyone with some experience and proficiency in C programming.
+.PP
+This document is a step-by-step introduction to how the ELM works, so by the
+end of it you can write your own libraries to extend the AWK programming
+language using Awka.  For example, you could write an interface to allow AWK 
+programs to communicate with ODBC databases, or solve the travelling salesman
+problem given input of town locations - whatever you require AWK to do should
+now be possible.
+
+.SH AN OVERVIEW OF HOW IT WORKS
+.PP
+The C code produced by \fBawka\fR from AWK programs is heavily populated
+with calls to functions in the awka library (\fIlibawka\fR).  Hence after
+it is compiled, this code must be linked to the library to produce a working
+executable.
+.PP
+When parsing an AWK program, \fBawka\fR checks to see if each function call in the
+program is (a) a core builtin function, (b) a call to a user-defined AWK 
+function in the program, or (c) a call to one of the extended builtin functions.
+The above order of priority is applied, so a user-defined function (b) overrides
+(c), and (a) overrides (b) to avoid conflicts.
+.PP
+If none of these prove to be true, the function call is written in the code in
+the format of a user-defined function, even though that function doesn't exist
+to its knowledge.  \fBAwka\fR is assuming that by link time you will provide another
+object file or library that contains the missing function and resolve the call.
+.PP
+So if I pass \fBawka\fR the following code:
+.PP
+.CS
+BEGIN { print mymath(3,4) }
+.CE
+.PP
+The call it generates will look like this...
+.PP
+.CS
+mymath_fn(awka_arg2(a_TEMP, _litd0_awka, _litd1_awka))
+.CE
+.PP
+So all we need to do is write the mymath_fn() function, and link it with the
+awka-generated code, and bingo!  AWK has been extended by you, to do what you
+want.  And the only restrictions on what a function like mymath_fn() might
+do are those imposed by the C language!
+.PP
+So, you write the function, compile it into a library, use it in your AWK program,
+translate it, link it in, and you're away - its that simple (fingers crossed).
+
+.SH FUNCTIONS AND DATA STRUCTURES
+.PP
+Ok, the first thing to notice is that the function name in the AWK code, 
+\fImymath\fR, has been appended with \fI_fn\fR in the C code.  This happens
+with all unresolved AWK function calls (also with user-defined function names,
+but that doesn't matter here).  It's done to avoid unintentional conflicts 
+with functions in other libraries.
+.PP
+The definition of any function is this:-
+.DS
+funcname_fn( a_VARARG * )
+.DE
+Ugh!  What's this a_VARARG thingy?  Yes, learned reader, the time has come
+to get acquainted with the dreaded Awka data structures.  Well they're
+pretty simple actually.  The two you need to know about are a_VAR and
+a_VARARG, and as the latter contains arrays of the former, I'll deal with
+a_VAR first.
+.DS
+\fBThe a_VAR Structure\fR
+.DE
+.CS
+typedef struct {
+  double dval;          /* the variable's numeric value */
+  char * ptr;           /* pointer to string, array or RE structure */
+  unsigned int slen;    /* length of string ptr as per strlen */
+  unsigned int allc;    /* space mallocated for string ptr */
+  char type;            /* records current cast of variable */
+  char type2;           /* special flag for dual-type variables */
+  char temp;            /* TRUE if a temporary variable */
+} a_VAR;
+.CE
+.PP
+These are used prolifically throughout the AWK library, and are at the
+heart of how it manipulates data.  Remember, AWK variables are essentially
+typeless, as they can be cast to number, string or regular expression at your
+whim throughout a program.  The only thing you can't cast to & from is arrays,
+as a variable is only either an array or a scalar (the other types).
+.PP
+Recall our mymath example earlier.  In the AWK code, we had "mymath(3,4)",
+but the C code was "mymath_fn(awka_arg2(a_TEMP, _litd0_awka, _litd1_awka))".
+.PP
+The numeric value of 3 has been changed to _litd0_awka, and 4 to _litd1_awka.
+If you run awka with this example program & examine the output, you'll see
+that both _litd0_awka and _litd1_awka are pointers to a_VAR structures, and
+each has been set to the appropriate numeric values.  Hence, all data passed
+to our functions will be embodied inside a_VAR's.  
+.PP
+Confused?  Yes?  No?  Take heart, it doesn't get much worse, and with a few
+more examples I hope things should be clearer.  Looking at the call to mymath_fn
+above, you'll notice a call to awka_arg2().  Remember that mymath_fn only
+takes a pointer to an a_VARARG, so awka_arg2() obviously returns one of these.
+.PP
+What an a_VARARG contains is an array of a_VARs, and an integer showing how many
+there are in the array - thats all!  Don't believe me?  Then here's the structure
+in all its glory:
+.DS
+\fBThe a_VARARG Structure\fR
+.DE
+.CS
+typedef struct {
+  a_VAR *var[256];
+  int used;
+} a_VARARG;
+.CE
+.PP
+The a_VARARG structure gives us an easy means of passing around flexible numbers
+of a_VARS to functions, much as you'd use vararg in a C program.  If you don't
+know what vararg does and have some time, check the \fIstdarg\fR manpage.
+.PP
+So, to conclude, awka_arg2() takes two a_VARs and packages them nicely into an
+a_VARARG to make life easy for our function.  Another thing to note - the a_VARARG
+function allows up to 256 arguments.  No parameters, only arguments, and they always
+win them!  Sorry, on with the serious stuff...
+
+.SH THE MYMATH FUNCTION IMPLEMENTED
+.PP
+So when we come to write mymath_fn, what type of thing should it contain?  Ok,
+lets assume we want mymath to add the two numbers it receives as arguments, 
+then add on the two numbers multiplied, and return the result, ie. (n1+n2)+n1*n2.
+.PP
+Well, here goes...
+.PP
+.CS
+#include <libawka.h> 
+
+a_VAR * 
+mymath_fn( a_VARARG *va )
+{ 
+  a_VAR *ret = NULL;
+
+  if (va->used < 2)
+    awka_error("function mymath expecting 2 arguments, only got %d.\\n",va->used);
+
+  ret = awka_getdoublevar(FALSE);
+  ret->dval = (awka_getd(va->var[0]) + awka_getd(va->var[1])) + 
+                  va->var[0]->dval * va->var[1]->dval;
+
+  return ret;
+}
+.CE
+.PP
+Ok, there's not a lot to it, so lets start at the top.  You need to include
+libawka.h, as it defines the data structures plus the whole Awka API that you'll
+be calling.
+.PP
+The definition of mymath_fn is as described earlier.  It will need to return a
+numeric value, but as we're in AWK (conceptually), this will need to be enclosed
+in an a_VAR, hence the existence of \fIret\fR.
+.PP
+The incoming a_VARARG can contain any number of a_VAR's - we only care about
+the first two, so we check to see whether these exist, and if not spit an error
+through the awka_error function (or you could use your own error handler).  When
+writing your own functions, you'll need to remember that any number of arguments
+could be passed in, and they could be of any type, so you'll need to check them.
+.PP
+So far, \fIret\fR is NULL, so we need to create a structure to point it to.
+Better than that, we call awka_getdoublevar(), which gets us a temporary variable,
+already initialised to contain a numeric value.  You guessed it, there's
+an awka_getstringvar() that we could use if our function was to return a string.
+The value of FALSE passed to awka_getdoublevar() means that we don't want to be
+responsible for freeing this structure, but prefer to leave it to libawka's 
+internal garbage collection.  I can't see any reason why you'd choose TRUE, but
+its there just in case.
+.PP
+The next 2 lines do the core stuff.  Ok, ret->dval is set, that makes sense.  The
+expression refers to the contents of the a_VARARG->a_VAR array, again this is 
+expected.  At first, though, it calls awka_getd() for each of the arguments, but
+on the next line it references the dval value directly.  Why the calls to awka_getd?
+.PP
+Because it can't be sure that the incoming variables are already cast to numbers,
+so these functions (actually macros) do the casting for us, and return the value
+of dval after the cast is done.  Subsequently, we can look at dval directly as we
+know its been set to the current numerical value of the variable.
+.PP
+Lastly, we return ret.
+
+.SH COMPILING AND LINKING
+.PP
+Alright, let's get this working.  Follow these steps:
+.DS
+  1. Create mymath.c with mymath_fn(), exactly as its written above. 
+.br
+2. Create mymath.h containing:  a_VAR * mymath_fn( a_VARARG *va );
+.br
+3. gcc -c mymath.c    (or use whatever C compiler you have).
+.br
+4. awka -i mymath.h 'BEGIN { print mymath(3,4) }' >test.c
+.br
+5. gcc -I. test.c mymath.o -lawka -lm -o mytest
+.br
+6. mytest
+.DE
+The output from running mytest should be 19.  Magic!
+.PP
+A more comprehensive example is the awkatk library available from the awka
+website.  Hopefully you'll find it helpful, and who knows, you may even use
+it to write GUI interfaces from AWK!
+
+.SH HOW & WHEN WOULD YOU USE IT?
+.PP
+Obviously, this is intended to extend the limits of the AWK universe, as you 
+could introduce any functionality written in C as a new builtin function within
+AWK.
+.PP
+There may be complex functions you've written in AWK and use all the time that
+are just plain inefficient, even using Awka.  They're stable, you have the skill
+to implement them in C, so now you can, and your AWK programs become shorter
+in the process.  It's no longer a choice of C \fBor\fR AWK, now you can migrate
+sections to C as & when you like.
+.PP
+There are many functions in standard C libraries that AWK doesn't have.  Things
+like strcasecmp(), fread(), cbrt(), and so on.  Now you can implement them.
+.PP
+Lastly, I'd love to see Awka have functions to read & write proprietary formats
+like MS Excel, to communicate with ODBC databases, to perform complex mathematical
+or scientific operations, to implement true multi-dimensional arrays, to provide
+Fast Fourier Transform functions - I know its possible.  If you do develop something 
+neat like this, it'd be very cool if you were to make it available for everyone 
+to share.  Just send an email to andrewsumner@yahoo.com, and I'd be happy to 
+host it on, or link it from the Awka website.
+
+.SH NOTE: KEEP YOUR API "FLAT"
+.PP
+So you've created quite a few Awka-ELM functions that you've put together into
+a library.  Let's say they calculate the time needed to build the Sydney 
+Harbour Bridge given a volume of manpower and the number of supervisors.  Internally,
+there's quite a few algorithms that take into account strikes by unions, material
+shortages, and casualties as workers fall off the bridge.
+.PP
+Because of this complexity, within your library functions will need to call other
+functions.  This is fine.  What you need to do is not have an API function call
+another API function, but instead keep any functions they call hidden within the
+library, and also ensure these internal functions do not use the awka_getdoublevar(),
+awka_getstringvar() or awka_tmpvar() calls.
+.PP
+Apart from keeping your library structure nice and hierarchical and your API simple,
+it avoids overloading awka's internal pool of temporary variables.  If this pool is
+overloaded, random chaos will ensue, so please avoid it.
+
+.SH NOTE: REFERENCING GLOBAL VARIABLES
+.PP
+All global variables in your AWK program are accessible by your library functions.
+Herein lies the potential for great danger, so be careful!
+.PP
+Global variables are, of course, pointers to a_VAR structures, and their name is the
+same as in the AWK script, with _awk appended.  So the variable 'myvar' in the script
+would be myvar_awk in the translated C code.  If you know what the variable name is,
+you can put an extern declaration of it in your library code then work with it directly,
+but this may be very restrictive, as it would mean that every script that uses your
+library would need that variable name reserved.  There are other methods.
+.PP
+One of the easiest is with arrays.  You can pass them in as arguments to your functions, 
+as their address is passed over rather than a copy of their contents.  Scalars are not
+as easy.  Just say our function will work with a global variable, however it expects a
+string argument to contain the variable name in order to identify which variable to work
+with - this would make it pretty flexible.
+.PP
+You have available to you the \fIgvar_struct\fR variable \fB_gvar\fR (both described in
+\fBawka-elmref\fR(5)).  This contains the name of every global variable in the script,
+and its a simple matter to search down the list to find a pointer to the a_VAR structure
+of the variable you want to use.
+.PP
+.SH NOTE: CUSTOM DATA STRUCTURES
+.PP
+Looking again at the a_VAR structure, you may note that it contains a char * pointer
+that can reference strings, arrays and regular expressions.  There is no reason why
+you couldn't introduce your own custom data structure and attach it to a global
+variable within one of your functions, as long as you adhere to the following rules:
+.PP
+1. Don't set the variable to anything in AWK after you set it to your
+   customised value, as libawka will try (and fail) to free the value up,
+   causing all sorts of flow-on problems.
+.PP
+2. Don't use the AWK language to copy or compare this variable to others, 
+   even with two variables of the same custom type (ie. custvar1 = custvar2),
+   as libawka will have no idea how the copy should be done, and it will stuff
+   it up.  Instead, provide your own copy and comparison functions.
+.PP
+3. If your structures are memory intensive, you may consider providing a method
+   of freeing the structures when they are no longer needed.
+.PP
+4. Document what your data structures and methods do, and how they should be used
+   in the AWK script.  Please, please do this, as it could save you a lot of grief
+   later.  If your library becomes publicly available this is especially necessary.
+.PP
+This has been a very brief introduction indeed, but hopefully enough to get you
+started.  I recommend you refer to the \fIawka-elmref\fR(5) manpage for a listing 
+of key libawka API functions and data definitions that are available for you to 
+use (but hopefully not abuse).  If you have any questions at all, don't be afraid 
+to contact me (andrewsumner@yahoo.com).  Put the word "awka" at the front of 
+your message title so I know its not spam.
+
+.SH SEE ALSO
+\fBawka\fR(1), \fBawka-elmref\fR(5), \fBgcc\fR(1)
+
+.SH BUGS
+Bound to be plenty.  Let me know if you find a bug with the libawka interface,
+or get stuck with a problem.  I am not, though, in any way responsible for bugs 
+that are introduced by your code, nor am I liable for any damages or expenses
+incurred as a result.  Nor am I liable for anything you do using Awka.  
+.PP
+I'll help where I can, and I'll usually help debug someone's library if I have 
+a personal interest in it.  If you're not sure, try me anyway, the worst I can 
+do is say no, and I might be able to help.  I really like folk who send fixes 
+along with bug reports, though.  And I love the folk who send cash inducements 
+(at last count, um, zero folk).  Oh well, enough rambling, time to finish.
+
+.SH AUTHOR
+Andrew Sumner, August 2000 (andrewsumner@yahoo.com).
+.PP
+.PP

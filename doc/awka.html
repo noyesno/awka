@@ -1,0 +1,675 @@
+Content-type: text/html
+
+<HTML><HEAD><TITLE>Manpage of AWKA</TITLE>
+</HEAD><BODY>
+<H1>AWKA</H1>
+Section: USER COMMANDS (1)<BR>Updated: Aug 8 2000<BR
+<HR>
+
+
+
+
+
+
+
+
+
+
+<P>
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+awka - AWK language to ANSI C translator and library
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>awka</B>
+
+[-<B>c
+</B><I>fn</I>]
+
+[-<B>X</B>]
+[-<B>x</B>]
+[-<B>t</B>]
+[-<B>o
+</B><I>filename</I>]
+
+[-<B>a
+</B><I>args</I>]
+
+[-<B>w
+</B><I>args</I>]
+
+[-<B>I
+</B><I>include-dir</I>]
+
+[-<B>i
+</B><I>include-file</I>]
+
+[-<B>L
+</B><I>lib-dir</I>]
+
+[-<B>l
+</B><I>lib-file</I>]
+
+[-<B>f
+</B><I>progname</I>]
+
+[-<B>d</B>]
+[program] [--] [exe-args]
+<BR>
+
+<B>awka</B>
+
+[-<B>version</B>]
+[-<B>help</B>]
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<B>Awka</B>
+
+is two products - a translator of AWK language programs to ANSI-C, and
+a library of essential functions against which the translated code must
+be linked.
+<P>
+
+The
+<I>AWK</I>
+
+language is useful for maniplation of datafiles, text retrieval and processing,
+and for prototyping and experimenting with algorithms.  Usually AWK is
+implemented as an interpretive language - there are several good free 
+interpreters available, notably <B>gawk</B>, <B>mawk</B> and 'The One True Awk'
+maintained by Brian Kernighan.
+<P>
+
+This manpage does not explain how AWK works - refer to the SEE ALSO section
+at the end of this page for references.
+<P>
+
+<B>Awka</B>
+
+is a <I>new awk</I> meaning it implements the AWK language as defined in Aho, 
+Kernighan and Weinberger, <I>The AWK Programming Language</I>, Addison-Wesley
+Publishing 1988.
+<B>Awka</B>
+
+includes features from the Posix 1003.2 (draft 11.3) definition of the AWK
+language, but does not necessarily conform in entirety to Posix standards.
+<B>Awka</B>
+
+also provides a number of extensions not found in other implementations of
+AWK.
+<P>
+
+<A NAME="lbAE">&nbsp;</A>
+<H2>AWKA OPTIONS</H2>
+
+<DL COMPACT>
+<DT>-<B>c </B><I>fn<DD>
+Instead of producing a 'main' function, </I><B>awka</B> will instead
+generate '<I>fn</I>' as a controlling function.  This is useful where
+the compiled C code is to be linked in with a larger 
+application.  The -<B>c</B> argument is not compatible with the
+-<B>X</B> and -<B>x</B> arguments.  See the section <B>USING awka -c</B>
+below for more details on how to use this option.
+<DT>-<B>X<DD>
+awka</B> will generate C code, which will then be compiled
+into an executable, using the C compiler and intallation
+paths defined when <B>Awka</B> was installed.  The C code will be
+stored in 'awka_out.c' and the executable in 'awka.out' or 'awka_out.exe'.
+<DT>-<B>x<DD>
+The same as -X</B>, except that the compiled program will
+also be executed using arguments following the '--' option on
+the command-line.
+<DT>-<B>t<DD>
+To be used in conjunction with -x</B>.  The C file and the
+executable will be removed following execution of the 
+program.
+<DT>-<B>o </B>filename<DD>
+To be used in conjunction with -<B>x</B> and -<B>X</B>.  The generated
+executable will be called 'filename' rather than the default 'awka.out'.
+<DT>-<B>a </B>args<DD>
+This embeds executable command-line arguments within the translated
+code itself.  For example, <I>awka -X -a &quot;-We&quot; file.awk</I> will create
+an awka.out that will already have -We in its command-line when it is
+run.  To see what arguments have been embedded in an executable, 
+use -showarg at runtime.
+<DT>-<B>w </B>args<DD>
+Prints various warnings to stderr, useful in debugging large, complex
+AWK programs.  None of these are errors - all are acceptable uses of the AWK
+language.  Depending on your programming style, however, they could
+be useful in narrowing down where problems may be occuring.
+<I>args</I> can contain the following characters:-
+<P>
+<B>a</B> - prints a list of all global variables.
+<P>
+<B>b</B> - warns about variables set to a value but not referenced.
+<P>
+<B>c</B> - warns about variables referenced but not set to a value.
+<P>
+<B>d</B> - reports use of global vars within a function.
+<P>
+<B>e</B> - reports use of global vars within just one function.
+<P>
+<B>f</B> - requires declaration of global variables.
+<P>
+<B>g</B> - warns about assignments used as truth expressions.
+<P>
+NOTE: As at version 0.5.8 only a, b and c are implemented.
+<DT>-<B>I </B>include-dir<DD>
+Specifies a directory in which include files required by awka, or
+defined by the user, reside.  You may use as many -I options as you
+like.
+<DT>-<B>i </B>include-file<DD>
+Specifies an include filename to be inserted in the translated code.
+<DT>-<B>L </B>lib-dir<DD>
+Specifies a directory containing libraries that may be required by
+awka, or defined for linking by the user.  See the <I><a href="awka-elm.html">awka-elm</a></I> manpage
+for more details.
+<DT>-<B>l </B>lib-file<DD>
+Specifies a library file to be linked to the translated code generated
+by awka at compile time (this only really makes sense if using awka -x).
+The lib-file is specified in the same way as C compilers, that is, the
+library libmystuff.a would be referred to as &quot;-l mystuff&quot;.
+<P>
+Again, see the <I><a href="awka-elm.html">awka-elm</a></I> manpage for details on awka extension
+libraries.  Like the three previous options, you can use this as often
+as you like on a commandline.
+<DT>-<B>f </B>progname<DD>
+Specifies the name of an AWK language program to be 
+translated to C.  Multiple -<B>f</B> arguments may be specified.
+<DT><I>program</I>
+
+<DD>
+An AWK language program on the command-line, usually surrounded by single
+quotes (').
+<DT>--<DD>
+All arguments following this will be passed to the compiled
+executable when it is executed.  This argument only makes
+sense when -x has been specified.
+<DT><B>exe-args<DD>
+Arguments to be passed directly to the executable when it
+is run.  
+<DT>-h<DD>
+Prints a short summary of command-line options.
+<DT>-v<DD>
+Prints version information then quits.
+</DL>
+<P>
+
+</B><A NAME="lbAF">&nbsp;</A>
+<H2>EXECUTABLE OPTIONS</H2>
+
+<P>
+
+An executable formed by compiling Awka-generated code against libawka.a
+will also understand several command-line arguments.
+<DL COMPACT>
+<DT>-<B>help<DD>
+Prints a short summary of executable command-line options, then exits.
+<DT>-We<DD>
+Following command-line arguments will be stored in the ARGV
+array, and not parsed as options.
+<DT>-Wi<DD>
+Sets unbuffered writes to stdout and line buffered reads from stdin.
+<DT>-v var=value<DD>
+Sets variable 'var' to 'value'.  'var' must be a defined scalar variable
+within the original AWK program else an error message will be generated.  
+<DT>-F value<DD>
+Sets FS to value.
+<DT>-showarg<DD>
+Displays any embedded command-line arguments, then exits.
+<DT>-awkaversion<DD>
+Shows which version of awka generated the .c code for the executable.
+</DL>
+<P>
+
+</B><A NAME="lbAG">&nbsp;</A>
+<H2>ADDITIONAL FEATURES</H2>
+
+<P>
+
+<B>awka</B> contains a number of builtin functions may not presently be
+found in standard AWK implementations.  The functions have been added to
+extend functionality, or to provide a faster method of performing tasks that
+AWK could otherwise undertake in an inefficient way.
+<P>
+
+The new functions are:-
+<DL COMPACT>
+<DT>totitle(<I>s</I>)<DD>
+converts a string to Title or Proper case, with the first letter of each
+word uppercased, the remainder lowercased.
+<DT>alength(<I>a</I>)<DD>
+returns the number of elements stored in array variable <I>a</I>.
+<DT>asort(<i>src</i>, [<i>dest</i>])<DD>
+The function introduced in Gawk 3.1.0.  From Gawk's manpage, this "returns the 
+number of elements in the source array <i>src</i>.  The contents of <i>src</i>
+are sorted using awka's normal rules for comparing values, and the indexes of the
+sorted values of <i>src</i> are replaced with sequential integers starting with 1. 
+If the optional destination array <i>dest</i> is specified, then <i>src</i>
+is first duplicated into <i>dest</i>, and then <i>dest</i> is sorted, leaving the 
+indexes of the source array <i>src</i> unchanged."
+<DT>ascii(<I>s,n</I>)<DD>
+Returns the ascii value of character <I>n</I> in string <I>s</I>.  If <I>n</I> is omitted, the
+value of the first character will be returned.  If <I>n</I> is longer than the string,
+the last character will be returned.  A Null string will result in a return
+value of zero.
+<DT>char(<I>n</I>)<DD>
+Returns the character associated with the ascii value of <I>n</I>.  In effect, this is the
+complement of the ascii function above.
+<DT>left(<I>s,n</I>)<DD>
+Returns the leftmost <I>n</I> characters of string <I>s</I>.  This is more efficient than
+a call to substr.
+<DT>right(<I>s,n</I>)<DD>
+Returns the rightmost <I>n</I> characters of string <I>s</I>.
+<DT>ltrim(<I>s, c</I>)<DD>
+Returns a string with the preceding characters in <I>c</I> removed from the left of <I>s</I>.
+For instance, ltrim(&quot; hello&quot;, &quot;h &quot;) will return &quot;ello&quot;.  If <I>c</I> is not specified,
+whitespace will be trimmed.
+<DT>rtrim(<I>s, c</I>)<DD>
+Returns a string with the preceding characters in <I>c</I> removed from the right of <I>s</I>.
+For instance, ltrim(&quot; hello&quot;, &quot;ol&quot;) will return &quot; he&quot;.  If <I>c</I> is not specified,
+whitespace will be trimmed.
+<DT>trim(<I>s, c</I>)<DD>
+Returns a string with the preceding characters in <I>c</I> removed from each end of <I>s</I>.
+For instance, trim(&quot; hello&quot;, &quot;oh &quot;) will return &quot;ell&quot;.  If <I>c</I> is not specified,
+whitespace will be trimmed.  The three trim functions are considerably more efficient than
+calls to sub or gsub.
+<DT>min(<I>x1,x2,...,xn</I>)<DD>
+Returns the lowest number in the series <I>x1</I> to <I>xn</I>.  A minimum of
+two and a maximum of 255 numbers may be passed as arguments to Min.
+<DT>max(<I>x1,x2,...,xn</I>)<DD>
+Returns the highest number in the series <I>x1</I> to <I>xn</I>.  A minimum of
+two and a maximum of 255 numbers may be passed as arguments to Max.
+<DT>time(<I>year,mon,day,hour,sec</I>)  time()<DD>
+returns a number representing the date &amp; time in seconds since the Epoch, 00:00:00GMT 1 Jan 1970.  The arguments allow specification of a date/time, while no arguments
+will return the current time.
+<DT>systime()<DD>
+returns a number representing the current date &amp; time in seconds since the Epoch, 00:00:00
+GMT 1 Jan 1970.  This function was included to increase compatibility with Gawk.
+<DT>strftime(<I>format, n</I>)<DD>
+returns a string containing the time indicated by <I>n</I> formatted according to <I>format</I>.
+See <A HREF="strftime.html">strftime</A>(3) for more details on format specification.  This function was included to 
+increase compatibility with Gawk.
+<DT>gmtime(<I>n</I>)  gmtime()<DD>
+returns a string containing Greenwich Mean Time, in the form:-
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;Fri&nbsp;Jan&nbsp;&nbsp;8&nbsp;01:23:56&nbsp;1999
+<P>
+<I>n</I> is a number specifying seconds since 1 Jan 1970, while a call with no arguments
+will return a string containing the current time.
+<DT>localtime(<I>n</I>)  localtime()<DD>
+returns a string containing the date &amp; time adjusted for the local timezone,
+including daylight savings.  Output format &amp; arguments are the same as gmtime.
+<DT>mktime(<i>str</i>)
+The same as mktime() introduced in Gawk 3.1.0.  See Gawk's manpage for a detailed
+description of what this function does.
+<DT>and(<I>y,x</I>)<DD>
+Returns the output of '<I>y</I> &amp; <I>x</I>'.
+<DT>or(<I>y,x</I>)<DD>
+Returns the output of '<I>y</I> | <I>x</I>'.
+<DT>xor(<I>y,x</I>)<DD>
+Returns the output of '<I>y</I> ^ <I>x</I>'.
+<DT>compl(<I>y</I>)<DD>
+Returns the output of '~<I>y</I>'.
+<DT>lshift(<I>y,x</I>)<DD>
+Returns the output of '<I>y</I> &lt;&lt; <I>x</I>'.
+<DT>rshift(<I>y,x</I>)<DD>
+Returns the output of '<I>y</I> &gt;&gt; <I>x</I>'. 
+<DT>argcount()<DD>
+When called from within a function, returns the number of arguments that
+were passed to that function.
+<DT>argval(<I>n[, arg, arg...]</I>)<DD>
+When called from within a function, returns the value of variable <I>n</I>
+in the argument list.  The optional <I>arg</I> parameters are index elements
+used if variable <I>n</I> is an array.  You may not specify values for <I>n</I>
+that are larger than <B>argcount()</B>.
+<DT>getawkvar(<I>name[, arg, arg...]</I>)<DD>
+Returns the value of global variable &quot;<I>name</I>&quot;.  The optional <I>arg</I>
+parameters work in the same as for <B>argval</B>.  The variable specified by
+<I>name</I> must actually exist.
+<DT>gensub(<I>r,s,f[,v]</I>)<DD>
+Implementation of Gawk's gensub function.  It should perform exactly the same
+as it does in Gawk.  See Gawk's documentation for details on how to use gensub.
+</DL>
+<P>
+
+<P>
+
+The <B>SORTTYPE</B> variable controls if and how arrays are sorted when accessed using 'for (i in j)'.
+The value of this variable is a bitmask, which may be set to a combination of the following values:-
+
+<DL COMPACT>
+<DT><DL COMPACT><DT><DD>
+<DD>
+<PRE>
+
+  0  No Sorting
+1  Alphabetical Sorting
+2  Numeric Sorting
+4  Reverse Order
+
+</PRE>
+
+</DL>
+
+<P>
+
+A value for <B>SORTTYPE</B> of 5, therefore, indicates that the array is to be sorted Alphabetically,
+in Reverse order.
+</DL>
+<P>
+
+Awka also supports the <B>FIELDWIDTHS</B> variable, which works exactly as it does in Gawk.
+<P>
+
+If the <B>FIELDWIDTHS</B> variable is set to a space separated list of positive numbers, each field is expected to have fixed width, and awka will split up the record using the widths specified in <B>FIELDWIDTHS</B>.  The value of <B>FS</B> is ignored.  Assigning a value to <B>FS</B> overrides the use of <B>FIELDWIDTHS</B>, and restores the default behaviour.
+<P>
+
+Awka also introduces the <B>SAVEWIDTHS</B> variable.  This applies when <B>FIELDWIDTHS</B> is in use, and <B>$0</B> is being rebuilt following a change to a <B>$1..$n</B> field variable.
+<P>
+
+If the <B>SAVEWIDTHS</B> variable is set to a space separated list of positive numbers, each output field will be given a fixed width to match these numbers.  <B>$n</B> values shorter than their specified width will be padded with spaces; if they are longer than their specified width they will be truncated.  Additional values to those specified in <B>SAVEWIDTHS</B> will be separated using <B>OFS</B>.
+
+<p>
+Awka 0.7.5 supports the inet/coprocessing features introduced in Gawk 3.1.0.  See the documentation
+accompanying the Gawk source, or visit <b>http://home.vr-web.de/Juergen.Kahrs/gawk/gawkinet.html</b>
+for details on how these work.
+<DL COMPACT><DT><DD>
+<PRE>
+
+</DL>
+</PRE><A NAME="lbAH">&nbsp;</A>
+<H2>EXAMPLES</H2>
+
+<P>
+
+The command-line arguments above provide a range of ways in which <B>awka</B> may
+be used, from output of C code to stdout, through to an automatic translation
+compile and execution of the AWK program.
+<P>
+
+(a) Producing C code:-
+
+<DL COMPACT>
+<DT><DL COMPACT><DT><DD>
+<DD>
+<PRE>
+
+  1. awka -f myprog.awk &gt;myprog.c
+2. awka -c main_one -f myprog.awk -f other.awk &gt;myprog.c
+
+</PRE>
+
+</DL>
+
+<P>
+
+(b) Producing C code and an executable:-
+
+<DT><DL COMPACT><DT><DD>
+<DD>
+<PRE>
+
+  awka -X -f myprog.awk -f other.awk
+
+</PRE>
+
+</DL>
+
+<P>
+
+(c) Producing the C and Executable, run the executable:-
+
+<DT><DL COMPACT><DT><DD>
+<DD>
+<PRE>
+
+  awka -x -f myprog.awk -f other.awk -- input.txt
+
+</PRE>
+
+</DL>
+
+<P>
+
+Afterwards, you could run the executable directly, as in:-
+
+<DT><DL COMPACT><DT><DD>
+<DD>
+<PRE>
+
+  awka.out input.txt
+
+</PRE>
+
+</DL>
+
+<P>
+
+Running the same program using an interpreter such as
+<B>mawk</B> would be done as follows:-
+
+<DT><DL COMPACT><DT><DD>
+<DD>
+<PRE>
+
+  mawk -f myprog.awk -f other.awk input.txt
+
+</PRE>
+
+</DL>
+
+<P>
+
+The following will run the program, passing it -v on the
+command-line without it being interpreted as an 'option':-
+
+<DT><DL COMPACT><DT><DD>
+<DD>
+<PRE>
+
+  awka.out -We -v input.txt, OR
+awka -x -f myprog.awk -- -We -v input.txt
+
+</PRE>
+
+</DL>
+
+<P>
+
+(d) Producing and running the executable, ensuring it
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;the&nbsp;C&nbsp;program&nbsp;file&nbsp;are&nbsp;automatically&nbsp;removed:-
+
+<DT><DL COMPACT><DT><DD>
+<DD>
+<PRE>
+
+  awka -x -t -f myprog.awk -f other.awk -- input.txt
+
+</PRE>
+
+</DL>
+
+<P>
+
+(e) A simplistic example of how awka might be used in a Makefile:-
+
+<DT><DL COMPACT><DT><DD>
+<DD>
+<PRE>
+
+  myprog:  myprog.o
+       gcc myprog.o -lawka -lm -o myprog
+
+myprog.o:  myprog.c
+
+myprog.c:  myprog.awk
+       awka -f myprog.awk &gt;myprog.c
+
+</PRE>
+
+</DL>
+
+<P>
+
+</DL>
+<A NAME="lbAI">&nbsp;</A>
+<H2>LINKING AWKA-GENERATED CODE</H2>
+
+<P>
+
+The C programs produced by <B>awka</B> call many functions in <B>libawka.a</B>.
+This library needs to be linked with your program for a workable executable to be
+produced.  
+<P>
+
+Note that when using the -<B>x</B> and -<B>X</B> arguments this is automatically taken care
+of for you, so linking is only an issue when you use Awka to produce C code,
+which you then compile yourself.  Many people many only wish to use Awka in
+this way, and never use <B>awka</B>-generated code as part of larger applications.
+If this is you, you needn't worry too much about this section.
+<P>
+
+As well as linking to <B>libawka.a</B>, your program will also need to be linked to
+your system's math library, typically <B>libm.a</B> or <B>libm.so</B>.
+<P>
+
+Typical compiler commands to link an <B>awka</B> executable might be as follows:-
+<P>
+
+<BR>&nbsp;&nbsp;gcc&nbsp;myprog.c&nbsp;-L/usr/local/lib&nbsp;-I/usr/local/include&nbsp;-lawka&nbsp;-lm&nbsp;-o&nbsp;myprog
+<P>
+
+<BR>&nbsp;&nbsp;OR
+<P>
+
+<BR>&nbsp;&nbsp;awka&nbsp;-c&nbsp;my_main&nbsp;-f&nbsp;myprog.awk&nbsp;&gt;myprog.c
+<BR>&nbsp;&nbsp;gcc&nbsp;-c&nbsp;myprog.c&nbsp;-I/usr/local/include&nbsp;-o&nbsp;myprog.o
+<BR>&nbsp;&nbsp;gcc&nbsp;-c&nbsp;other.c&nbsp;-o&nbsp;other.o
+<BR>&nbsp;&nbsp;gcc&nbsp;myprog.o&nbsp;other.o&nbsp;-L/usr/local/lib&nbsp;-lawka&nbsp;-lm&nbsp;-o&nbsp;myapp
+<P>
+
+If you are not sure of how your compiler works you should consult the manpage
+for the compiler.  In release 0.7.5 Awka introduced Gawk-3.1.0's inet and coprocess
+features.  On some platforms this may require you to link to the socket and nsl
+libraries (-lsocket -lnsl).  To check this, look at config.h after running the
+configure script.  The #define awka_SOCKET_LIBS indicate what, if any, extra 
+libraries are required on your system.
+<P>
+
+<A NAME="lbAJ">&nbsp;</A>
+<H2>USING awka -c</H2>
+
+<P>
+
+The -c option, as described previously, replaces the main() function with a function
+name of your choosing.  You may then link this code to other C or C++ code, and thus
+add AWK functionality to a larger application.
+<P>
+
+The command line &quot;awka -c matrix 'BEGIN { print &quot;what is the matrix?&quot; }'&quot; will produce
+in its output the function &quot;int matrix(int argc, char *argv[])&quot;.  Obviously, this replaces
+the main() function, and the argc and argv variables are used the same way - they handle
+what awka thinks are command-line arguments.  Hence argv is an array of pointers to char *'s, and argc is the number of elements in this array.  argv[0], from the command-line, holds the name of the running program.  You can populate as many argv[] elements as you like to pass as input to your AWK program.  Just remember this array is managed by your calling function, not by awka.
+<P>
+
+That's just about it.  You should be able to call your awka function (eg matrix()) as many times as you like.  It will grab a little bit of memory for itself, but you should see no growing memory use with each call, as I've taken quite some time to eliminate any potential memory leaks from awka code.
+<P>
+
+Oh, one more thing,  <I>exit</I> and <I>abort</I> statements in your AWK program code will still exit your program altogether, so be careful of where &amp; how you use them.
+<P>
+
+<A NAME="lbAK">&nbsp;</A>
+<H2>GOING FURTHER</H2>
+
+<P>
+
+Awka also allows you to create your own C functions and have them accessible in your AWK
+programs as if they were built-in to the AWK language.  See the <B>awka-elm</B> and <B>awka-elmref</B> manpages for details on how this is done.
+<P>
+
+<A NAME="lbAL">&nbsp;</A>
+<H2>FILES</H2>
+
+<P>
+
+<B>libawka.a</B>, <B>libawka.so</B>, <B>awka</B>, <B>libawka.h</B>, <B>libdfa.a</B>, <B>dfa.h</B>
+<P>
+
+<A NAME="lbAM">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<P>
+
+<B><A HREF="awk.html">awk</A></B>(1), <B><A HREF="mawk.html">mawk</A></B>(1), <B><A HREF="gawk.html">gawk</A></B>(1), <B><A HREF="awka-elm.html">awka-elm</A></B>(5) <B><A HREF="awka-elmref.html">awka-elmref</A></B>(5), <B><A HREF="cc.html">cc</A></B>(1), <B><A HREF="gcc.html">gcc</A></B>(1)
+<P>
+
+Aho, Kernighan and Weinberger, The AWK Programming Language, Addison-Wesley
+Publishing, 1988, (the AWK book), defines the language, opening with a
+tutorial and advancing to many interesting programs that delve into issues
+of software design and analysis relevant to programming in any language.
+<P>
+
+The GAWK Manual, The Free Software Foundation, 1991, is a tutorial and
+language reference that does not attempt the depth of the AWK book and
+assumes the reader may be a novice programmer. The section on AWK arrays is
+excellent.  It also discusses Posix requirements for AWK.
+<P>
+
+Like you, I should probably buy &amp; read these books some day.
+<P>
+
+<A NAME="lbAN">&nbsp;</A>
+<H2>MISSING FEATURES</H2>
+
+<P>
+
+<B>awka</B> does not implement <B>gawk</B>'s internal variable <I>IGNORECASE</I>.
+<B>Gawk</B>'s /dev/pid functions are also absent.
+<P>
+
+<A NAME="lbAO">&nbsp;</A>
+<H2>AUTHOR</H2>
+
+<P>
+
+Andrew Sumner (<A HREF="mailto:andrewsumner@yahoo.com">andrewsumner@yahoo.com</A>)
+<P>
+
+The <B>awka</B> homepage is at <I><A HREF="http://awka.sourceforge.net">http://awka.sourceforge.net</A></I>.
+The latest version of <B>awka</B>, along with development 'snapshot' releases, are available from
+this page.  All major releases will be announced in comp.lang.awk.  If you
+would like to be notified of new releases, please send me an email to that
+effect.  Make sure you preface any email messages with the word &quot;awka&quot; in the
+title so I know its not spam.
+<P>
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">AWKA OPTIONS</A><DD>
+<DT><A HREF="#lbAF">EXECUTABLE OPTIONS</A><DD>
+<DT><A HREF="#lbAG">ADDITIONAL FEATURES</A><DD>
+<DT><A HREF="#lbAH">EXAMPLES</A><DD>
+<DT><A HREF="#lbAI">LINKING AWKA-GENERATED CODE</A><DD>
+<DT><A HREF="#lbAJ">USING awka -c</A><DD>
+<DT><A HREF="#lbAK">GOING FURTHER</A><DD>
+<DT><A HREF="#lbAL">FILES</A><DD>
+<DT><A HREF="#lbAM">SEE ALSO</A><DD>
+<DT><A HREF="#lbAN">MISSING FEATURES</A><DD>
+<DT><A HREF="#lbAO">AUTHOR</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 20:10:34 GMT, August 09, 2000
+</BODY>
+</HTML>

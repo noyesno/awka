@@ -1,0 +1,54 @@
+Michael D. Brennan provided considerable inspiration with his excellent
+Mawk product.  Awka owes to Mawk the configure scripts, the AWK language
+parser, and the idea that the language could be implemented for high 
+performance.
+
+Thanks also to Arnold Robbins, maintainer of Gawk, for his ongoing encouragement
+and helpfulness.  The extensive test suite in Awka is mostly based on Gawk's 
+test suite and Gawk has led the way in new functionality, particularly with
+version 3.1.0.  The inet and coprocess functions in Awka were drawn directly
+from Gawk, and were originally developed by Jürgen Kahrs.
+
+Thanks to the many contributors to comp.lang.awk who made it clear that 
+a freely available awk-to-C translator was needed.
+
+Finally, thanks in advance to everyone who reports bugs or offers 
+suggestions or constructive criticism, along with those who have already
+contributed.
+
+I along with everyone who uses Awka, owe special thanks to people who
+have contributed with bug reports, suggestions and patches.  Awka would
+be a far poorer product without their help and encouragement.  I've listed
+these fine folk below in no particular order, and apologise if I've missed 
+anybody...
+
+  * Eiso AB <eiso@chem.rug.nl>
+  * John H. DuBois III <spcecdt@armory.com>
+  * chris proctor <bil@linuxstart.com>
+  * Finn Drablos <finn.drablos@unimed.sintef.no>
+  * Matthijs van Aalten <Matthijs.vanAalten@ehv.ce.philips.com>
+  * Phil Magson <phil.magson@lansa.com.au>
+  * Hans-Henrik Staerfeldt <hhs@cbs.dtu.dk>
+  * David Lucido <DLucido@aol.com>
+  * Hannu Toivonen <htt@rni.helsinki.fi>
+  * Christoph A. Specjalski <special@muenster.de>
+  * Jack Kuan <jack_kuan@hotmail.com>
+  * Peter J. Farley III <pjfarley@banet.net>
+  * Nethanel Elzas <nelzas@ndsisrael.com>
+  * Thomas Birnthaler <Thomas.Birnthaler@gfk.de>
+  * Mick Donna <mdonna@cincom.com>
+  * John L Cox <jlcox@notes.west.raytheon.com>
+  * Michael Mauch <michael.mauch@gmx.de>
+  * Wenshio Gan <gan@actainc.com>
+  * Christian Haul <haul@informatik.tu-darmstadt.de>
+  * Steven W. Orr <steveo@world.std.com>
+  * John Maybury <j.maybury@miscapital.com>
+  * Nelson H. F. Beebe <beebe@math.utah.edu>
+  * Lothar Stache <LStache@t-online.de>
+  * Matthijs Kadijk <matthijs@and.nl>
+  * Urs Meier <meier@genesiscom.ch>
+  * Igor Mendelev <igor@compete.com>
+  * Kenny McCormack <gazelle@yin.interaccess.com>
+  * Jules Altfas <mwmc@nwlink.com>
+
+----------------------------------------------------------------------

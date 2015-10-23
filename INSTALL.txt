@@ -1,0 +1,62 @@
+HOW TO INSTALL AWKA
+-------------------
+
+DJGPP users should consult INSTALL.djg
+
+1. Download awka from the Awka home page - make sure you check
+   this site to ensure you have the latest version.  Awka lives at
+   http://awka.sourceforge.net
+
+2. 'cd' to the directory containing the downloaded awka file.
+
+3. type the following (insert the correct version number):-
+   gunzip -c awka-0.7.x.tgz | tar -xvf -
+   (you will need gzip installed).
+
+4. cd to awka-0.7.x
+
+5. type "./configure" (not including the quotes).  You may specify
+   options to configure to control where awka is installed.  For
+   instance, to put libawka.a in /mydir/lib, and awka in /mydir/bin,
+   you would run
+
+     ./configure --prefix mydir
+
+   By default Awka will not seek to identify and 'clean' binary 
+   characters in the input data by substituting them for spaces.  To 
+   make Awka do this, uncomment:
+
+     /* #define NO_BIN_CHARS */
+
+   in config.h.  
+
+   HPUX users:  If you don't have gcc, change CFLAGS in lib/Makefile and
+   awka/Makefile to equal "-O -Aa".  Make the same change in config.h
+   as well.
+
+   By default, Awka will use /bin/sh when forking external tasks, either
+   using the builtin function system(), or the piped i/o methods.  If you
+   would like to use a different shell, edit the line where awka_shell is
+   defined in config.h, and change the value to the location of the shell
+   program on your system.
+   
+6. type "make" (minus the quotes).  This will compile the library and 
+   the awka executable.
+
+   NOTE: Users of Solaris and some other platforms have experienced
+   errors in building the shared-object version of libawka.  If you
+   find this happening to you, the easiest workaround is to comment
+   or remove the line "SHAREDLIB = libawka.so" in lib/Makefile.
+
+   Optionally you may then run "make test" to verify the program is
+   working properly (this may take some time).  If you see any errors
+   reported in this stage, please take the time to let me know, along
+   with the platform and operating system you are using.
+
+7. Type "make install".  This will copy 'awka' to /usr/local/bin,
+   'libawka.a' to /usr/local/lib, 'libawka.h' to /usr/local/include and
+   'awka.1' to /usr/local/man/man1.  Of course if you have specified
+   --prefix or --exec-prefix etc at configure time, the files will be
+   installed elsewhere.
+
+

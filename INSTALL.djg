@@ -1,0 +1,84 @@
+The contents of this file contributed by Peter J. Farley III <pjfarley@banet.net>
+
+Versions Tested:
+================
+
+- GNU bash
+  (version 2.03.0(1)-release (i386-pc-msdosdjgpp) r0.4)
+
+- GNU autoconf
+  (version 2.13)
+
+- GNU gawk
+  (version 3.0.3)
+
+- GNU sed
+  (version 3.02)
+
+- GNU m4
+  (version 1.4)
+
+- GNU gcc
+  (version 2.81)
+
+- DJGPP DJTAR
+  (DJGPP version 2.02)
+
+
+
+Building and installing:
+========================
+
+To build Awka under DJGPP bash, you must have your DJGPP environment
+set up and operating correctly (environment variables set, PATH set,
+etc.).  If you have DJGPP already running, then these instructions
+will allow you to build Awka.
+
+Awka requires Win95/98 LFN support.  You must have LFN=y in your DJGPP.ENV 
+file.  Plain DOS building has not been tested.
+
+If you did not use DJTAR to extract Awka, you should delete Awka and
+re-extract it using DJTAR.  Recent versions of WinZip (including the
+most recent as of this writing, 7.0 SR-1) do not extract zero-length
+files, and there are several zero-length files in the directories test
+and test/reg that WinZip will fail to extract.
+
+You can use this command to extract the Awka gzipped tarball:
+
+  djtar -x -d -v -!. ?:/awka-<version>.tar.gz
+
+where "?:/" is the drive and path where the Awka file is located, and
+"awka-<version>.tar.gz" is the filename of the Awka distribution that
+you downloaded.
+
+If you have not already done so, copy bash.exe to /bin/sh.exe, or make
+a symbolic link file as described in the bash installation documentation.  
+Most of the Awka installation will not work properly unless you do this.
+
+Ensure FILES=50 (or larger) exists in your CONFIG.SYS file.  If it
+does not, make the change and REBOOT YOUR SYSTEM.  If you are not
+booted with FILES=50 or better, the "manyfiles" test will fail in
+strange and unpredictable ways.
+
+In the Awka directory, you will need to rebuild the configure script
+so that DJGPP-specific changes are included.  To do this, type:
+
+    bash autoconf
+
+To build Awka under DJGPP bash, type:
+
+    bash ./configdj
+
+(bash is required as both autoconf and configdj are shell scripts)
+
+To make and install Awka:
+
+    make install
+
+To run the test suite (be patient, this can take a while)
+
+    make test
+
+All the tests should run successfully.  If you see any tests fail, 
+be sure to report them to Andrew Sumner, andrew_sumner@bigfoot.com.
+

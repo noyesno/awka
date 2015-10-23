@@ -1,0 +1,805 @@
+v 0.7.5, June 20 2001
+
+*  Gawk 3.1.0's Coprocessing and inet functions are now supported by Awka,
+   as are the new builtin functions asort() and mktime().  Thanks to Juergen 
+   Kahrs for the original work to implement this excellent feature, and to
+   Arnold Robbins for including it in Gawk.  That libawka will now be 
+   distributed under the GNU General Public License (GPL) rather than
+   LGPL as a result of having to include some code from Gawk.  The previously 
+   separate dfa library is now absorbed into libawka, and the -d command-line 
+   option for awka removed as it is no longer needed.
+*  The match() function has been extended to support its new capability in
+   Gawk 3.1.0.  See the Gawk manpage for details.
+*  awka -a -v 'var="string with whitespace"' will now work correctly.
+*  To avoid breaching ANSI-C guidelines, \r in AWK program strings will
+   be preserved as \r in the generated C code, not converted to ASCII
+   character 13.  Previously some platforms were incorrectly treating
+   \r as \n - this has been fixed by this change.
+*  Fixed a problem wherein awka -c sometimes failed to output matching
+   curly braces in the translated code.
+*  Fixed a data-input parsing error that could occur when RS="".  The new
+   test rsnul1nl (from gawk-3.1.0) will ensure the buglet doesn't return.
+*  A new hash routine was implemented providing fewer collisions, particularly
+   with long string indexes that have only minor differences.  The optional
+   SLOW_HASH #define is no longer needed.
+*  Translator now tracks the datatype of scalar variables, and will produce
+   more efficient code for vars that stay one type throughout a script.
+   This is the first optimisation of translated code in a long, long time
+   and it makes a considerable difference to many scripts.
+
+v 0.7.4, June 12 2001
+
+*  Regular expressions that are exact strings will now run much quicker.
+*  Tidied up some loose threads in lib/rexp.c.
+*  FIELDWIDTHS will no longer be used in calls to the split() function,
+   but only with the parsing of $0 into the $1 ... $n fields.
+*  Removed the unnecessary VERSION line from configure.
+*  Removed the 'longwrds' test's reliance on the sort utility.
+*  Dropped the 'nasty' test.  It doesn't accomplish much and fails
+   on many systems (as it does for gawk).
+*  Altered the test suite so it will always use the static library 
+   rather than the shared-object one.  This was necessary to allow "make test"
+   to work if the package hadn't previously been installed.
+
+v 0.7.3, May 25 2001
+
+*  A shared object version of libawka will be compiled on systems that
+   support it.
+*  "var=value" without a preceding -v is now supported.
+*  awka's "-o filename" will now produce a C file called "filename.c", 
+   instead of defaulting to awka_out.c as it did previously.
+*  awka's -- option now works again, as will --help.
+*  The third parameter of Gensub now works if it is a number > 0.
+*  "." no longer required in PATH to run the test suite.
+*  Array element deletions will no longer leak memory like a sieve.
+*  The extended function alength() wasn't accounting for array element
+   deletions - now it does.
+*  various code cleanups, and better support for C++ compilers.
+*  split("",array,whatever) will now return 0 instead of 1.
+*  fixed a memory fault that sometimes occurred when arrays created by
+   split() were extended.
+*  nextfile and next from with a function now supported.
+*  The builtin function system() will now fork()/execl() processes, and
+   you can define which shell program it uses.  See INSTALL for more details.
+   I haven't implemented this for piped input (eg. "sort abc" | getline) yet.
+*  Added John Maybury's fix for a problem in the temporary variable stack.
+*  Libawka will now compile with SLOW_HASH defined.
+*  Eliminated the annoying compile warnings for redefinition of BEGIN and END.
+*  SUBSEP wasn't being picked up as an internal variable by the translator!
+   This error corrected.
+*  Relaxed the temporary variable pool optimisation introduced in 0.7.2, as
+   it was occasionally overdoing it & causing buggy behaviour.
+*  Fixed a bug that caused getline to sometimes fail to set the value of $0.
+
+v 0.7.2, August 26 2000  
+
+*  Added to the test suite about a dozen or so new scripts borrowed from
+   gawk-3.0.6.
+*  Corrected awka's handling of code like b += b++, the problem being that
+   AWK's handling of post & pre increment and decrement operators is actually
+   different from how C does it, which isn't what I expected.
+*  Optimised the size of the temporary-variable pools, so that it doesn't
+   create more variables than your program needs.  This reduces memory 
+   requirements, and can significantly improve performance.
+
+v 0.7.1, August 15 2000  
+
+*  Introduced a structure containing names & pointers to user-defined
+   functions, for potential use in extended library code.
+*  Found and fixed some memory leaks stemming from how the new dfa library
+   was integrated with awka.
+*  Some code cleanup to make gcc -Wall a bit happier (but still not 
+   warning-free).
+
+v 0.7.0, August 9 2000  - MAJOR VERSION CHANGE
+
+*  Awka Extended Library Methods are finally implemented, about a year
+   after the idea was first seriously discussed by my friend chris
+   proctor.  Sorry about the wait, but finally its here.  This feature
+   allows you to write your own C functions, and have them available as
+   functions to call from your AWK program.  The possibilities are 
+   endless!  I can't say how good it feels to finally get this done.
+*  Extra manpages awka-elm(5) and awka-elmref(5) now available to describe
+   how the Awka-ELM features work, and provide a libawka API reference.
+*  All manpages are also now in html format - see the doc directory.
+*  Gawk's dfa module has been added to the Awka package as an optional 
+   library that can be used to enhance regular expression performance,
+   in doing so making the translated C source of your AWK program subject
+   to the GPL.  See the manpage or awka -h for more details.
+*  Fixed a very subtle bug causing incorrect casting of strings to numbers
+   after a few numerical comparisons of the string.  I doubt this affected
+   many programs, as it would have been pretty obvious something was wrong.
+*  ARGIND internal variable is now supported.
+*  Getawkvar removed.  It was always broken, and now can be done better
+   in an extended library.  This may happen with other extended functions
+   that don't really belong in the core of libawka.
+*  Added the necessary system #includes to libawka.h, rather than having 
+   them in every translated C file, as this assists writing Awka-ELM
+   compliant code.
+   
+v 0.5.9, July 18 2000
+
+*  Arrays populated by split() were on occasion containing strange values
+   in elements larger than the number of fields returned by split.  If that
+   makes sense.  Anyway, problem fixed.
+*  Fixed some FIELDWIDTHS errors.
+*  Corrected a file input error that sometimes caused the input buffer to
+   be processed twice when RS was longer than a single character.
+
+v 0.5.8, July 13 2000
+
+*  Debug warning message added - outputs sorted list of global variables, 
+   and a summary of their usage.  This is activated using "awka -w a".
+   See man page for more details.
+*  The length function, without arguments, was failing to return the 
+   length of $0 - this now fixed.  Don't know how this escaped notice
+   for so long.
+
+v 0.5.7, June 29 2000
+
+*  More gensub fixes.  What a complex beast this function is!  Thanks Eiso
+   for reporting the problems.
+
+v 0.5.6, June 22 2000
+
+*  Gensub fix - sub-patterns that failed to match anything were being 
+   handled wrongly by the substitution code; this has been fixed.
+
+v 0.5.5, June 9 2000
+
+*  Oops, ENVIRON was broken in 0.5.3 - this release restores ENVIRON.
+
+v 0.5.4, June 8 2000
+
+*  Gensub was thoroughly broken from version 0.5.0 - it should now be working
+   again, at least to the level it was at in 0.3b-47, plus it will now support
+   a literal string as the 4th parameter.
+*  The extended function "or" is now being translated correctly.
+
+v 0.5.3, June 1 2000
+
+*  Yet more backslash and escape character fixes.  These have taken some time, 
+   as I really want to slay this dragon for good.
+*  Running "awka -x" should now work for those who keep "." out of their PATH.
+*  Gsub on patterns like /^ | $/ will now work - previously it wasn't going past
+   the first case (^ ).
+*  Octals are now supported in regular expressions eg. /a\052b/ same as /a*b/
+*  Escaping of the ampersand character in the substitution string in calls to
+   gsub() and sub() now works properly.
+*  Corrected an awka command-line parse problem when both -a and -o were used.
+*  Replaced awka_setd() in translated code with a new function, awka_vardblset().
+   This means code like this: '{ x="0123"; x = ("3" x) + 0; print x }' will work,
+   as the awka_setd was incorrectly casting x to numeric _prior_ to the right hand
+   side being evaluated.
+*  Fixed a problem with $1..$n variables not being updated after getline.
+*  Eliminated leakage that occurred when deleting arrays.
+*  Fixed several problems associated with using awka -c.
+*  Updated the manpage.
+*  Tidied up the code, eliminating unused variables & so on.  This should
+   produce fewer warnings for some compilers.
+
+v 0.5.2, Apr 10 2000
+
+*  A segfault that occurred when using "/" as a regular expression has been
+   fixed.
+*  Adding a negative-integer element to an array created by split will now
+   work.  eg. 'BEGIN { split("",x); x[-2]; print -2 in x }'.
+
+v 0.5.1, Apr 3 2000
+
+*  Corrected the compile dependancy problem in the awka subdirectory.  Awka
+   should compile smoothly now.
+
+v 0.5.0, Mar 31 2000
+
+*  Dispensed with the Henry Spencer regular expression library, and adopted
+   the one from glibc.  Due to its age, the former just didn't support 
+   enough features and it was getting too difficult to hack them in.  
+*  Major revision of backslash parsing methods.  The reason they've caused
+   me so much grief is that, unlike an interpreter, I have to protect them
+   (as well as quotes) from the C compiler.
+*  Said goodbye to the "Awka Library License", and hello to LGPL.  This was
+   necessitated by the inclusion of glibc's regexp.
+*  Adopted the Linux numbering system of even numbers for a stable release
+   (I wish) and odd for beta releases.  Also started from a new number, as
+   I was sick of 0.3b.
+
+The following refer to snapshot releases of v0.3b:-
+
+SNAPSHOT 52.
+a) Serves me right - "run the test suite before releasing snapshots".  The
+   final change I made to 51 seriously broke getline.  I apologise to all
+   who were affected by this.
+b) The print function was unusually slow when you gave it a comma-separated
+   output list; now it's quicker.
+c) A few minor regular expression speed enhancements.
+
+SNAPSHOT 51.
+a) Finally overcame a translator memory error introduced by the snapshot
+   48 local function override fix.
+b) Changed translator so that calls to split() will use FIELDWIDTHS if it
+   is active and no field separator is specified.
+c) Fixed a library problem that occasionally caused FIELDWIDTHS splits to
+   return incorrect results.
+d) This script: { print; getline<"another.file"; print } will now work.
+   Previously it read one line from the input file, then read only from
+   "another.file".
+
+SNAPSHOT 50.
+a) Yet more regexp backslash adjustments, which I really hate making as 
+   they can so easily introduce new problems - lets hope not.
+b) Rationalised the buffered input functions, as they were written in such
+   a complex fashion that I was having difficulty understanding how they 
+   worked.  The new design is much simpler, and a bit faster as well.
+   Another benefit is that the -Wi flag, which makes input from stdin line-
+   buffered, will now respect the value of RS.
+c) Eliminated some unnecessary strcmp() calls from awka_getline and 
+   awka_print(), thus improving performance (a bit).
+
+SNAPSHOT 49.
+a) The unbuffered getline from /dev/stdin, introduced in snapshot 47, should
+   now work on platforms that don't actually have a /dev/stdin device.
+b) Oops, the local function override fix in 48 introduced some new errors,
+   which in turn have now been fixed.  Code in haste, debug forever...
+c) A new feature - passing command-line parameter "-a[wkaversion]" to a 
+   compiled executable will cause its awka version (really?) to be
+   printed.  Nice idea Eiso 8-).
+d) Configure script edited to use diff instead of cmp for the test suite
+   under DJGPP.
+
+SNAPSHOT 48.
+a) Gensub bugfix - it now returns the altered variable as a string rather
+   than the faulty behaviour of casting it to a number.
+b) Local functions that override the extended builtins can now be defined
+   anywhere, rather than having to precede the BEGIN section.
+c) Yet another backslash fix: regular expressions used in match statements
+   no longer need their backslashes to be double escaped - eg /\\/ {print}
+   will work, previously you needed /\\\\/ {print}.
+
+SNAPSHOT 47.
+a) Corrected some old translator code that prevented exit statements at
+   the end of BEGIN sections from working.
+b) Gawk gensub function introduced - YES!
+c) getline input from "/dev/xxx" streams is now unbuffered to match the 
+   behaviour of other awk implementations.
+
+SNAPSHOT 46.
+a) This code: BEGIN { $1="x";$0="y";print $0 } will now print "y" rather
+   than "x".
+b) Regular expressions with box brackets [] inside other brackets, 
+   such as /[[]/, will now work again (broken in snapshot 45).
+c) Variable names, held in the _gvar[] structure, were not being null
+   terminated, and this was causing problems with -v arguments under
+   SGI 6.5 - problem fixed.
+
+SNAPSHOT 45.
+a) Completed string regular expression change commenced in the previous
+   snapshot - it will now work when the RE is in a string variable as
+   well as for string constants.
+b) Regular expressions with a / enclosed in [] or () are now supported.
+c) Prevented potential free of null pointers in init.c.
+
+SNAPSHOT 44.
+a) Failure to read from an input file (eg awka -x '{print}' -- nosuchfile)
+   will now cause an error message, as is the case with gawk.  Calls to
+   getline do not produce an error if it fails, as this is handled by
+   getline's return value.
+b) If you deleted an ARGV element, then called getline, the deleted element
+   returned as an empty string.  This 'feature' has been removed - a deleted
+   ARGV element will stay deleted.
+c) An array bounds error that occurred when SORTTYPE is used has been fixed.
+d) The string "[\\t]", when used as a regular expression will now be treated
+   like /[\t]/ rather than /[\\t]/.  This change makes behaviour more
+   compatible with other awks.
+
+SNAPSHOT 43.
+a) (s ~ r) expressions will now return 0 or 1, rather than the position
+   in s that matched r.
+b) Fixed a bug in the regexp module caused by an uninitialised variable.
+   I've converted this module to ANSI-C to prevent this type of error
+   occurring again.
+c) The awka library will now try to intercept fatal signals, such as 
+   segmentation faults, rather than core-dumping.  You can turn this off
+   by defining a_DUMP_ON_ERROR in config.h after running configure.
+d) New feature:  argcount() within a function will return the number of
+   arguments passed to the function; outside a function will return 0.
+e) New feature:  argval(n[, arg, arg...]) within a function will return 
+   the variable passed as the n'th argument; outside a function will return 
+   a 'null' variable (ie. 0 or "").  If the n'th argument is an array variable,
+   you can also define array elements.
+   Examples:-
+     'BEGIN { abc(5,3) } 
+      function abc(a,b,c) { for (i=1; i<=argcount(); i++) print argval(i) }'
+     'BEGIN { a[3,4] = "hello"; abc(a) }
+      function abc(a) { print argval(1, 3, 4) }'
+f) New feature:  getawkvar(name[, arg, arg...]) will return the value of 
+   the global variable "name".  For example, try:
+     'BEGIN { a=4; print getawkvar("a") }', or
+     'BEGIN { a[3,4] = "hello"; print getawkvar("a", 3, 4) }'
+
+SNAPSHOT 42.
+a) The DJGPP/Cygwin32 fix now breaks configure under Unixes!  Another
+   correction, _hopefully_ all is now well.
+b) Another error in the generation of the ARGV array has been corrected.
+c) The labels produced in the translated code have been modified to overcome
+   a problem with the HPUX C compiler.
+d) The use of '&' in gsub is now supported.  From the gawk manpage:-
+   "An & in the replacement text is replaced with the text that was
+    actually matched.  Use \& to get a literal &."
+e) The support for --prefix and --exec-prefix in configure broke the setup
+   of config.h, affecting awka -x on some platforms.
+
+SNAPSHOT 41.
+a) Error in handling awka -x combined with -- arguments has been fixed.
+b) The introduction of DJGPP into the configure script's test for .exe
+   extensions broke the test under Cygwin32 - this has been corrected.
+c) Included DJGPP-related enhancements to Makefile.in, and improved the
+   contents of INSTALL.djg.
+d) Corrected an error in the conversion of split() arrays to hash arrays.
+e) When reading from a file not on the filelist, getline was failing to
+   close the file handle after reaching the end, even if close() was called.
+   Large numbers of such files in a script meant that the operating system's 
+   maximum number of open files was in danger of being breached.  The error
+   has now been corrected.
+
+SNAPSHOT 40.
+a) DJGPP now supported, thanks to the effort put in by Peter J. Farley III
+   and Nethanel Elzas.  See INSTALL for details on how to compile Awka
+   in this environment.
+b) The configure --exec-prefix, --prefix, --bindir, --libdir, --includedir
+   and --mandir options can now be used to determine where make install puts
+   its files on your system.  See configure --help for more details.
+c) SORTTYPE builtin variable introduced.  This variable controls how output
+   of 'for (i in j)' is sorted - see manpage for more details.
+d) The use of a * character in a printf format string to insert a length out
+   of the argument list (eg "%*s",3,str) was supported for widths; now it is
+   also supported for precisions (eg "%3.*g").  
+e) User-defined functions are now suffixed by _fn instead of _awkfn - this
+   makes future implementation of extended functions libraries easier.
+
+SNAPSHOT 39.
+a) Prevented some duplicate use of temporary variables, a potential cause
+   of memory problems.
+b) Now freeing I/O buffer upon reaching the end of a file.  Previously, this
+   took excessive memory when large numbers of files (100 or more) were used.
+c) Fixed a cause of memory problems when calling split() with an empty string
+   for the separator.
+d) array.c will no longer treat empty strings as zero integers.
+e) Corrected a translation error that was sometimes reversing logic on numeric
+   comparisons (this error was introduced in snapshot 33).
+
+SNAPSHOT 38.
+a) The "temp" char in the a_VAR structure was not being initialised for
+   some builtin variables, and this was causing problems in variable assignments.
+   In particular, the amsal5 and parsecsv tests were failing, but all should
+   be well now.
+b) Changed test/Makefile.in to execute ./xx instead of xx, thus supporting
+   users who don't have . in their PATH.  Also reduced the number of files
+   opened concurrently in the manyfiles test.
+c) Under some circumstances, library code was trying to free the same
+   variable twice - surprisingly Linux and many other platforms didn't
+   complain about this, but at least Irix core-dumped.  Problem fixed.
+d) Fixed a minor memory leak that occurred under rare circumstances with
+   user-defined functions.
+e) Variables set using the -v var=val command-line option are now treated as
+   numbers if their value is numeric.
+f) ARGV held one too many arguments (ie ARGC == 2, and (2 in ARGV)) - this
+   corrected, but hopefully no new problems as a result, as messing with
+   ARGV/ARGC is fairly tricky.
+g) Manpage updated to reflect previous addition of FIELDWIDTHS.
+
+SNAPSHOT 37.
+a) Improved the order-of-execution fix below - it shouldn't hit performance
+   quite as hard now.
+b) Spaces between builtin function names and parentheses, eg. 'sin (a)' is
+   supported by most AWKs, however the spaces are not allowed for user-defined
+   functions.  This is to prevent code like 'a = this that (x="4")' from having
+   'that' incorrectly treated as a function.  Awka now supports this policy;
+   previously it allowed spaces for user-defined functions, causing the above
+   example to fail.
+c) Another (y in z) fix, correcting an error introduced by the fix in the
+   previous snapshot.
+
+SNAPSHOT 36.
+a) The code 'x["y"]; z = ("y" in x)' was setting z to 0, not 1 as it should
+   have.  Now it works properly - this does not affect 'if ("y" in x)', which
+   was already behaving itself.
+b) The order-of-execution of function arguments was not correct.  The code
+   'a=1; printf "%d %d\n",a,++a' would print "2 2" rather than "1 2" due to
+   this problem.  My present fix is overkill, ensuring correctness at potential
+   cost to speed, but them's the breaks.
+
+SNAPSHOT 35.
+a) Oops!  The translator fix in snapshot 34 introduced errors when RSTART
+   used in a script - now fixed.
+
+SNAPSHOT 34.
+a) Plugged a nasty memory leak that occurred under rare conditions in user 
+   function calls.
+b) Added some more parentheses protection for assignments within truth 
+   condition expressions in the translated code.
+c) Added the internal variable RT, which complements use of RS as a regular
+   expression.
+
+SNAPSHOT 33.
+a) Fixed a translation bug to do with over-zealous optimization of local
+   function variables (introduced back in snapshot 25).
+b) Due to a strange addition to the return variable, awka's rand() function
+   was sometimes returning values > 1.  This has been fixed.
+c) If you set environment variable BUILDLIB to "so", libawka will be built
+   as a shared object library rather than a static archive.  Only do this
+   if your C compiler supports the -shared argument.  You may have problems
+   with make test - if so, try doing a make install first.
+
+SNAPSHOT 32.
+a) RS as a regular expression now introduced.
+b) Setting element 0 in an array created by split was overwriting
+   element 1.  This anomaly has been corrected.
+
+SNAPSHOT 31.
+a) 'if (i in j)' always returned true if j was created by split, and i was 
+   any positive integer.  Now it should behave itself.
+b) Some more regexp to string conversion speed optimisation, and some 
+   tidying of the enhancements introduced in snapshot 30.
+
+SNAPSHOT 30.
+a) Fixed a memory leak that sometimes occurred when regexps were being
+   cast to strings and vice versa.
+b) When execution reaches main pattern section, FILENAME will be set to a 
+   default value of "-" rather than "", providing it has not been 
+   previously set to some other value.
+c) The (s)printf function had a static buffer for temporary memory needs,
+   on the assumption that it would never be fully used.  Bad assumption -
+   now we have a dynamic buffer.
+d) The backslash parsing code in the (s)printf function was causing scripts 
+   like 'BEGIN { printf "\\" }' to misbehave.  The code was obsolescent, 
+   and has been removed.
+e) Scripts that cast variables from regular expressions to strings & back
+   again will now run much faster.
+
+SNAPSHOT 29.
+a) Introduced FIELDWIDTHS, which behaves in the same way as gawk's
+   variable of the same name.
+b) Also introduced SAVEWIDTHS.  This variable contains a space-separated
+   list of widths, similar to FIELDWIDTHS.  When FIELDWIDTHS is active
+   and SAVEWIDTHS is set to a valid format string, any rebuilding of $0 
+   will seek to use the widths specified in the SAVEWIDTHS format.  This 
+   means short field values will be padded with spaces, and long ones will 
+   be truncated.  Fields additional to those specified in the format will 
+   be separated by OFS.
+c) The function that formats strings for (s)printf was sometimes failing
+   to allocate sufficient memory, resulting in array bounds overruns.
+   Some more explicit logic has corrected this.
+
+SNAPSHOT 28.
+a) Fixed test/Makefile.in - the argtest2 script will work now.
+b) More rationalisation of malloc/realloc methods.
+c) Fixed a problem in performing gsub over /^.*|whatever/ type
+   expressions.
+d) Removed the annoying (but harmless) warnings when compiling awka.
+
+SNAPSHOT 27.
+a) The concatenation of multiple array subscripts, last reviewed in
+   snapshot 24, needed another small adjustment.
+b) Removed some unneccesary causes of memory free, malloc and realloc
+   operations.
+c) In lib/Makefile.in, there were two ../regexp/regexp.o rules, which 
+   was confusing make on some systems.
+d) New Feature:  you can now specify command-line arguments to be
+   embedded in the executable, using awka -a 'args'.  See the man
+   page for more details.
+
+SNAPSHOT 26.
+a) Some more parentheses protection for assign operations within truth
+   expressions, this time for 'x = (y = (a in b || c in b))'.
+
+SNAPSHOT 25.
+a) Optimisation tweak involving a reduction in the use of memcpy.  Scripts
+   that have lots of functions and/or string manipulation should be faster.
+b) Another optimisation, this time introducing some more intelligent
+   tracking of variable types returned by builtin functions.
+c) Re-implemented a gsub bugfix that was previously done in snapshot 4.  The
+   problem had been re-introduced by the snapshot 20 rework of gsub.
+
+SNAPSHOT 24.
+Library Fixes:
+a) Small fix required in the concatenation of multiple array subscripts.
+b) gsub(var, whatever, var), where the same variable is both the target
+   and the regular expression, was not previously catered for but will 
+   now work properly.
+c) Another small fix in varcpy, to correct an incomplete copy where the
+   source variable was a regular expression.
+d) Some number formats (eg 2.34567e-02) were not being handled
+   properly, causing incorrect behaviour - this has been fixed.
+Translator Fixes:
+e) Ensured assignments used in truth expressions (eg. if ((x = y) > 3))
+   are protected by parentheses in the generated code.
+f) The code 'x *= y' will now be translated using '*=' rather than
+   'x = x * y'.  As well as being correct, this eliminates some potential
+   compile errors.
+g) Calls to builtin functions within conditional expressions will no longer
+   cause parse errors.
+
+SNAPSHOT 23.
+a) A small translation error in parsing conditional expressions has been
+   corrected.
+b) A gsub error in replacing entire strings with "" has been corrected.
+c) Comparison of uninitialised variables and int(whatever) was causing
+   problems, but is now working properly.
+d) The regexp functions call awka_error() rather than their own error
+   function.
+e) Passing an uninitialised variable to sub() or gsub() was causing a
+   regexp error message, but is now ok.
+f) Some circumstances were causing $0 not to be updated following a change
+   in a $n variable.  The fix for this was tricky, and I did not enjoy 
+   making it - I am hoping it has not created other problems.
+
+SNAPSHOT 22.
+a) The code 'function foo() {bar()}' contains a call to an undefined 
+   function bar() within a function that itself is never called.  Hence
+   the error about bar() not being defined has been removed.
+b) Fixed a translation error that occurred when multiple range patterns
+   were used.
+c) Corrected an error in the parsing of backslashes on some regular 
+   expressions.  Thanks go to John H. Dubois III for his work in tracking
+   this bug down.
+
+SNAPSHOT 21.
+a) Fixed a small memory error in the gsub function, reworked in
+   snapshot 20.
+b) Fixed a translation error that occurred when range patterns were preceded
+   by other patterns.
+c) Small optimisation for handling of function parameters.
+
+SNAPSHOT 20.
+a) Fixed a minor memory leak.
+b) Getline was setting the target variable to an empty string when 
+   the input file could not be read.  The proper behaviour appears to
+   be leaving the variable alone - this is what getline now does.
+c) The management of local function variables was a little bit loose,
+   and could confuse itself under some circumstances.  It has now been
+   tightened up.
+d) Running delete(x), where x is an array that has not been initialised
+   yet, would produce a core-dump.  Now its ok.
+e) Local function array variables were not being identified as arrays
+   before runtime.  This sometimes resulted in unusual side-effects.  
+   The translator has been improved to overcome this problem.
+f) In interactive mode (-Wi), the length of incoming lines is now being
+   calculated correctly.
+g) Performance enhancements: new test for exact-string searching in
+   regexps, reworked & simplified gsub function, revisited garbage
+   collection methods and optimised $n access methods.
+
+SNAPSHOT 19.
+a) The translator was producing code for 'for (i in j)' loops that 
+   contained an uninitialised variable.  This was sporadically causing
+   core dumps, and has now been fixed.
+b) The compile error in patch 18 has been fixed.  Don't know how that
+   one slipped through!
+c) The alterations in 14.b had not been carried through to the function
+   that converts split arrays to hash arrays.  For local function array
+   variables, this was causing core dumps.
+
+SNAPSHOT 18.
+a) LinuxPPC 5.0 now supported.
+b) Both the translator and the library now have the same definition
+   of awka_error().  Not a major change - it's really for my benefit.
+c) A key variable monitoring memory allocation for i/o streams is now
+   being initialized correctly.  This fixes the previously mentioned
+   SGI file read problem.
+d) New memory-debug module added.  It is activated by defining
+   MEM_DEBUG in config.h.  It provides basic protection against array
+   bounds errors, failure to initialize allocated memory and read/write
+   of freed memory.  Like all memory debugging schemes, it will make 
+   programs run slowly - its really for use in tracking down problems 
+   in the library, such as the uninitialized variable fixed in c) above.
+
+SNAPSHOT 17.
+a) Fixed a minor problem in parsing backslash characters within regular
+   expressions.
+b) Reworked some dangerous code in var.c that could have resulted in
+   using uninitialized variables, leading to memory corruption.
+c) Checking against division by zero was sometimes producing spurious
+   math errors, although under very rare circumstances.  This now fixed.
+d) Some performance enhancements (without introducing new bugs, honest!)
+e) Interactive mode is now available using the -Wi option on the 
+   executable's command line.  See man page for more details.
+
+SNAPSHOT 16.
+a) Removed a subtle cause of memory corruption from array.c.  This _may_
+   resolve the file read problems some users are experiencing under SGI
+   (here's hoping).
+
+SNAPSHOT 15.
+a) Thoroughly re-worked the 'garbage collection' code that manages temporary
+   variables.  The old method was overly restrictive, and could break under
+   certain conditions.  A lot more thought has gone into the new design.
+b) Renamed regexp functions regcomp() and regexec() to avoid conflicts with
+   system libraries.
+
+SNAPSHOT 14.
+a) The Library is now released under the Awka Library License (see file 
+   LIBLICENSE.txt.
+b) Some mods to array.c to improve multi-dimensional array performance,
+   and a new benchmark test file (array3).
+c) Ensured variables are freed properly after execution, preventing 
+   leakage where code is integrated with a user application and called 
+   multiple times.
+d) Fixed some silly errors in the sorted output of 'for (bugs in awka)' 
+   loops.
+e) Removed a whole stack of function inlining from the library.  Instead
+   of speeding things up, it was slowing everything down.
+f) The 'function hello(RS) {;}' bug has been fixed - it will now compile
+   and run correctly.
+g) Fixed some translation problems relating to RE's, also fixed a core-dump
+   where a variable was being set to a string, then an RE, then a string
+   again.
+h) The 'function xx(yy) {print yy} function yy(xx) {xx(++xx)} BEGIN {yy(2)}'
+   problem has been fixed - it will now compile and run correctly.  This
+   basically clears my known bug list, _and_ (hopefully) I no longer need 
+   to transfer to the Gawk parser!
+
+SNAPSHOT 13.
+a) Small change to Makefile.in to prevent some 'mkdir -p' commands from failing
+   on make install.
+b) Revised the manpage.
+c) 'for (i in j)' loops in the main pattern section of a program will now 
+   compile correctly.
+d) Enhanced the ltrim, rtrim and trim functions.  You may now pass a second 
+   (string) argument, containing characters to be trimmed.  Without the
+   second arg the functions will still trim whitespace.
+e) Range Patterns are now supported (at long last!)
+f) Defining NO_BIN_CHARS in config.h will cause awka-generated executables 
+   to replace binary characters in the input data with spaces, at the cost 
+   of some speed degradation.
+g) Defining SLOW_HASH in config.h will cause array hashing to be generated from
+   the entire index string, rather than a truncated part of it (default method).
+   Your average case will be worse with this method, but the worst-case 
+   performance will not be nearly as bad.
+h) Functions that are never called will not be translated.  This reduces the size
+   of output and therefore of the compiled executable.  It should greatly improve 
+   the efficiency of including files containing libraries of AWK functions.
+i) User-defined AWK functions and variables will override the extended builtin
+   functions.  This was previously attempted way back in Patch 5.  I really hope
+   it works properly this time!
+j) '-o filename' option added to awka command-line.  In conjunction with -X and -x,
+   it allows you to specify the filename of the generated executable.
+
+SNAPSHOT 12.
+a) -s switch added to awka command-line.  This will cause output from 'for (x in y)'
+   loops to be sorted in ascending order.  If an array has both string and integer
+   keys, the ints will come first, followed by the strings.  Note that this may
+   run slower than the non-sorted version, as it does a quick-sort of the list before
+   each loop.
+b) The parse error encountered when using 'x++ / y' has been fixed, thanks to a
+   patch from Mike Brennan.
+c) Making a recursive function call from within a 'for (i in j)' loop will now work
+   correctly.
+d) Small change in array.c to prevent yet another cause of core-dumps.
+e) Reworked awka command-line option '--' to eradicate some errors in passing
+   arguments.  Also added -help command-line option for the compiled executables.
+f) Small fix in translate.c, removing some parentheses that didn't belong.
+g) The 'totitle' function now converts the first letter in every word to uppercase,
+   rather than the first letter only, eg:
+     old:  totitle("i shall return") returned "I shall return"
+     new:  totitle("i shall return") returns  "I Shall Return"
+h) Reversed order of changes in this file to make for easier reading.
+
+SNAPSHOT 11.
+a) Fixed (I hope) the wanton leakage of memory that occurred if you used return
+   or next within a 'for (i in j)' loop.
+b) Fixed another array.c that caused segfaults when deleting an element in an array
+   indexed by both strings and ints.  Made another fix to ensure hashing doesn't 
+   suffer on these types of arrays.
+c) Fixed a backslash bug that was inherited from mawk.  'print "\{ hello \}"' will
+   now print "{ hello }" rather than "\{ hello \}".  This was a major change that
+   could well have introduced new problems, although the test suite works ok.
+d) On some occasions, NF was not being set until $n was read - this has been
+   corrected.
+e) Small tweak in array.c to optimise performance for arrays containing both
+   string and int indexes.
+
+SNAPSHOT 10.
+a) Introduced the alength() builtin function.  This takes an array variable as
+   its argument, and returns the number of elements in the array.
+b) Fixed a bug in array.c that caused storage of strings & ints when only
+   storage of ints was required.  What a waste of space.
+c) Setting an array variable from the command-line (eg "-v x=1 'BEGIN { x[1]=2 }'")
+   will now produce an error message about using an array as a scalar.  This is
+   a dark corner of AWK, and neither gawk or nawk seem to handle it logically.
+d) Getline should return -1 when it fails to open a file.  Awka's getline was
+   returning 0.
+
+SNAPSHOT 09.
+a) Fixed an uninitialized variable problem in the translator that sometimes 
+   caused it to crash.
+b) Multiple print arguments (eg print a,b,c) will now be separated on output
+   using OFS - it was previously using a space character.
+c) Added another example in the benchmark directory, showing how awka performs
+   using nested for-loops (worth a look).
+
+SNAPSHOT 08.
+a) The conversion of an 'int' indexed array to a dual int & string array, 
+   introduced in 06.c below, had a bug or two that led to core dumps - not now.
+b) Replaced mkdirhier with mkdir -p (used in make install).
+c) configure should find ranlib now.
+
+SNAPSHOT 07.
+a) An array bounds error in io.c has been fixed - this should hopefully correct
+   some reported bugs that I was previously unable to replicate.
+
+SNAPSHOT 06.
+a) The code 'BEGIN { if (x<0) print "bad" }' will no longer print "bad" (x is 
+   an uninitialised variable)
+b) Added some extra parentheses to mathematical expressions, as some were being
+   incorrectly parsed.
+c) Reluctantly modified array method to store int keys without conversion to
+   strings.  This substantially boosts performance, but of course opens the
+   door for more bugs, given the number of changes required.  It also uses more
+   memory (or it _can_, depending on your script).
+d) And another major change - string variables now track the amount of memory 
+   allocated as well as string length, thus avoiding unnecessary realloc calls.
+   This increases the size of an a_VAR by 4 bytes, which uses a bucketload extra
+   memory for large arrays.  A memory chip is cheaper than a super-fast CPU.
+e) Another translation fix similar to 05 a) below - 'x = a || (b && c)' will work.
+f) Fixed a getline bug that caused a premature halt to reading input.
+g) Added patch level number to -v output.
+
+SNAPSHOT 05.
+a) Code such as 'x = ((a == 1) || (b == 2))' will now parse correctly.
+b) User-defined function names should no longer conflict with functions
+   in system libraries.
+c) The Henry Spencer library now used for both libawka.a and translator,
+   avoiding spurious parse errors generated by mawk's rexp.
+d) Variable names will no longer conflict with user-defined function names.
+   Code such as 'function b(a) { print a } function a(b) { b(b) } BEGIN { a(3) }'
+   should now work, and this time nothing else should be broken!
+
+   NOTE: The intention was to remove conflict between functions and local vars,
+   but it will actually apply to all vars (gawk will not allow this).  This can
+   be dangerous, particularly when combined with...
+e) Variable names will override builtin function names.  The intention was
+   to support code using variables with the same names as the new extended
+   functions, but actually many other builtins are also affected.
+f) The split bug 'fixed' in 04 g) below, has now been fixed.  Really.
+
+SNAPSHOT 04.
+a) An array overrun in the translator has been fixed - it produced core
+   dumps on SCO, but remained hidden on most other platforms.
+b) Improved hash algorithm, after seeing some input that caused too many
+   collisions.
+c) This code: 'x = "1"; y = 2; x += y' produced a value for x of 2, not 3.  
+   It is now correct.
+d) A variable with dual numeric & string status was dropping its numeric
+   value after being run through sub or gsub.  Now it will retain its
+   numeric status if the gsub'd string is, by nature, a numeric.
+e) When $1..$n are changed, $0 should be rebuilt before next use.  This
+   was not happening when $0 was being passed to sub or gsub.  It is now.
+f) Numeric local function variables are now initialised between function
+   calls.
+g) A split bug, where old values were still accessible after subsequent
+   calls to split, has been fixed.
+h) There was a subtle bug in split RE's with OR characters, eg / *|^x|,/
+   This has been corrected.
+
+SNAPSHOT 02.
+a) Fix to 01.a below - overriding some functions would have caused
+   core-dumps.  Note that you cannot override the getline, split, 
+   print, printf, length or match functions.
+b) -W exec option added to the command-line parse function in init.c in
+   the library.  This is similar to mawk, in that all following command-line
+   options will be treated as filenames and inserted into the ARGV array.
+c) Optimised awka_strconcat(), and section in awka_doln() that rebuilds $0.
+   Also improved _awka_isnumber().
+d) print() will now use the more efficient awka_argn (n=0,1,2,3) where 
+   possible.
+e) Some minor changes to awka.ac.m4 and Makefile.in to ensure ranlib only
+   runs when it actually exists, and to chmod permissions on the library,
+   header file and translator executable on install.
+f) Fixed a subtle logic bug with 'if (i in j)' expressions.
+
+SNAPSHOT 01.
+a) Local Functions will override builtin functions
+b) split(a, b, z x) will no longer core-dump
+c) using 'for (i in j)' where j was created by split should now work
+

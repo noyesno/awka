@@ -1,0 +1,12 @@
+rec :5 :4
+rec 5 5
+rec :10 :
+rec 10 1
+q10
+rec :5 :4
+rec 5 5
+rec :10 :
+rec 10 1
+q10
+fun :5 :4'54'
+fun :5 :'5'

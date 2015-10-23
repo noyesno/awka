@@ -1,0 +1,137 @@
+In this directory are some simple awk scripts aimed at testing
+relative performance of some aspects of the language.
+
+They are:-
+
+  cast.awk     (lots of string to number & back casts in a loop)
+  array.awk    (tests arrays with string elements)
+  array2.awk   (tests arrays with integer elements)
+  array3.awk   (speed accessing multi-dimension arrays)
+  io.awk       (writes out a large file, reads it in & splits $0)
+  split.awk    (how fast is the split functionality?)
+  function.awk (many repeated function calls passing arguments)
+  expr.awk     (speed evaluating a reasonably complex expression)
+  parsecsv.awk (a benchmarking example from comp.lang.awk)
+  loop.awk     (heavily nested for loops and if statements)
+  recurse.awk  (deep recursive function test)
+  regexp.awk   (test regular expression speed)
+
+The code for these tests is pretty small - I wanted to compare
+performance of the internal 'library' functions rather than
+speed of interpreting vs compiled, with the exception of loop.awk,
+which was so dramatic I couldn't leave it out.
+
+If you have a good benchmark test, feel free to forward it to me.
+I'd also be interested in seeing results of awka in comparison with
+other AWK implementations not listed here, such as Thompson Awk
+(which I dont have).
+
+Note:  The awka tests were conducted as follows:-
+
+  awka -f array.awk >x.c
+  gcc -O x.c -L/usr/local/lib -I/usr/local/include -lawka -lm
+  time a.out
+
+Libawka.a, mawk-1.3.3, gawk-3.0.6, tcl-8.0.4, perl-5.0 and 'the 
+one true AWK (nawk)' used in the tests were all compiled using gcc 
+with an optimisation flag of -O.  The benchmark platform was a 
+233mhz Powerbook G3 running LinuxPPC.
+
+Results may vary on different systems, probably due to variations
+in how well gcc optimises code.  The results listed here should
+still be a generally reliable representation.
+
+Note to Perl users:  I rarely write in Perl, so my test programs
+may not be as efficient as they could/should be.  By all means
+improve them & forward me a copy.  Any takers?  Anyone?  I also
+need perl scripts for the parsecsv, loop & regexp  examples.
+
+RESULTS for v0.7.1, 17-8-2000:
+
+CAST
+1. awka:       38.51 sec
+2. gawk:       47.44 sec
+3. perl:       47.65 sec
+4. mawk:       85.73 sec
+5. nawk:      105.59 sec
+
+ARRAY
+1. awka:       20.42 sec
+2. gawk:       32.58 sec
+3. perl:       36.45 sec
+4. tcl:        39.20 sec
+5. nawk:       53.55 sec
+6. mawk:       57.71 sec
+
+ARRAY2
+1. awka:        6.41 sec
+2. mawk:        7.73 sec
+3. gawk:       43.01 sec
+4. tcl:        49.84 sec
+5. perl:       66.04 sec
+6. nawk:       99.04 sec
+
+ARRAY3
+1. awka:       17.93 sec
+2. perl:       36.77 sec
+3. gawk:       39.07 sec
+4. nawk:       49.69 sec
+5. tcl:        71.56 sec
+6. mawk:      100.47 sec
+
+IO
+1. awka:       17.88 sec
+2. mawk:       26.62 sec
+3. gawk:       39.46 sec
+4. perl:       64.26 sec
+6. nawk:       91.71 sec
+7. tcl:       115.05 sec
+
+SPLIT
+1. mawk:       24.12 sec
+2. awka:       31.99 sec
+3. perl:       62.87 sec
+4. gawk:       80.94 sec
+5. nawk:      197.53 sec
+
+FUNCTION
+1. mawk:       31.21 sec
+2. awka:       46.22 sec
+3. perl:       98.25 sec
+4. nawk:      147.79 sec
+5. gawk:       93.74 sec
+
+RECURSE
+1. mawk:        1.62 sec
+2. awka:        3.98 sec
+3. perl:        8.09 sec
+4. nawk:       13.12 sec
+5. gawk:       33.33 sec
+
+EXPR
+1. awka:       33.00 sec
+2. mawk:       40.72 sec
+3. gawk:       58.95 sec
+4. perl:       98.31 sec
+5. nawk:      123.80 sec
+
+PARSECSV
+1. mawk:       25.54 sec
+2. awka/dfa:   42.46 sec
+3. awka:       50.54 sec
+4. gawk:       69.65 sec
+5. nawk:      185.79 sec
+
+NESTED-LOOP
+1. awka:        7.66 sec
+2. perl:       45.92 sec
+3. mawk:       54.77 sec
+4. gawk:       56.67 sec
+5. nawk:      142.57 sec
+
+REGEXP
+1. mawk:        7.57 sec
+2. awka/dfa:   19.15 sec
+3. awka:       22.07 sec
+4. nawk:       24.77 sec
+5. gawk:       27.51 sec

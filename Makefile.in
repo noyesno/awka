@@ -1,0 +1,81 @@
+
+SHELL=/bin/sh
+
+####################################
+
+CC = @CC@
+AR = @AR@
+RANLIB = @RANLIB@
+EXE = @EXE@
+
+SHAREDFLAG = @SHAREDFLAG@
+CFLAGS =   @CFLAGS@
+
+MATHLIB = @MATHLIB@
+SOCKET_LIBS = @SOCKET_LIBS@
+
+YACC = @YACC@ 
+AWK = @AWK@
+CMP = @CMP@
+
+# where to put awka
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+BINDIR = @bindir@
+LIBDIR = @libdir@
+INCDIR = @includedir@
+# where to put the man pages
+MANEXT = @MANEXT@
+MANSRCDIR = @mandir@
+MANDIR = $(MANSRCDIR)/man$(MANEXT)
+SHARED_LIB = @SHARED_LIB@
+BUILDLIB = libawka.a $(SHARED_LIB)
+#######################################
+
+MAKEFILEIN = Makefile.in lib/Makefile.in awka/Makefile.in test/Makefile.in
+
+all: awka_exe libawka
+
+Makefile:	$(MAKEFILEIN) config.status
+	/bin/sh ./config.status
+
+libawka: 
+	cd lib; $(MAKE)
+
+awka_exe: 
+	cd awka; $(MAKE)
+
+AWKAMAN = $(MANDIR)/awka.$(MANEXT)
+install:  awka_exe libawka
+	if [ ! -d $(LIBDIR) ]; then mkdir -p $(LIBDIR); fi
+	if [ ! -d $(INCDIR) ]; then mkdir -p $(INCDIR); fi
+	if [ ! -d $(BINDIR) ]; then mkdir -p $(BINDIR); fi
+	if [ ! -d $(MANDIR) ]; then mkdir -p $(MANDIR); fi
+	if [ ! -d $(MANSRCDIR)/man5 ]; then mkdir -p $(MANSRCDIR)/man5; fi
+	cd awka; $(MAKE) install
+	cd lib; $(MAKE) install
+	cp  doc/awka.1  $(AWKAMAN)
+	cp  doc/awka-elm.5  $(MANSRCDIR)/man5
+	cp  doc/awka-elmref.5  $(MANSRCDIR)/man5
+	chmod  0644  $(AWKAMAN)
+
+clean:
+	cd awka; $(MAKE) clean
+	cd lib; $(MAKE) clean
+	cd test; $(MAKE) clean
+
+distclean:  clean
+	rm -f config.h Makefile lib/Makefile awka/Makefile test/Makefile \
+	    config.status config.log config.cache
+	rm -f defines.out maxint.out
+	rm -f benchmark/*.c benchmark/core benchmark/*.o benchmark/x*
+
+configure:  configure.in awka.ac.m4
+	autoconf
+
+check:	awka_exe libawka
+	cd test; $(MAKE) -k
+
+test:	check
+

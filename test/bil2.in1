@@ -1,0 +1,4 @@
+#include bil2.in2
+BEGIN {
+  hello()
+}

@@ -1,0 +1,493 @@
+.TH AWKA-ELMREF 5  "Aug 8 2000" "Version 0.7.x" "AWKA API REFERENCE"
+.\" strings
+.ds ex \fIexpr\fR
+'\" .CS   - begin code excerpt
+.de CS
+.TP -2
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\" .CE   - end code excerpt
+.de CE
+.fi
+.RE
+..
+'\" .DS   - start indented
+.de DS
+.TP -2
+.RS
+.nf
+.sp
+..
+'\" .DE   - end indented
+.de DE
+.fi
+.RE
+.sp
+..
+
+.SH NAME
+.PP
+awka-elmref - Awka API Reference for use with Awka-ELM libraries.
+
+.SH DESCRIPTION
+\fBAwka\fR is a translator of AWK programs to ANSI-C code, and a library
+(\fIlibawka.a\fR) against which the code is linked to create executables.
+Awka is described in the \fBawka\fR manpage.
+.PP
+The Extended Library Methods (ELM) provide a way of adding new functions
+to the AWK language, so that they appear in your AWK code as if they were
+builtin functions such as substr() or index().  The \fBawka-elm\fR manpage
+contains an introduction to Awka-ELM.
+.PP
+This page lists the available data structures, definitions, functions and
+macros provided by \fIlibawka.h\fR that you may use in creating C libraries
+that link with awka-generated code.
+.PP
+I have broken the page into the following main sections: BASIC VARIABLE
+METHODS, ARRAY METHODS, BUILTIN FUNCTIONS, I/O METHODS, REGULAR EXPRESSION
+METHODS.  So, without further ado...
+
+.SH BASIC VARIABLE METHODS
+.PP
+\fIData Structures\fR
+.DS
+\fBa_VAR\fR
+
+typedef struct {
+  double dval;          /* the variable's numeric value */
+  char * ptr;           /* pointer to string, array or RE structure */
+  unsigned int slen;    /* length of string ptr as per strlen */
+  unsigned int allc;    /* space mallocated for string ptr */
+  char type;            /* records current cast of variable */
+  char type2;           /* double-typed variable flag, explained later. */
+  char temp;            /* TRUE if a temporary variable */
+} a_VAR;
+
+The \fBa_VAR\fR structure is used to store everything related to AWK
+variables.  This includes those named & used in your program, and 
+transient variables created to return values from functions and other
+operations like string concatenation.  As such, this structure is
+ubiquitous throughout libawka and awka-generated code.
+
+The \fItype\fR value is set to one of a number of #define values, 
+described in the Defines paragraph below.  Many functions and macros 
+exist for working with the contents of a_VARs - see the Functions & 
+Macros paragraph for details.
+.DE
+.DS
+\fBa_VARARG\fR
+
+typedef struct {
+  a_VAR *var[256];
+  int used;
+} a_VARARG;
+
+This structure is typically used to pass variable numbers of a_VARs to 
+functions.  Up to 256 a_VARs may be referenced by an a_VARARG, and the
+\fIused\fR value contains the number of a_VARs present.
+.DE
+.DS
+\fBstruct gvar_struct\fR
+
+struct gvar_struct {
+  char *name;
+  a_VAR *var;
+};
+
+Provides a mapping of the global variable names in an AWK script to pointers
+to their a_VAR structures.
+.DE
+\fIInternal Libawka Variables\fR
+.DS
+\fBa_VAR * a_bivar[a_BIVARS]\fR
+This array contains all the AWK internal variables, such as ARGV, ARGV, 
+CONVFMT, ENVIRON and so on, along with $0 and the field variables $1..$n.  
+\fIa_BIVARS\fR is a define, as are the identities of which element in the 
+array belongs to which variable.  Again, look for functions that manage 
+these variables rather than working with them directly if possible.
+.DE
+.DS
+\fBextern struct gvar_struct *_gvar;\fR
+This is actually created & populated by the translated C code generated 
+by \fIawka\fR, rather than by libawka.a.  It is a NULL-terminated array 
+of the gvar_struct structure defined earlier in this page, and contains 
+the names of all global variables in an AWK script, mapped to their a_VAR 
+structures.
+.DE
+\fIDefines\fR
+.PP
+.CS
+\fBa_VARNUL\fR - the \fItype\fR value of an a_VAR if the variable is unused.
+.CE
+.br
+.CS
+\fBa_VARDBL\fR - the \fItype\fR value for an a_VAR cast to a number.
+.CE
+.br
+.CS
+\fBa_VARSTR\fR - \fItype\fR where the a_VAR has been cast to a string.
+.CE
+.br
+.CS
+\fBa_VARARR\fR - \fItype\fR where the a_VAR contains an array.
+.CE
+.br
+.CS
+\fBa_VARREG\fR - \fItype\fR where the a_VAR contains a regular expression.
+.CE
+.br
+.CS
+\fBa_VARUNK\fR - \fItype\fR where the a_VAR is a string, but could also be a
+         number.  Variables populated by getline, the FILENAME variable,
+         and elements of an array created by split(), are all of this
+         special type.
+.CE
+.PP
+.CS
+\fBa_DBLSET\fR - for a string a_VAR that has been read in context as a number, the
+         \fItype2\fR flag is set to this #define to prevent the string-to-number
+         conversion being done again.
+.CE
+.br
+.CS
+\fBa_STRSET\fR - the opposite of the above.  The variable is a number, has been read
+         as a string, hence the value of \fIptr\fR is current, and the \fItype2\fR
+         flag is set to this #define.
+.CE
+.PP    
+.CS
+\fBa_BIVARS\fR provides the number of elements in the a_bivar[] array.
+.CE
+.PP
+\fBa_ARGC\fR, \fBa_ARGIND\fR, \fBa_ARGV\fR, \fBa_CONVFMT\fR, \fBa_ENVIRON\fR, \fBa_FILENAME\fR, \fBa_FNR\fR, \fBa_FS\fR, \fBa_NF\fR, \fBa_NR\fR, 
+\fBa_OFMT\fR, \fBa_OFS\fR, \fBa_ORS\fR, \fBa_RLENGTH\fR, \fBa_RS\fR, \fBa_RSTART\fR, \fBa_RT\fR, \fBa_SUBSEP\fR, \fBa_DOL0\fR, 
+\fBa_DOLN\fR, \fBa_FIELDWIDTHS\fR, \fBa_SAVEWIDTHS\fR, \fBa_SORTTYPE\fR provide indexes to
+which elements in the a_bivar[] array are for which AWK internal variable.
+.PP
+\fIFunctions & Macros\fR
+.DS
+\fBawka_getd(a_VAR *)\fR
+This macro calls the awka_getdval() function, appending the calling file & line number 
+for debug purposes.  It read-casts the variable to a number, and returns the double
+value of the variable.  By read-cast, we mean that if the variable is a string it
+remains so, but \fIdval\fR is set, and \fItype2\fR is set to a_DBLSET.  But if the a_VAR
+is a regular expression, the re structure is dropped and the variable converted to a
+number.  If you're not sure whether an a_VAR you're about to read is a number, and you
+want to read it as one, simply call awka_getd(varname) - its the easiest way.
+.DE
+.DS
+\fBawka_getd1(a_VAR *)\fR
+Same as awka_getd, except this will be faster if the a_VAR * is a variable.  Do not
+use this if the a_VAR * is a function call return value, as it'll call the function
+several times!  In this case, use awka_getd() instead.
+.DE
+.DS
+\fBawka_gets(a_VAR *)\fR
+Similar to awka_getd(), this read-casts an a_VAR to a string, and returns the character
+array pointed to by \fIptr\fR.
+.DE
+.DS
+\fBawka_gets1(a_VAR *)\fR
+Use this where the a_VAR * is a variable, not a function call that returns an a_VAR *,
+for faster performance.
+.DE
+.DS
+\fBawka_getre(a_VAR *)\fR
+Write-casts the a_VAR * to a regular expression, and returns the pointer to the awka_regexp
+structure.  Write-cast means that the existing contents of the variable are dropped in
+favour of the new contents.
+.DE
+.DS
+\fBstatic char *awka_strcpy(a_VAR *var, char *str)\fR
+This function sets \fIvar\fR to string type, and copies to it the contents of \fIstr\fR.
+It returns a pointer to \fIvar->ptr\fR.
+.DE
+.DS
+\fBa_VAR *awka_varcpy(a_VAR *va, a_VAR *vb)\fR
+This function copies the contents of scalar a_VAR *\fIvb\fR to scalar a_VAR *\fIva\fR, 
+and returns a pointer to \fIva\fR.
+.DE
+.DS
+\fBdouble awka_varcmp(a_VAR *va, a_VAR *vb)\fR
+This function compares the contents of the two scalar variables, and returns 0 if the 
+variables are equal, -1 if va is less than vb, or 1 if va is greater.  Numerical 
+comparison is used where possible, otherwise string.
+.DE
+.DS
+\fBa_VAR *awka_vardup(a_VAR *va)\fR
+This function creates a new a_VAR *, copies the contents of \fIva\fR, and returns a pointer
+to the new structure.
+.DE
+.DS
+\fBawka_varinit(a_VAR *)\fR
+A macro that takes a NULL a_VAR *, mallocs space for it, and initialises it to a_VARNUL.
+.DE
+.DS
+\fBvoid awka_killvar(a_VAR *)\fR
+Frees all memory used by the a_VAR, except the structure itself.
+.DE
+.DS
+\fBstatic a_VAR * awka_argv()\fR
+You can use a_bivar[a_ARGV] directly when reading the value of elements in the array,
+but when you want to write to the array, use the above function instead, as it will
+make sure the changes are recognised elsewhere in libawka.
+.DE
+.DS
+\fBstatic a_VAR * awka_argc()\fR
+You can use a_bivar[a_ARGC] directly when reading its value, but when you want to write 
+to it, use the above function instead, as it will make sure the change is recognised 
+elsewhere in libawka.
+.DE
+.SH ARRAY METHODS
+.PP
+\fIData Structures & Variables\fR
+.br
+These are strictly internal to the array module within libawka.  If you need 
+functionality other than that provided by the array functions, I recommend 
+creating your own custom array data structures and interface functions, 
+otherwise you could cause serious problems.  The structure definitions are too
+lengthy to list here, and the foolhardy may find them in lib/array.h within the
+awka distribution.
+.PP
+\fIDefines\fR
+.CS
+\fBa_ARR_TYPE_NULL\fR
+The 'type' of an array that has not been initialised, or has been deleted.
+.CE
+.br
+.CS
+\fBa_ARR_TYPE_SPLIT\fR
+The 'type' of an array populated by the split() builtin function.
+.CE
+.br
+.CS
+\fBa_ARR_TYPE_HSH\fR
+The 'type' of arrays populated within the AWK script, eg. arr["pigs"] = cows.
+.CE
+.PP
+.CS
+\fBa_ARR_CREATE\fR
+When searching arrays, specifies that an element is to be created if it doesn't
+already exist in the array.
+.CE
+.br
+.CS
+\fBa_ARR_QUERY\fR
+When searching arrays, this will not create a new element if it doesn't already
+exist.
+.CE
+.br
+.CS
+\fBa_ARR_DELETE\fR
+In an array search, this flag will cause the element to be deleted from the array.
+.CE
+.PP
+\fIFunctions\fR
+.DS
+\fBvoid awka_arraycreate( a_VAR *var, char type );\fR
+Allocates an array structure of type \fItype\fR, makes \fIvar->ptr\fR point
+to it, and sets \fIvar->type\fR to a_VARARR.  The \fItype\fR argument may
+be one of a_ARR_TYPE_NULL, a_ARR_TYPE_SPLIT or a_ARR_TYPE_HSH, according to
+how the array will be populated.
+.DE
+.DS
+\fBvoid awka_arrayclear( a_VAR *var );\fR
+Assumes \fIvar\fR is an a_VARARR, this deletes the contents of the array structure
+pointed to by \fIvar->ptr\fR.
+.DE
+.DS
+\fBa_VAR * awka_arraysearch1( a_VAR *v, a_VAR *element, char create, int set );\fR
+Searches array variable \fIv\fR for index \fIelement\fR.  If it does not exist, and
+\fIcreate\fR is a_ARR_CREATE, a new element in the array for this value will be added.
+If the element is found (or created) and \fIcreate\fR is not a_ARR_DELETE, the
+function will return a pointer to the a_VAR for that element.  For a_ARR_DELETE, the
+element will be deleted from the array.  The \fIset\fR value should be FALSE.
+.DE
+.DS
+\fBa_VAR * awka_arraysearch( a_VAR *v, a_VARARG *va, char create );\fR
+Searches array variable \fIv\fR as per awka_arraysearch1(), except that this works
+with multiple index subscripts (eg, arr[x, y]).
+.DE
+.DS
+\fBdouble awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max );\fR
+The AWK builtin split() function.  It splits \fIstr\fR into array variable \fIv\fR,
+based on \fIfs\fR, up to \fImax\fR number of fields.  If \fIfs\fR is NULL, then
+a_bivar[a_FS] will be used.  Otherwise \fIfs\fR may contain an empty string, a
+single-character string, or a regular expression.  The number of fields created
+in \fBv\fR is returned.
+.DE
+.DS
+\fBint awka_arrayloop( a_ListHdr *ah, a_VAR *v );\fR
+This function implements the "for (i in j)" feature in AWK.  You provide \fIah\fR, 
+making sure it is initialised to zeroes. 
+
+The best way to understand how to call this function is to type:
+
+  awka 'BEGIN { for (i in j) x = j[i]; }'
+
+and see what is generated as a result.  You don't have to understand the a_ListHdr
+structure or sub-structures to use this function.
+.DE
+.DS
+\fBint awka_arraynext( a_VAR *v, a_ListHdr *ah, int pos );\fR
+Given that \fIah\fR has been populated by a call to awka_arrayloop(), this function
+copies the (string or integer) element at position \fIpos\fR in the list to \fIv\fR, 
+then returns \fIpos\fR+1, or zero if there are no more elements in the array list.
+.DE
+.DS
+\fBvoid awka_alistfree( a_ListHdr *ah );\fR
+Frees the last list element in \fBah\fR.
+.DE
+.DS
+\fBvoid awka_alistfreeall( a_ListHdr *ah );\fR
+Frees all memory held by \fIah\fR, and sets its contents to zero/NULL.
+.DE
+.DS
+\fBa_VAR * awka_dol0(int set);\fR
+The best means of accessing the $0 a_VAR, as it updates its contents with any pending
+changes.  Make \fIset\fR zero if you're reading the value of $0, but if you want to
+set $0, make it 1.
+.DE
+.DS
+\fBa_VAR * awka_doln(int fld, int set);\fR
+This function returns the a_VAR * of the $1..$n variable identified by \fIfld\fR, 
+updating the field array with any refreshed $0 contents first if necessary.  If you
+want to read the value of $\fIfld\fR, make \fIset\fR zero, otherwise it should be 1.
+.DE
+.SH BUILTIN FUNCTIONS
+.PP
+These are documented in lib/builtin.h in the awka distribution.  You can call any of 
+the builtin functions as often as you like.  Those that return a_VAR's also provide
+a \fIkeep\fR flag that, if TRUE, will return a variable that you must free, otherwise
+they will use a temporary variable that you don't have to worry about freeing, but 
+will be reused elsewhere sooner or later.  The functions should be pretty much as
+you'd expect them, except that many require an a_VARARG as input, and we haven't 
+discussed how to create one - we will now.
+.CS
+\fBa_VARARG * awka_arg0(char);\fR
+.CE
+.br
+.CS
+\fBa_VARARG * awka_arg1(char, a_VAR *);\fR
+.CE
+.br
+.CS
+\fBa_VARARG * awka_arg2(char, a_VAR *, a_VAR *);\fR
+.CE
+.br
+.CS
+\fBa_VARARG * awka_arg3(char, a_VAR *, a_VAR *, a_VAR *);\fR
+.CE
+.DS
+\fBa_VARARG * awka_vararg(char, a_VAR *var, ...);\fR
+These functions populate & return a pointer to an a_VARARG structure.  The char 
+argument, if TRUE, will make you responsible for freeing the structure, otherwise
+it'll be a temporary one that libawka will manage.  awka_arg0() will return an
+empty structure (ie. no args), awka_arg1() will have one a_VAR * in it, and so
+on.  Where you want to put more than four a_VAR *'s inside an a_VARARG, you can 
+call awka_vararg with as many as you like, or if there's seriously a lot, maybe
+write your own loop of code to populate an a_VARARG - its not rocket science.
+.DE
+.SH I/O METHODS
+.PP
+\fIData Structures & Variables\fB
+.DS
+\fB_a_IOSTREAM\fR
+
+typedef struct {
+  char *name;       /* name of output file or device */
+  FILE *fp;         /* file pointer */
+  char *buf;        /* input buffer */
+  char *current;    /* where up to in buffer */
+  char *end;        /* end of data in buffer */
+  int alloc;        /* size of input buffer */
+  char io;          /* input or output stream flag */
+  char pipe;        /* true/false */
+  char interactive; /* whether from a /dev/xxx stream or not */
+} _a_IOSTREAM;
+
+\fBextern _a_IOSTREAM *_a_iostream;\fR
+\fBextern int _a_ioallc, _a_ioused;\fR
+
+Controls input and output streams used by AWK's getline, print and printf
+builtin functions.  The two int variables record the space allocated in the 
+_a_iostream array, and the number of elements used, respectively.  I list this 
+information here in case you wish to create fread, fwrite and fseek functions for 
+awka, as these will need low-level access to the streams.
+.DE
+\fIFunctions\fR
+.DS
+\fBa_VAR * awka_getline(char keep, a_VAR *target, char *input, int pipe, char main);\fR
+As previously described, \fIkeep\fR controls whether you want to be responsible for
+freeing the a_VAR the function returns or not.  Moving on, \fItarget\fR is the a_VAR
+to hold the line of data to be read (you provide this one).  \fIinput\fR is the name
+of the input file or command.  \fIpipe\fR is TRUE if \fIinput\fR is a command rather
+than a file, eg. "sort stuff | getline x".  \fImain\fR should always be false.
+
+If \fIinput\fR is NULL, getline will try to read from the file identified by 
+a_bivar[a_FILENAME], or from the next element in the a_bivar[a_ARGV] array.
+.DE
+I won't go into detail about awka_fflush, awka_close, awka_printf & so on, as these
+should be easy enough to understand and use, and the chances are you should use the
+native C variety anyway where possible.
+.PP
+.SH REGULAR EXPRESSIONS
+.PP
+Ah, now we're in murky water indeed, as awka inherited its RE library from Libc, and
+treats it like a magical black box that does its bidding.  Want my advice?  Treating
+the RE library & structure like a black box is a wise thing to do, as its ugly-looking
+stuff.
+.PP
+Ok, we know that when an a_VAR has been set to a_VARREG, its \fIptr\fR value will 
+point to an awka_regexp structure.  Do we need to know what's in this structure?  I
+don't think so.  What we do need are the functions that help us compile and execute
+regular expressions.  Oops, getting ahead of myself.  RE's are like C programs, they
+need to be compiled before they can be used to search strings.  This basically is
+a parsing of the RE pattern into a tree structure that is easier to navigate while
+searching, and is a one-off task.
+.DS
+\fBawka_getre(a_VAR *)\fR
+This macro is the easiest method of creating & compiling a regexp.  Providing you've
+set the a_VAR to the string value of the re pattern, this macro call works a treat.
+.DE
+.DS
+\fBa_VAR *awka_match(char keep, char fcall, a_VAR *va, a_VAR *rva);\fR
+This function is the implementation of AWK's match() function, and is the most
+simple way of evaluating an RE against a string.  \fIkeep\fR is as previously
+discussed, \fIfcall\fR should be set to TRUE if you want a_bivar[a_RSTART] and
+a_bivar[a_RLENGTH] to be set, otherwise FALSE, \fIva\fR contains the string, and
+\fIrva\fR contains the regular expression.  The numerical a_VAR returned is
+1 on success, zero on failure.
+.DE
+I was going to describe the lower-level methods of compiling and matching against
+RE's, but when I looked at it, there seemed to be a lot of complexity for no real
+gain in functionality.  All you get is the ability to avoid using a_VAR structures
+to manage the regular expressions, and honestly I don't see what you'd gain from
+this given how much more complexity you'd have to deal with.
+
+.SH NOTES
+.PP
+I haven't described all of the functions available in libawka.h, not by any means.
+But I have tried to avoid functions that are really only meant for internal use,
+or that are only needed by translated code and should be done in other ways by 
+library code.  In the same way I've avoided describing structures that were intended 
+to remain privy to a module within libawka, and you really shouldn't need to tamper 
+with them.
+.PP
+Any questions at all, or suggestions for improving this page, let me know via
+andrewsumner@yahoo.com.  Make sure you preface any message title with the
+word "awka" so I know its not spam.
+
+.SH SEE ALSO
+\fBawka\fR(1), \fBawka-elm\fR(5).
+
+
+
+
+
+
+
+
+

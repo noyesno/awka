@@ -1,0 +1,58 @@
+<include libawka.h.warn
+
+#ifndef _AWKA_H
+#  define _AWKA_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <limits.h>
+#include <ctype.h>
+
+#define A_MIN(a, b) ((a) > (b) ? (b) : (a))
+#define A_MAX(a, b) ((a) > (b) ? (a) : (b))
+
+<include ../config.h
+
+#if defined(__cplusplus)
+#undef INLINE
+#define INLINE inline
+#endif
+
+<include ../patchlev.h
+
+#ifndef TRUE
+#  define TRUE  1
+#  define FALSE 0
+#endif
+
+<include varg.h
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+<include error.h
+
+<include mem.h
+
+<include ../regexp/regex.h
+
+<include var.h
+
+<include array.h
+
+<include builtin.h
+
+<include builtin2.h
+
+<include io.h
+
+<include init.h
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif

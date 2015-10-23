@@ -1,0 +1,2 @@
+mawk: gsubasgn.awk: line 4: syntax error at or near test1
+mawk: gsubasgn.awk: line 8: syntax error at or near test2

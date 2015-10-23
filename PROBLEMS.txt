@@ -1,0 +1,26 @@
+Generally I try to fix problems as soon as they are reported,
+and eliminate them prior to the next release.  Occasionally
+stubborn issues arise that cannot readily be resolved.
+
+1.  The native C compiler under Irix 6.5 may produce incorrect
+    output from libawka if it is compiled with optimisation 
+    at -02 or higher.
+
+2.  On some GNU/Linux distributions \r characters may be wrongly
+    translated as carriage returns by awka.  This has so far been
+    noticed in Intel RedHat 7.0.  If this occurs, the "print" 
+    script in the test suite will fail.
+
+3.  The test suite script "printf1" fails on many platforms,
+    but not any I have access to.  I'll work on this if and when
+    I can, and a patch to solve this would be most welcome.
+
+4.  The shared library support is rudimentary at best.  If
+    it doesn't work for you, remove the relevant lines from
+    lib/Makefile.
+
+5.  Various code inefficiencies exist in the regex and dfa libraries,
+    as gcc -Wall will reveal.  This code is from glibc and gawk
+    respectfully, and I treat it as a black box - I've no intention
+    of delving into it unless there's an actual bug.
+

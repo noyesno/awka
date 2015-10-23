@@ -1,0 +1,90 @@
+<BEGIN {
+  RS = ">
+<"
+  whil>
+< (g>
+<tlin>
+<<INFILE>0)
+    print "<"$0">"
+  clos>
+<(INFILE)
+
+  g>
+<tlin>
+<<"/d>
+<v/stdin"; print "["$0"]"
+  g>
+<tlin>
+<<"/d>
+<v/stdin"; print "["$0"]"
+  g>
+<tlin>
+<<"/d>
+<v/stdin"; print "["$0"]"
+
+  RS = "[ld]in"
+  whil>
+< (g>
+<tlin>
+<<INFILE>0)
+    print "<<"$0">>"
+
+  g>
+<tlin>
+<<"/d>
+<v/stdin"; print "[["$0"]]"
+  g>
+<tlin>
+<<"/d>
+<v/stdin"; print "[["$0"]]"
+  g>
+<tlin>
+<<"/d>
+<v/stdin"; print "[["$0"]]"
+}
+>
+[BEGIN {
+  RS = "]
+["
+  whil]
+[ (g]
+<<BEGIN {
+  RS = "e"
+  while (get>>
+<<e<INFILE>0)
+    print "<"$0">"
+  close(INFILE)
+
+  get>>
+<<e<"/dev/st>>
+<<"; print "["$0"]"
+  get>>
+<<e<"/dev/st>>
+<<"; print "["$0"]"
+  get>>
+<<e<"/dev/st>>
+<<"; print "["$0"]"
+
+  RS = "[ld]in"
+  while (get>>
+<<e<INFILE>0)
+    print "<<"$0">>"
+
+  get>>
+<<e<"/dev/st>>
+<<"; print "[["$0"]]"
+  get>>
+<<e<"/dev/st>>
+<<"; print "[["$0"]]"
+  get>>
+<<e<"/dev/st>>
+<<"; print "[["$0"]]"
+}
+>>
+[[t]]
+[[e<INFILE>0)
+    print "<"$0">"
+  close(INFILE)
+
+  get]]
+[[e<"/dev/st]]
