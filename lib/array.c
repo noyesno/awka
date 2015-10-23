@@ -2128,7 +2128,7 @@ _awka_dol0(int set)
     
     case 0:
     case -1:
-      if (_rebuildn == TRUE && _split_req)
+      if (_rebuildn == TRUE && _split_req==1)
       {
         awka_setd(a_bivar[a_NF]) = awka_arraysplitstr(awka_gets1(dol0), a_bivar[a_DOLN], NULL, _split_max, TRUE);
         _rebuildn = FALSE;

@@ -100,10 +100,14 @@ awka_NFset()
 static INLINE a_VAR *
 awka_NFget()
 {
-  if (_rebuildn)
+  extern int _split_req, _split_max;
+
+  /* noyesno: delayed split from awka_setNF() */
+  if (_rebuildn || _split_req == 1)
   {
     awka_setd(a_bivar[a_NF]) = awka_arraysplitstr(awka_gets1(a_bivar[a_DOL0]), a_bivar[a_DOLN], a_bivar[a_FS], _split_max, TRUE);
     _rebuildn = FALSE;
+    _split_req = 0;
   }
   return a_bivar[a_NF];
 }
