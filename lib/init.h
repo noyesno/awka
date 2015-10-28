@@ -43,7 +43,7 @@ static INLINE char
 awka_setNF()
 {
   extern int _split_req, _split_max;
-  _split_req == 1;  /* noyesno: delay split to awka_NFget */
+  _split_req = 1;  /* noyesno: delay split to awka_NFget */
   return 1;
 
   if (_split_req == 1)
