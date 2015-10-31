@@ -1,0 +1,6 @@
+
+2015/10/31
+----------
+  [+] support BEGINFILE & ENDFILE
+  [+] add file existence check. current behavior is exit
+
