@@ -1,0 +1,26 @@
+The tcolor.tcl file was pinched from the Tk8.0 demos, and provided you have X Windows 
+and wish8.0 on your system it should work fine, just typing "tcolor.tcl" at a command
+prompt.
+
+As this is a reasonably complex script, I thought it a fair example to convert to AWK 
+using AwkaTk.  This took about 2 hours, so it wasn't a huge undertaking, and the result 
+was the tcolor.awk script you see here.
+
+To use tcolor.awk, type the following:-
+
+  awka -i awkatk.h -f tcolor.awk >tcolor.c
+  
+  gcc -O x.c -L/usr/X11R6/lib -lawka -lm -lX11 -ltcl -ltk -lawkatk -ldl -o tcolor.exe
+  
+  tcolor.exe
+  
+Note that I've specified a location for the X11 library that may be different on many 
+systems.  Also, you may not need -ldl, nor -lm, but everything else should be necessary.
+
+tcolor.exe should behave exactly the same as tcolor.tcl.  If it doesn't I want to know
+about it - email me at andrew_sumner@bigfoot.com
+
+It is very interesting to look at tcolor.awk and tcolor.tcl.  It will give you a good
+feel and understanding for how the AwkaTk functions work, and the various pros & cons
+of using AWK instead of Tcl for non-gui coding.
+

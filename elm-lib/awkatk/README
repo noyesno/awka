@@ -1,0 +1,137 @@
+SUMMARY
+
+  AwkaTk is an Awka Extended Library (Awka/ELM) that provides an interface 
+  between Awka and Tcl/Tk.  It allows you to evaluate Tcl/Tk code from 
+  within an AWK program, to have AWK user functions attached to Tk widget
+  callbacks, and to access & set Tcl variables from your AWK code.
+  
+SOFTWARE REQUIREMENTS
+
+  * The Awka package, version 0.7.1 or later.
+  * Ansi-C compiler & libraries
+  * Tcl/Tk 8.0 or later.
+
+  Awka may be downloaded from http://members.linuxstart.com/~awka.
+  Tcl/Tk is available from http://www.scriptics.com, and many mirror
+  ftp sites.
+  
+NEW FUNCTIONS
+
+  AwkaTk adds the following functions that you may call from your AWK
+  script:-
+  
+  tk("tclprogram")
+       - tclprogram may be any valid Tcl/Tk command.  Basically anything
+         that is accepted at a wish prompt should work.  If a problem
+         occurs in executing tclprogram, an error message will be printed
+         and your program will exit.  tk() returns any output that
+         tclprogram would produce.  For example:-
+         
+           tk("expr 3 + 4")
+  
+         would return a value of 7.
+         
+  tk_getvar("varname")
+       - returns the value of the tcl variable identified by the "varname"
+         string.
+         
+  tk_setvar("varname", "value")
+       - sets the Tcl variable identified by the "varname" string to "value".
+       
+  tk_mainloop()
+       - tells Tk to start trapping & acting on events.  This function only
+         returns when the GUI window has closed.
+         
+  If you want to use these functions, make sure you don't define any user
+  functions with these names in your AWK script, otherwise there will be
+  a conflict and the resultant C code won't compile.
+  
+BUILDING AWKATK
+
+  Look at Makefile, and edit the values that identify where things are stored
+  on your system.  
+  
+  Type "make install".  This will build both awkatk.a and awkatk.so, and install
+  them and awkatk.h in the place of your choosing.
+
+COMPILING AGAINST AWKATK
+
+  Ok, imagine we have an AWK program called mygui.awk, that uses the AwkaTk
+  functions.  Firstly, we type:
+  
+    awka -i awkatk.h -f mygui.awk >mygui.c
+    
+  This translates your AWK program into C, and writes this to mygui.c.
+
+  The "-i awkatk.h" option will ensure that mygui.c #includes the awkatk 
+  header file, which it will need to know where to find the AwkaTk functions.
+  
+    gcc mygui.c -L/usr/X11R6/lib -lX11 -ltcl -ltk -ldl -lawka -lawkatk -lm -o mygui.exe
+    
+  Quite lengthy!  This binds your program to the various libraries it will need
+  to work.
+  
+  1. I've used gcc, but any ANSI C compiler will do the job.
+  
+  2. If your system has Tcl/Tk, but doesn't use X Windows, you don't need to
+     worry about linking with the X11 library.  Otherwise...
+  
+     The -L/usr/X11R6/lib option tells the compiler where to find the X11 library.
+     I've shown where it is on a Linux system.  Other systems may store it under
+     /usr/lib/X11, or somewhere else.  Find where the file libX11.so or libX11.a
+     is on your system, and use the -L option to specify this location.
+
+     -lX11 tells the compiler to link against the X11 library.
+    
+  3. -ltcl will link against the tcl library, needed to interpret Tcl/Tk code.
+  
+  4. -ltk will link against the tk library.
+  
+  5. -ldl was needed on my system, but may not be on others.  If your program
+     compiles without this, well and good.
+     
+  6. -lawka is vital, otherwise your translated C code won't work.
+  
+  7. -lawkatk provides the new tk functions.
+  
+  8. -lm links to your system's math library.  Note that this may not be needed
+     on every system, as some put math functions in the standard C library.  
+     
+  9. -o mygui.exe tells the compiler to create an executable of this name.
+  
+  You should be able to run mygui.exe, and all being well it will work!
+
+A REAL LIVE EXAMPLE
+
+  Have a look in the example directory in this distribution.  There's a README
+  there that'll tell you what's going on.
+  
+NOTES
+
+  Although you can define Tcl procedures and call them from Tk widgets, it
+  is preferable to use AWK functions as callbacks, and to avoid using Tcl
+  procedures altogether.  This optimises performance, and also makes your
+  AWK program a lot easier to understand and work with.
+  
+  Tcl variables exist separately from AWK variables.  You can reference and
+  set their values using the tk_getvar() & tk_setvar() functions.  It is
+  probably a good idea to minimise the number of Tcl variables you use, 
+  restricting them only to those variables that are attached to widgets.  Make
+  sure you document which Tcl variables you use in your code.
+
+  Awka will remove from the C code user-defined AWK functions that aren't called.
+  This becomes a problem where functions are only called as Tk callbacks, as
+  Awka can't see these.  To make sure Awka translates & outputs these functions,
+  put dummy calls to them inside an if (0) { } statement in the BEGIN section.
+  
+  Minimise the amount of Tcl code (as distinct from Tk code) that you use, where
+  possible using AWK code instead, as it will run a lot faster.
+
+  If you have any questions, suggestions or problems, please let me know
+  via andrew_sumner@bigfoot.com
+
+
+Andrew Sumner
+August 2000
+  
+
