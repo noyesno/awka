@@ -118,25 +118,31 @@ int
 Tcl_AppInit(interp)
     Tcl_Interp *interp;                /* Interpreter for application. */
 {
-    Tk_Window main;
     char *cmd;
     int result;
-    
+
     if (Tcl_Init(interp) == TCL_ERROR) {
         return TCL_ERROR;
     }
+
+#ifdef AWKATK_USE_TK
+    Tk_Window main;
+
     if (Tk_Init(interp) == TCL_ERROR) {
         return TCL_ERROR;
     }
     Tcl_StaticPackage(interp, "Tk", Tk_Init, Tk_SafeInit);
-    
+
     main = Tk_MainWindow(interp);
+#endif
     
+#if 0
     if ((result = Tcl_EvalFile(interp, INIT_TCL_FILE)) != TCL_OK)
       awka_error("Failed to read %s: %s\n",INIT_TCL_FILE,interp->result);
         
     if ((result = Tcl_EvalFile(interp, TK_TCL_FILE)) != TCL_OK)
       awka_error("Failed to read %s: %s\n",TK_TCL_FILE,interp->result);
+#endif
         
     Tcl_SetVar(interp, "tcl_rcFileName", "~/.wishrc", TCL_GLOBAL_ONLY);
     
@@ -254,7 +260,7 @@ tk_setvar_fn( a_VARARG *va )
   result = Tcl_SetVar( interp, awka_gets(va->var[0]), awka_gets(va->var[1]), TCL_GLOBAL_ONLY | TCL_LEAVE_ERR_MSG );
   
   if (result == NULL)
-    awka_strcpy(ret, interp->result);
+    awka_strcpy(ret, Tcl_GetStringResult(interp));
   
   return ret;
 }
@@ -298,7 +304,7 @@ tk_getvar_fn( a_VARARG *va )
     awka_strcpy(ret, "");
   else
     awka_strcpy(ret, str);
-  
+
   return ret;
 }
 
@@ -325,11 +331,13 @@ tk_mainloop_fn( a_VARARG *va )
 {
   a_VAR *ret = awka_getdoublevar(FALSE);
   ret->dval = AWKATK_OK;
-  
+
   if (!interp)
     _tk_init();
-  
+
+#ifdef AWKATK_USE_TK
   Tk_MainLoop();
+#endif
   return ret;
 }
 

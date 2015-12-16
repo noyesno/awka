@@ -72,7 +72,7 @@ tkver::
 	
 
 awkatk.o: awkatk.c awkatk.h
-	$(CC) -c $(CFLAGS) -DINIT_TCL_FILE="\"$(TCLDISTDIR)/init.tcl\"" -DTK_TCL_FILE="\"$(TKDISTDIR)/tk.tcl\"" -I. -I$(LIBAWKA_H) -I$(TCLINCDIR) awkatk.c -o awkatk.o
+	$(CC) -c $(CFLAGS) -DAWKATK_USE_TK=0 -DINIT_TCL_FILE="\"$(TCLDISTDIR)/init.tcl\"" -DTK_TCL_FILE="\"$(TKDISTDIR)/tk.tcl\"" -I. -I$(LIBAWKA_H) -I$(TCLINCDIR) awkatk.c -o awkatk.o
 
 install: $(TARGETS)
 	if [ ! -d $(LIBINSTALLDIR) ]; then mkdir -p $(LIBINSTALLDIR); fi
