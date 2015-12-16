@@ -223,6 +223,37 @@ tk_fn( a_VARARG *va )
 
 /*
  *----------------------------------------------------------------------
+ * tcl_fn --
+ *----------------------------------------------------------------------
+ */
+a_VAR *
+tcl_fn( a_VARARG *va )
+{
+  a_VAR *ret = awka_getstringvar(FALSE);
+  
+  if (!interp)
+    _tk_init();
+  
+  if (!va->used)
+  {
+    awka_setd(ret) = AWKATK_TOOFEWARGS;
+    return ret;
+  }
+  if (va->var[0]->type == a_VARNUL || va->var[0]->type == a_VARDBL)
+  {
+    awka_setd(ret) = AWKATK_ARGNOTSTRING;
+    return ret;
+  }
+
+  if (Tcl_Eval(interp, awka_gets(va->var[0])) != TCL_OK)
+    awka_error("Call to tk(%s) failed\n",va->var[0]->ptr);
+  
+  awka_strcpy(ret, Tcl_GetStringResult(interp));
+  return ret;
+}
+
+/*
+ *----------------------------------------------------------------------
  *
  * tk_setvar_fn --
  *
