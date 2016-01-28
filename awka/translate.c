@@ -305,7 +305,9 @@ buildstr(char *func, char *fmt, char *p, char context, char true_context, int in
           sprintf(tmp, "(%s)", getdoublevalue(p));
           /* sprintf(tmp, "(%s->dval)", p); */
         if (findvaltype(p) == _VALTYPE_STR || (prev >= 0 && progcode[prev].ftype == 2))
-          sprintf(tmp, "awka_strtrue(%s)", getstringvalue(p));
+          // TODO: make "abc" a glob match
+          // XXX: sprintf(tmp, "awka_strtrue(%s) /* 1 */", getstringvalue(p));
+          sprintf(tmp, "awka_globline(%s)", getstringvalue(p));
           /* sprintf(tmp, "awka_strtrue(%s->ptr)", p); */
         else
           sprintf(tmp, "awka_vartrue(%s)",p);
@@ -2063,7 +2065,7 @@ awka_match(int inst, int *earliest, char *context)
       q = (* progcode[inst-1].func)(inst-1, &prev, &c2);
       r2 = buildstr("match1", "%s", q, c2, _VAR, inst, inst-1);
       ret = (char *) malloc( strlen(r2) + strlen(r3) + 70);
-      sprintf(ret, "awka_match(a_TEMP, FALSE, %s, %s, NULL)",r2,r3);
+      sprintf(ret, "awka_match(a_TEMP, FALSE, %s, %s, NULL) /* 1 */",r2,r3);
       setvaltype(r3, _VALTYPE_RE);
       free(q);
       break;

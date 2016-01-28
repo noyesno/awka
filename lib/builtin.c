@@ -2514,3 +2514,17 @@ awka_fclose( int i )
   return ret;
 }
 
+int
+awka_globline(const char *pattern)
+{
+  a_VAR      *_haystack;
+  const char *s;
+  int         s_size;
+  int         ret;
+
+  _haystack = awka_dol0(0);
+  ret = strglob(pattern, strlen(pattern), _haystack->ptr, _haystack->slen);
+
+  return ret==0?1:0;
+}
+

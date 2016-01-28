@@ -1,6 +1,10 @@
 
 2015/10/31
 ----------
-  [+] support BEGINFILE & ENDFILE
-  [+] add file existence check. current behavior is exit
+  [ ] support BEGINFILE & ENDFILE
+  [ ] add file existence check. current behavior is exit
+
+2015/01/27
+  [x] support fseek(), ftell(), fsize()
+  [ ] support glob match
 

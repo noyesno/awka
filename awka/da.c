@@ -536,7 +536,7 @@ da(start, fp)
                 awka_insertop(_PUSHS, sval->str, NULL, minst, file, line);
                 break ;
              }
-
+          // TODO: diff glob pattern and regexp pattern
           case _MATCH0:
              sprintf(tmp1, "0x%lx", (long) p->ptr);
              sprintf(tmp2, "/%s/", re_uncompile(p->ptr));
