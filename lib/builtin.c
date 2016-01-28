@@ -41,6 +41,7 @@
 
 extern int _awka_fileoffset;
 int _awka_curfile = -1, _awka_file_read = TRUE;
+int _awka_file_stream = -1;  // current file stream
 int _dol0_used = 0;
 
 int awka_fclose( int i );
@@ -2219,6 +2220,7 @@ start:
       }
     }
     stream = i;
+    _awka_file_stream = stream;  // track current stream globally. For seek, tell, etc.
   }
 
   /* read a line */
@@ -2247,6 +2249,126 @@ start:
   getline_end:
   target->type = a_VARUNK;
   return(outvar);
+}
+
+a_VAR *
+awka_fseek(char keep, a_VARARG *va )
+{
+  a_VAR *outvar;
+  register int i;
+  register char *ptr;
+
+  _awka_getdoublevar;
+  outvar->dval = -1;
+
+  // XXX: use a_bivar[a_FILENAME] ?
+
+  long offset = 0;
+  int  origin = 0;
+
+  if(va->used==1){
+    ptr = awka_gets1(a_bivar[a_FILENAME]);
+    offset = (long) awka_getd(va->var[0]);
+    origin =  offset>0?SEEK_SET:SEEK_END;
+  } else if(va->used==2){
+    ptr = awka_gets1(va->var[0]);
+    offset = (long) awka_getd(va->var[1]);
+    origin =  offset>0?SEEK_SET:SEEK_END;
+  } else if(va->used==3){
+    // TODO: use string to int conversion
+    ptr = awka_gets1(va->var[0]);
+    offset = (long) awka_getd(va->var[1]);
+    origin = (int) awka_getd(va->var[2]);
+    origin = SEEK_CUR;
+  }
+
+  /* fseek specific stream */
+  for (i=0; i<_a_ioused; i++) {
+    if (!strcmp(_a_iostream[i].name, ptr) && _a_iostream[i].io != _a_IO_CLOSED)
+    {
+      fseek(_a_iostream[i].fp, offset, origin);
+      outvar->dval = 0;
+
+      _a_iostream[i].current = _a_iostream[i].end = _a_iostream[i].buf ;
+      break;
+    }
+  }
+
+
+  return outvar;
+}
+
+a_VAR *
+awka_ftell(char keep, a_VARARG *va )
+{
+  a_VAR *outvar;
+  register int i;
+  register char *ptr;
+
+  _awka_getdoublevar;
+  outvar->dval = -1;
+
+  // XXX: use a_bivar[a_FILENAME] ?
+  if(va->used == 0) {
+    ptr = awka_gets1(a_bivar[a_FILENAME]);
+  } else {
+    ptr = awka_gets1(va->var[0]);
+  }
+
+  // i = _awka_file_stream;
+  // if (!strcmp(_a_iostream[i].name, ptr) && _a_iostream[i].io != _a_IO_CLOSED)
+  // {
+  //     outvar->dval = ftell(_a_iostream[i].fp);
+  // }
+
+  /***************************************************************************
+   * XXX: For performance reason, use abvoe code to avoid loop.
+   *      Considering support of FILENAME, and low usage frequency, use below
+   **************************************************************************/
+
+  /* fseek specific stream */
+  for (i=0; i<_a_ioused; i++) {
+    if (!strcmp(_a_iostream[i].name, ptr) && _a_iostream[i].io != _a_IO_CLOSED)
+    {
+      outvar->dval = ftell(_a_iostream[i].fp);
+      break;
+    }
+  }
+
+  return outvar;
+}
+
+a_VAR *
+awka_fsize(char keep, a_VARARG *va )
+{
+  a_VAR *outvar;
+  register int i;
+  register char *ptr;
+
+  _awka_getdoublevar;
+  outvar->dval = -1;
+
+  if(va->used == 0) {
+    ptr = awka_gets1(a_bivar[a_FILENAME]);
+  } else {
+    ptr = awka_gets1(va->var[0]);
+  }
+
+  /* fseek specific stream */
+  for (i=0; i<_a_ioused; i++) {
+    if (!strcmp(_a_iostream[i].name, ptr) && _a_iostream[i].io != _a_IO_CLOSED)
+    {
+      // TODO: use stat
+      long pos = ftell(_a_iostream[i].fp);
+      fseek(_a_iostream[i].fp, 0, SEEK_END);
+      outvar->dval = ftell(_a_iostream[i].fp);
+      fseek(_a_iostream[i].fp, pos, SEEK_SET);
+      break;
+    }
+  }
+
+
+  return outvar;
 }
 
 /*
@@ -2391,5 +2513,4 @@ awka_fclose( int i )
 
   return ret;
 }
-
 

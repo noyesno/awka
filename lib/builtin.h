@@ -122,6 +122,7 @@ a_VARARG * awka_arg3(char, a_VAR *, a_VAR *, a_VAR *);
                           
 #ifndef BUILTIN_HOME
 extern int _awka_file_read;
+extern int _awka_file_stream;
 #endif
 
 #endif

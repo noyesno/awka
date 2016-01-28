@@ -288,7 +288,10 @@ struct a_sc code[] = {
 { "totitle",     awka_tocase,       _TOTITLE,     _BI_TOCASE,     FALSE, 2, },
 { "toupper",     awka_tocase,       _TOUPPER,     _BI_TOCASE,     FALSE, 2, },
 { "trim",        awka_builtin,      _TRIM,        _BI_TRIM,       FALSE, 2, },
-{ "xor",         awka_builtin,      _XOR,         _BI_XOR,        FALSE, 1  }
+{ "xor",         awka_builtin,      _XOR,         _BI_XOR,        FALSE, 1  },
+{ "fsize",       awka_builtin,      _FSIZE,       -1,             FALSE, 1, },
+{ "fseek",       awka_builtin,      _FSEEK,       -1,             FALSE, 1, },
+{ "ftell",       awka_builtin,      _FTELL,       -1,             FALSE, 1, }
 };
 
 struct a_sc ext_funcs[] = {
@@ -318,6 +321,9 @@ struct a_sc ext_funcs[] = {
 { "totitle",     awka_tocase,       _TOTITLE,     _BI_TOCASE,     FALSE, 2, },
 { "trim",        awka_builtin,      _TRIM,        _BI_TRIM,       FALSE, 2, },
 { "xor",         awka_builtin,      _XOR,         _BI_XOR,        FALSE, 1, },
+{ "fsize",       awka_builtin,      _FSIZE,       -1,             FALSE, 1, },
+{ "fseek",       awka_builtin,      _FSEEK,       -1,             FALSE, 1, },
+{ "ftell",       awka_builtin,      _FTELL,       -1,             FALSE, 1, },
 { NULL,          awka_nullfunc,     0,            0,              FALSE, 0  }
 };
 #else

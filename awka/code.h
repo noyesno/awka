@@ -260,17 +260,20 @@ void  PROTO(dump_code, (void)) ;
 #define _TOUPPER    148
 #define _TRIM       149
 #define _XOR        150
+#define _FSIZE      151
+#define _FSEEK      152
+#define _FTELL      153
 
 #define CODE_MIN 0
 #define CODE_MAX 100
 
 #define BI_MIN 101
-#define BI_MAX 149
+#define BI_MAX 149     // TODO: use 153 ?  Is original 149 a bug?
 
-#define _FUNCTION   151
-#define _BEGIN      152
-#define _MAIN       153
-#define _END        154
-#define END_CODE    155
+#define _FUNCTION   154
+#define _BEGIN      155
+#define _MAIN       156
+#define _END        157
+#define END_CODE    158
 
 #endif  /* CODE_H */
