@@ -6038,10 +6038,24 @@ awka_regexec (preg, string, nmatch, pmatch, eflags)
     save = string[len];
     ret = dfaexec((struct dfa *) preg->dfa, string, string+len, 1, &count, &try_backref);
     string[len] = save;
-    
+
+    // @noyesno at Mar, 2017
+    // When come here, already see want_reg_info == 0, should simply return match result.
+    // Only question is whether we should move to re_search() if backreferencing happened.
+    if(ret){
+      preg->max_sub = 1;
+      // TODO: if(try_backref){ ... }
+      return REG_NOERROR;
+    } else {
+      return REG_NOMATCH;
+    }
+
     if (ret && !try_backref && !(eflags & REG_NEEDSTART))
     {
       preg->max_sub = 1;
+      // @noyesno: When come here, no need to check value of `ret`. Match is found!
+      //           And `ret` is actually a pointer, it may make `ret >= 0` check fail.
+      return REG_NOERROR;
       return ret >= 0 ? (int) REG_NOERROR : (int) REG_NOMATCH;
     }
     else if (!ret)
