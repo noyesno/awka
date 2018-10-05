@@ -372,7 +372,7 @@ awka_init(int argc, char *argv[], char *patch_string, char *date_string)
 
   _argc = argc + _int_argc;
   _orig_argc = argc;
-  malloc( &_argv, argc * sizeof(char *) );
+  malloc( &_argv, _argc * sizeof(char *) );
 
   if (argc)
   {
