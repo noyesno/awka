@@ -35,6 +35,7 @@
 #include "varg.h"
 #include "builtin_priv.h"
 #include "number.h"
+#include "nstring.h"
 #include "garbage.h"
 
 #include <math.h>
@@ -2523,7 +2524,7 @@ awka_globline(const char *pattern)
   int         ret;
 
   _haystack = awka_dol0(0);
-  ret = strglob(pattern, strlen(pattern), _haystack->ptr, _haystack->slen);
+  ret = nstring_match(pattern, strlen(pattern), _haystack->ptr, _haystack->slen);
 
   return ret==0?1:0;
 }

@@ -31,7 +31,7 @@ BUILDLIB = libawka.a $(SHAREDLIB)
 
 MAKEFILEIN = Makefile.in
 
-LOBJS = var.o builtin.o error.o init.o array.o io.o garbage.o rexp.o strfunc.o
+LOBJS = var.o builtin.o error.o init.o array.o io.o garbage.o rexp.o nstring.o
 
 REOBJS = ../regexp/regex.o ../regexp/dfa.o
 RE_C   = ../regexp/regex.c ../regexp/dfa.c
