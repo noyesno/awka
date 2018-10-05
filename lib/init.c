@@ -446,7 +446,7 @@ _awka_printhelp()
 void
 awka_parsecmdline(int first)
 {
-  int i = 1, j, argc, options_done = TRUE;
+  int i = 1, j, argc, options_done = FALSE;
   char c, *p, *p1, *p2, tmp[128];
   a_VAR *var;
 
@@ -501,7 +501,7 @@ awka_parsecmdline(int first)
   {
     if (!_argv[i]) { i++; continue; }
 
-    if (options_done && strcmp(_argv[i],"-awka") ==0 || strcmp(_argv[i],"--awka")==0) {
+    if (options_done && strcmp(_argv[i],"--awka")==0) {
       options_done = FALSE;
       i++;
       continue;
