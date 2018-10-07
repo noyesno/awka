@@ -23,7 +23,13 @@
 
 size_t awka_malloc(void **ptr, size_t size, char *file, int line);
 size_t awka_realloc(void **oldptr, size_t size, char *file, int line);
-void awka_free(void *ptr, char *file, int line);
+void   awka_free(void *ptr, char *file, int line);
+
+void   awka_mprotect(char *, size_t);
+void   awka_mfree(char *, char *file, int line);
+int    awka_mcheck(char *, char *file, int line);
+void   awka_mtest(char *);
+void   awka_mtestall();
 
 #define A_PROT_SIZE 64
 char mem_char = 0xff, free_char = 0xfe, allc_char = 0xfd;
@@ -96,20 +102,20 @@ awka_mtest(char *ptr)
   }
 
   if (!pmem)
-    awka_error("Mem_Debug: (test): Internal error in allocation structure looking for ptr %p.\n",ptr);
+    awka_error("Mem_Debug: (test): Internal error in allocation structure looking for ptr %p.\n", ptr);
 
   sptr = ptr;
   for (i=0; i<A_PROT_SIZE; i++)
     if (*sptr++ != mem_char)
-      awka_error("Mem_Debug: Corruption in leading block for ptr %p, offset %d\n",ptr, i);
+      awka_error("Mem_Debug: Corruption in leading block for ptr %p, offset %d\n", ptr, i);
   sptr = ptr + (pmem->size - A_PROT_SIZE);
   for (i=0; i<A_PROT_SIZE; i++)
     if (*sptr++ != mem_char)
-      awka_error("Mem_Debug: Corruption in trailing block for ptr %p, offset %d\n",ptr, i);
+      awka_error("Mem_Debug: Corruption in trailing block for ptr %p, offset %d\n", ptr, i);
 }
 
 void
-awka_mfree(char *ptr)
+awka_mfree(char *ptr, char *file, int line)
 {
   MemAllc *pmem, *prevmem = NULL;
   char *sptr;
@@ -125,18 +131,18 @@ awka_mfree(char *ptr)
   }
 
   if (!pmem)
-    awka_error("Mem_Debug: (free): Internal error in allocation structure looking for ptr %p.\n",ptr);
+    awka_error("Mem_Debug: (free): Internal error in allocation structure looking for ptr %p # %s:%d\n", ptr, file, line);
 
   size = pmem->size;
 
   sptr = pmem->ptr;
   for (i=0; i<A_PROT_SIZE; i++)
     if (*sptr++ != mem_char)
-      awka_error("Mem_Debug: Corruption in leading block for ptr %p, offset %d\n",ptr, i);
+      awka_error("Mem_Debug: Corruption in leading block for ptr %p, offset %d # %s:%d\n", ptr, i, file, line);
   sptr = pmem->ptr + (pmem->size - A_PROT_SIZE);
   for (i=0; i<A_PROT_SIZE; i++)
     if (*sptr++ != mem_char)
-      awka_error("Mem_Debug: Corruption in trailing block for ptr %p, offset %d\n",ptr, i);
+      awka_error("Mem_Debug: Corruption in trailing block for ptr %p, offset %d # %s:%d\n", ptr, i, file, line);
 
   memset(ptr, free_char, pmem->size); 
 
@@ -148,7 +154,7 @@ awka_mfree(char *ptr)
 }
 
 int
-awka_mcheck(char *ptr)
+awka_mcheck(char *ptr, char *file, int line)
 {
   MemAllc *pmem, *prevmem = NULL;
   char *sptr;
@@ -187,7 +193,7 @@ awka_malloc(void **ptr, size_t size, char *file, int line)
   size += A_PROT_SIZE * 2;
 
   if (!(*ptr = malloc(size)))
-    awka_error("Memory Error - Failed to allocate %d bytes, file %s line %d.\n",size,file,line);
+    awka_error("Memory Error - Failed to allocate %d bytes, file %s line %d.\n", size, file, line);
 
 /**
 fprintf(stderr,"m %p %s %d %u\n",*ptr,file,line,size); 
@@ -219,10 +225,10 @@ fprintf(stderr,"f %p %s %d\n",*oldptr,file,line);
 fprintf(stderr,"m %p %s %d %u\n",ptr,file,line,size);
 /**/
 
-  oldsize = awka_mcheck((char *) *oldptr);
+  oldsize = awka_mcheck((char *) *oldptr, file, line);
   if (size < oldsize) oldsize = size;
   memcpy(ptr, *oldptr, oldsize);
-  awka_mfree((char *) *oldptr);
+  awka_mfree((char *) *oldptr, file, line);
   free(*oldptr);
   ptr += A_PROT_SIZE;
   size -= A_PROT_SIZE * 2;
@@ -237,12 +243,12 @@ awka_free(void *ptr, char *file, int line)
 {
   if (!ptr)
   {
-    awka_error("Memory Error - Free of Null ptr, file %s, line %d.\n",file,line);
+    awka_error("Memory Error - Free of Null ptr, file %s, line %d.\n", file, line);
     return;
   }
 
   ptr -= A_PROT_SIZE;
-  awka_mfree((char *) ptr);
+  awka_mfree((char *) ptr, file, line);
 
 /**
 fprintf(stderr,"f %p %s %d\n",ptr,file,line); 

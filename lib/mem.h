@@ -17,11 +17,6 @@ extern int _print_mem;
 
 #ifdef MEM_DEBUG
 #define A_PROT_SIZE 64
-void awka_mprotect(char *, size_t);
-void awka_mfree(char *);
-int  awka_mcheck(char *);
-void awka_mtest(char *);
-void awka_mtestall();
 size_t awka_malloc(void **ptr, size_t size, char *file, int line);
 size_t awka_realloc(void **oldptr, size_t size, char *file, int line);
 void awka_free(void *ptr, char *file, int line);
