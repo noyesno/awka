@@ -27,6 +27,8 @@ int nstring_match(
   int p_size = pattern_size;
 
   while(p_size>0){
+    int stop = 0;
+
     switch(*p){
       case '?' :
         if( s_size>0 ){
@@ -40,14 +42,8 @@ int nstring_match(
         if( p_size==1 ){
           return 1;
         }
-        int match = 0;
-        for(int i=0; i<s_size; i++){
-          match = nstring_match(p+1, p_size-1, s+i, s_size-i); 
-          if( match ){
-            break;
-          }
-        }
-        return match; 
+        stop++;
+        break;
       default:
         if( s_size>0 && p[0]==s[0] ){
           s++; s_size--;
@@ -69,6 +65,10 @@ int nstring_match(
         }
         break;
       case '*' :
+        if( p_size==1 ){
+          return 1;
+        }
+        stop++;
         break;
       default :
         if( s_size>0 && p[p_size-1]==s[s_size-1] ){
@@ -77,6 +77,17 @@ int nstring_match(
         } else {
           return 0;
         }
+    }
+
+    if( stop==2 ){
+        int match = 0;
+        for(int i=0; i<s_size; i++){
+          match = nstring_match(p+1, p_size-1, s+i, s_size-i);
+          if( match ){
+            break;
+          }
+        }
+        return match;
     }
   }
 
@@ -101,7 +112,9 @@ int main(int argc, char *argv[]){
     "abc*123",   "abcd1234",  "0",
     "abc*123?",  "abcd1234",  "1",
     "abc*123?",  "abcd12345", "0",
+    "abc*123?",  "abcd1239234", "0",
     "abc*123*",  "abcd12345", "1",
+    "abc*123",   "abc",       "0",
     NULL, NULL
   };
 
