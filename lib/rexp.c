@@ -29,6 +29,9 @@
 #include <string.h>
 
 #include "libawka.h"
+#include "../regexp/dfa.h"
+
+unsigned int _awka_hashstr( char *str, register int len );
 
 typedef struct regexp_list_struct regexp_list;
 

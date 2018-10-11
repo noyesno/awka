@@ -23,6 +23,10 @@
 #define _IO_C
 #define _IN_LIBRARY
 #include "libawka.h"
+#include "garbage.h"
+
+#include <unistd.h>         // for execl(), _exit, pipe(), etc
+#include <sys/wait.h>
 
 #ifdef HAVE_SOCKETS
 #ifdef HAVE_SYS_SOCKET_H
