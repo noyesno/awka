@@ -42,6 +42,9 @@
 #include  "repl.h"
 #include  "field.h"
 
+#define isoctal(x)  ((x)>='0'&&(x)<='7')
+#define isdigit(x)  ((x)>='8'&&(x)<='9')
+
 static char *PROTO(find_bi_name, (PF_CP)) ;
 
 char **cfunc = NULL;
@@ -149,6 +152,16 @@ fixbackslashes(char *str, int which)
    * from the C compiler.  Smart parsing of backslashes
    * for regexps and printfs is left to the library.
    */
+   /*
+    *  Basically, we try to convert regular expression to a C string format.
+    *  -----------------------------------------------------------------
+    *  /\\/  => "\\\\"        # insert '\'
+    *  /\n|\r|\t/             # no change
+    *  /\7/  => "\\7"         # insert '\'
+    *  /\./  => "\\."         # insert '\'
+    *  /\8/  => "8"           # remove '\'
+    *  -----------------------------------------------------------------
+    */
 
   while (*p)
   {
@@ -162,9 +175,15 @@ fixbackslashes(char *str, int which)
         if (*p == '\\')
         {
           q = p+1;
-          if ((*q == '\\' || !(bslash[*q] & 2)))
-          {
-            /* double backslash */
+          if ( isdigit(*q) ) {
+            /* remove double backslash */
+            q = p;
+            r = q+1;
+            do {
+              *(q++) = *(r++);
+            } while (*q);
+          } else if ((*q == '\\') || !(bslash[*q] & 2)) {
+            /* insert double backslash */
             while (*(q++))
               ;
             r = q-1;

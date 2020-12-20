@@ -90,25 +90,23 @@ extern char _dol0_only;
 extern int _split_max;
 
 static INLINE a_VAR *
-awka_NFset()
+awka_NFget()
 {
-  _rebuild0_now = _rebuild0 = _awka_setdoln = TRUE;
-  _rebuildn = FALSE;
+  /* noyesno: delayed split from awka_setNF() */
+  if (_rebuildn)
+  {
+    awka_setd(a_bivar[a_NF]) = awka_arraysplitstr(awka_gets1(a_bivar[a_DOL0]), a_bivar[a_DOLN], NULL, _split_max, TRUE);
+    _rebuildn = FALSE;
+  }
   return a_bivar[a_NF];
 }
 
 static INLINE a_VAR *
-awka_NFget()
+awka_NFset()
 {
-  extern int _split_req, _split_max;
-
-  /* noyesno: delayed split from awka_setNF() */
-  if (_rebuildn || _split_req == 1)
-  {
-    awka_setd(a_bivar[a_NF]) = awka_arraysplitstr(awka_gets1(a_bivar[a_DOL0]), a_bivar[a_DOLN], a_bivar[a_FS], _split_max, TRUE);
-    _rebuildn = FALSE;
-    _split_req = 0;
-  }
+  awka_NFget();
+  _rebuild0_now = _rebuild0 = _awka_setdoln = TRUE;
+  _rebuildn = FALSE;
   return a_bivar[a_NF];
 }
 

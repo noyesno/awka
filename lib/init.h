@@ -42,12 +42,7 @@ extern struct awka_fn_struct *_awkafn;
 static INLINE char
 awka_setNF()
 {
-  extern int _split_req, _split_max;
-  _split_req = 1;  /* noyesno: delay split to awka_NFget */
-  return 1;
-
-  if (_split_req == 1)
-    awka_setd(a_bivar[a_NF]) = awka_arraysplitstr(awka_gets1(a_bivar[a_DOL0]), a_bivar[a_DOLN], NULL, _split_max, TRUE);
+  _rebuildn = TRUE;
   return 1;
 }
 

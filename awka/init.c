@@ -57,6 +57,7 @@ extern char *int_argv;
 short interactive_flag = 0 ;
 char awka_exe = FALSE, awka_comp = FALSE;
 char awka_tmp = FALSE;
+char awka_comp_debug = FALSE, awka_comp_static = FALSE;
 int exe_argc = 0;
 char **exe_argv = NULL;
 char **incfile = NULL, **incdir = NULL, **libfile = NULL, **libdir = NULL;
@@ -143,7 +144,7 @@ process_cmdline(argc, argv)
             }
             bad_option(argv[i]) ;
          }
-         else if (strchr("-DxtX", argv[i][j]))
+         else if (strchr("-DxtXs", argv[i][j]))
          {
            nextarg = i + 1;
          }
@@ -304,6 +305,10 @@ process_cmdline(argc, argv)
             strcpy(libdir[libd_used++], argv[i]);
             break;
 
+         case 's': // -s | -static
+            awka_comp_static = TRUE;
+            break;
+
          case 'X':
             awka_comp = TRUE;
             awka_exe = FALSE;
@@ -348,6 +353,7 @@ process_cmdline(argc, argv)
          case 'h':
             fprintf(stderr,"\nusage: awka [-c fn] [-X] [-x -t] [-w flags] [-f filename] program_string [--] [exe-args]\n");
             fprintf(stderr,"       awka [-h] [-v]\n\n");
+            fprintf(stderr,"    -f     AWK Program file(s)\n");
             fprintf(stderr,"    -c fn  Awka will generate a 'fn' function rather\n");
             fprintf(stderr,"           than a main function\n");
             fprintf(stderr,"    -x     Translates, compiles then executes program\n");
@@ -371,8 +377,11 @@ process_cmdline(argc, argv)
             fprintf(stderr,"           instead of the default 'awka_out.exe'\n");
 #else
             fprintf(stderr,"           instead of the default 'awka.out'\n");
+            fprintf(stderr,"\n");
+            fprintf(stderr,"    -I dir Compiler include directory.\n");
+            fprintf(stderr,"    -L dir Compiler link library directory.\n");
+            fprintf(stderr,"\n");
 #endif
-            fprintf(stderr,"    -f     AWK Program file(s)\n");
             fprintf(stderr,"    --     If -x specified, all arguments after this point\n");
             fprintf(stderr,"           will be passed to the compiled executable.\n");
             fprintf(stderr,"    -a str The executable command-line arguments in 'str' will\n");

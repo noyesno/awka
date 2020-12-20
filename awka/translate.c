@@ -1307,7 +1307,11 @@ awka_assign(int inst, int *earliest, char *context)
       }
       else if (findvaltype(p) == _VALTYPE_STR || progcode[inst-1].ftype == 2)
       {
-        sprintf(ret, "awka_strcpy(%s, %s)", r2, getstringvalue(p));
+        if (0 && !strcmp(r2, "a_bivar[a_FS]")){
+           sprintf(ret, "awka_NFget(); awka_strcpy(%s, %s) /* 1 */", r2, getstringvalue(p));
+        } else {
+           sprintf(ret, "awka_strcpy(%s, %s) /* 1 */", r2, getstringvalue(p));
+        }
         /* sprintf(ret, "awka_strcpy(%s, %s->ptr)", r2, p); */
         setvaltype(r2, _VALTYPE_STR);
         *context = _STR;
@@ -1326,7 +1330,11 @@ awka_assign(int inst, int *earliest, char *context)
       *context = _DBL;
       break;
     case _STR:
-      sprintf(ret, "awka_strcpy(%s, %s)", r2, p);
+      if (0 && !strcmp(r2, "a_bivar[a_FS]")){
+        sprintf(ret, "awka_NFget(); awka_strcpy(%s, %s) /* 2 */", r2, p);
+      }else{
+        sprintf(ret, "awka_strcpy(%s, %s) /* 2 */", r2, p);
+      }
       setvaltype(r2, _VALTYPE_STR);
       *context = _STR;
       break;

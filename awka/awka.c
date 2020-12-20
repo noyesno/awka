@@ -27,7 +27,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
-/* #include <unistd.h> */
+#include <unistd.h>   // for unlink()
 
 #define AWKA_MAIN
 #define TEMPBUFF_GOES_HERE
@@ -53,7 +53,7 @@ char begin_used=FALSE, main_used=FALSE, end_used=FALSE;
 extern int var_used;
 extern awka_varname *varname;
 extern char *uoutfile;
-extern char awka_exe, awka_tmp, awka_comp;
+extern char awka_exe, awka_tmp, awka_comp, awka_comp_static;
 extern int exe_argc;
 extern char **exe_argv;
 extern char **incdir, **libfile, **libdir;
@@ -142,6 +142,7 @@ main(int argc, char *argv[])
 {
   int i = 1, len;
   char *c_file, *tmp;
+  int ret;
 
   progcode = (struct pc *) malloc(20 * sizeof(struct pc));
   prog_allc = 20;
@@ -217,14 +218,17 @@ main(int argc, char *argv[])
     for (i=0; i<incd_used; i++)
       incd_len += strlen(incdir[i])+3;
 
-    cmd = (char *) malloc( strlen(c_file) + strlen(awka_INCDIR) + strlen(awka_LIBDIR) + strlen(awka_CC) + strlen(awka_CFLAGS) + strlen(awka_MATHLIB) + strlen(awka_SOCKET_LIBS) + strlen(outfile) + incd_len + libd_len + libf_len + 35 );
+    cmd = (char *) malloc( strlen(c_file) + strlen(awka_INCDIR) + strlen(awka_LIBDIR) + strlen(awka_CC) + strlen(awka_CFLAGS) + strlen(awka_MATHLIB) + strlen(awka_SOCKET_LIBS) + strlen(outfile) + incd_len + libd_len + libf_len + 35 + 512);
 
-    sprintf(cmd, "%s %s %s -I%s -L%s -lawka", awka_CC, awka_CFLAGS, c_file, awka_INCDIR, awka_LIBDIR);
+    sprintf(cmd, "%s %s %s", awka_CC, awka_CFLAGS, c_file);
 
     for (i=0; i<incd_used; i++)
       sprintf(cmd, "%s -I%s", cmd, incdir[i]);
     for (i=0; i<libd_used; i++)
       sprintf(cmd, "%s -L%s", cmd, libdir[i]);
+
+    sprintf(cmd, "%s -I%s -L%s", cmd, awka_INCDIR, awka_LIBDIR);
+
     for (i=0; i<libf_used; i++)
       sprintf(cmd, "%s -l%s", cmd, libfile[i]);
 
@@ -236,7 +240,17 @@ main(int argc, char *argv[])
     else
       sprintf(cmd, "%s -o %s", cmd, outfile);
 
-    system(cmd);
+    if (awka_comp_static) {
+      sprintf(cmd, "%s -l:libawka.a", cmd);
+    } else {
+      sprintf(cmd, "%s -lawka", cmd);
+    }
+
+    if (0) {
+      fprintf(stderr, "%s\n", cmd);
+    }
+
+    ret = system(cmd);
 
     if (!(fp = fopen(outfile, "r")))
     {
@@ -260,7 +274,7 @@ main(int argc, char *argv[])
         strcat(cmd, exe_argv[i]);
       }
 
-      system(cmd);
+      ret = system(cmd);
     }
 
     if (awka_tmp)

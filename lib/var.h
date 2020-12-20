@@ -113,11 +113,13 @@ extern char fs_or_fw, _awka_setdol0_len;
 extern char _rebuild0, _rebuildn, _rebuild0_now;
 #endif
 
+static INLINE a_VAR * awka_NFget();
 #define _awka_set_FW(v) \
-  if ((v) == a_bivar[a_FS]) \
-    fs_or_fw = 0; \
-  else if ((v) == a_bivar[a_FIELDWIDTHS]) \
-    fs_or_fw = 1;
+  if ((v) == a_bivar[a_FS]) { \
+    fs_or_fw = 0; awka_NFget(); \
+  } else if ((v) == a_bivar[a_FIELDWIDTHS]) {\
+    fs_or_fw = 1; awka_NFget(); \
+  }
 
 static int
 awka_isadbl( char *s, int len )
