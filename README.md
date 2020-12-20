@@ -1,6 +1,16 @@
 # Awka
 
-Awka is highlighted as "Open Source, AWK to C Conversion Tool" on its web site http://awka.sourceforge.net/index.html
+![C/C++ CI](https://github.com/noyesno/awka/workflows/C/C++%20CI/badge.svg)
+
+This is a fork and enhanced version of [Awka](http://awka.sourceforge.net/index.html).
+
+
+> Awka - Open Source, AWK to C Conversion 
+>
+> Awka is not an interpreter like Gawk, Mawk or Nawk, but instead it converts the program to ANSI-C, then compiles this using gcc or a native C compiler to create a binary executable. 
+>
+> -- http://awka.sourceforge.net/index.html
+
 
   * Awka has two main parts: a translator and a library.
   * `awka` translate a [Awk](https://www.gnu.org/software/gawk/) script into C code
