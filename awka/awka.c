@@ -27,7 +27,6 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
-#include <unistd.h>   // for unlink()
 
 #define AWKA_MAIN
 #define TEMPBUFF_GOES_HERE
@@ -36,6 +35,8 @@
 #include "awka.h"
 #include "awka_exe.h"
 #include "mem.h"
+
+#define strdup_cat(s, suffix) strcat(strcpy(malloc(strlen(s)+strlen(suffix))+1, s), suffix)
 
 char ** _arraylist = NULL;
 int _array_no = 0, _array_allc = 0;
@@ -93,7 +94,7 @@ add2arraylist(char *str)
 {
   int i;
   char *nstr;
-  
+
   nstr = (char *) malloc(strlen(str)+5);
   sprintf(nstr, "%s_awk", str);
 
@@ -137,99 +138,77 @@ isarray(char *var)
   return 0;
 }
 
-int
-main(int argc, char *argv[])
-{
-  int i = 1, len;
-  char *c_file, *tmp;
-  int ret;
+/*
+-----------------------------------------------------------------------------
+    | awka_comp | awka_exe | awka_main | awka_tmp
+-----------------------------------------------------------------------------
+ -c | FALSE     | FALSE    | TRUE      | FALSE    # translate
+ -x | FALSE     | TRUE     | FALSE     | FALSE    # translate, compile, execute
+ -X | TRUE      | FALSE    | FALSE     | FALSE    # translate, compile
+ -t | -         | -        | -         | TRUE     # use temproray file
+-----------------------------------------------------------------------------
+*/
 
-  progcode = (struct pc *) malloc(20 * sizeof(struct pc));
-  prog_allc = 20;
-  prog_no = 0;
+static int awka_output_file(int awka_tmp, char *uoutfile, char **c_file, char **outfile){
+  char *outfile_prefix = NULL;
+  char *outfile_suffix;
+  char tmp_file[512] = "./awka-XXXXXX.c";
 
-  initialize(argc, argv);
-  parse();
+#if defined(__CYGWIN32__) || defined(__DJGPP__)
+  outfile_suffix = ".exe";
+#else
+  outfile_suffix = ".out";
+#endif
 
-  if (awka_comp) awka_tmp = FALSE;
-
-  if (awka_exe || awka_comp)
-  {
-    if (awka_tmp)
-    {
-      tmp = (char *) tempnam("./","");
-      c_file = (char *) malloc(strlen(tmp) + 3);
-      sprintf(c_file, "%s.c",tmp);
-      free(tmp);
-      if (!(outfp = fopen(c_file, "w")))
-        awka_error("Failed to open temporary output file.\n");
-    }
-    else
-    {
-      if (uoutfile)
-      {
-        c_file = (char *) malloc(strlen(uoutfile)+3);
-        sprintf(c_file, "%s.c", uoutfile);
-      }
-      else
-      {
-        c_file = (char *) malloc(11);
-        strcpy(c_file, "awka_out.c");
-      }
-      if (!(outfp = fopen(c_file, "w")))
-        awka_error("Failed to open awka_out.c in current directory.\n");
-    }
+  if (awka_tmp) {
+    strcat(tmp_file, "./awka-XXXXXX");
+    int fd = mkstemp(tmp_file);
+    outfile_prefix = strdup_cat(tmp_file, "");
+    close(fd);
+  } if (!uoutfile) {
+    outfile_prefix = strdup_cat("./awka-app", "");
+  } else {
+    outfile_prefix = strdup_cat(uoutfile, "");
   }
-  else
-    outfp = stdout;
 
-  if (!prog_no) 
-    awka_error("Sorry, program was not parsed successfully.\n");
+  *c_file = strdup_cat(outfile_prefix, ".c");
 
-  translate();
+  if (awka_tmp) {
+    *outfile = strdup_cat(outfile_prefix, outfile_suffix);
+  } else if (uoutfile) {
+    *outfile = uoutfile;
+  } else {
+    *outfile = strdup_cat(outfile_prefix, outfile_suffix);
+  }
 
-  if (awka_exe || awka_comp)
-  {
-    FILE *fp;
+  free(outfile_prefix);
+
+  return 1;
+}
+
+static char* awka_build_compile_command(char *c_file, char *outfile){
     char *cmd;
-    char *outfile;
     int incd_len=0, libd_len=0, libf_len=0;
 
-    if (awka_tmp)
-      outfile = (char *) tempnam("./", "");
-    else if (uoutfile)
-      outfile = uoutfile;
-    else
-    {
-      outfile = (char *) malloc(15);
-#if defined(__CYGWIN32__) || defined(__DJGPP__)
-      strcpy(outfile, "./awka_out.exe");
-#else
-      strcpy(outfile, "./awka.out");
-#endif
-    }
-
-    fclose(outfp);
-
-    for (i=0; i<libd_used; i++)
+    for (int i=0; i<libd_used; i++)
       libd_len += strlen(libdir[i])+3;
-    for (i=0; i<libf_used; i++)
+    for (int i=0; i<libf_used; i++)
       libf_len += strlen(libfile[i])+3;
-    for (i=0; i<incd_used; i++)
+    for (int i=0; i<incd_used; i++)
       incd_len += strlen(incdir[i])+3;
 
     cmd = (char *) malloc( strlen(c_file) + strlen(awka_INCDIR) + strlen(awka_LIBDIR) + strlen(awka_CC) + strlen(awka_CFLAGS) + strlen(awka_MATHLIB) + strlen(awka_SOCKET_LIBS) + strlen(outfile) + incd_len + libd_len + libf_len + 35 + 512);
 
     sprintf(cmd, "%s %s %s", awka_CC, awka_CFLAGS, c_file);
 
-    for (i=0; i<incd_used; i++)
+    for (int i=0; i<incd_used; i++)
       sprintf(cmd, "%s -I%s", cmd, incdir[i]);
-    for (i=0; i<libd_used; i++)
+    for (int i=0; i<libd_used; i++)
       sprintf(cmd, "%s -L%s", cmd, libdir[i]);
 
     sprintf(cmd, "%s -I%s -L%s", cmd, awka_INCDIR, awka_LIBDIR);
 
-    for (i=0; i<libf_used; i++)
+    for (int i=0; i<libf_used; i++)
       sprintf(cmd, "%s -l%s", cmd, libfile[i]);
 
     if (strlen(awka_SOCKET_LIBS))
@@ -245,43 +224,112 @@ main(int argc, char *argv[])
     } else {
       sprintf(cmd, "%s -lawka", cmd);
     }
+    return cmd;
+}
+
+static int awka_do_compile(char *c_file, char *outfile){
+    char *cmd;
+    cmd = awka_build_compile_command(c_file, outfile);
 
     if (0) {
       fprintf(stderr, "%s\n", cmd);
     }
 
-    ret = system(cmd);
+    int ret = system(cmd);
 
+    free(cmd);
+
+    FILE *fp;
     if (!(fp = fopen(outfile, "r")))
     {
       if (awka_tmp)
-        unlink(c_file);
-      awka_error("Awka error: compile failed.\n");
+        remove(c_file);
+      return 0;
     }
     fclose(fp);
+    return 1;
+}
 
-    if (awka_exe)
-    {
-      len = strlen(outfile);
-      for (i=0; i<exe_argc; i++)
-        len += strlen(exe_argv[i]) + 2;
+static int awka_do_exec(char *outfile){
+  int len = strlen(outfile);
+  for (int i=0; i<exe_argc; i++)
+    len += strlen(exe_argv[i]) + 2;
 
-      cmd = (char *) realloc(cmd, len + 1);
-      strcpy(cmd, outfile);
-      for (i=0; i<exe_argc; i++)
-      {
-        strcat(cmd, " ");
-        strcat(cmd, exe_argv[i]);
+  char *cmd = (char *) malloc(len + 1);
+  strcpy(cmd, outfile);
+  for (int i=0; i<exe_argc; i++) {
+    strcat(cmd, " ");
+    strcat(cmd, exe_argv[i]);
+  }
+
+  int ret = system(cmd);
+
+  free(cmd);
+  return 1;
+}
+
+int main(int argc, char *argv[])
+{
+  int i = 1, len;
+  char *c_file, *tmp;
+  char *outfile = NULL;
+  int ret;
+
+  progcode = (struct pc *) malloc(20 * sizeof(struct pc));
+  prog_allc = 20;
+  prog_no = 0;
+
+  initialize(argc, argv);
+
+  parse();
+
+  if (!prog_no){
+    awka_error("Sorry, program was not parsed successfully.\n");
+    return -1;
+  }
+
+  if (awka_comp) awka_tmp = FALSE;
+
+  int do_translate = 1;
+  int do_compile   = awka_exe || awka_comp ;
+  int do_exec      = awka_exe;
+
+  if (do_translate) {
+    //% where to write translated code
+    outfp = stdout;
+    if (do_compile) {
+      awka_output_file(awka_tmp, uoutfile, &c_file, &outfile);
+      outfp = fopen(c_file, "w");
+      if (!outfp){
+        awka_error("Failed to open %s to write.\n", c_file);
+        return -1;
       }
-
-      ret = system(cmd);
     }
 
-    if (awka_tmp)
-    {
-      unlink(outfile);
-      unlink(c_file);
+    translate();       //% -- transtate Awk script to C code
+    fclose(outfp);
+  }
+
+  if (do_compile) {
+    int compile_succ = awka_do_compile(c_file, outfile);
+    if(!compile_succ){
+      awka_error("Awka error: compile failed.\n");
+      return -1;
     }
+  }
+
+  if (do_exec){
+    awka_do_exec(outfile);
+  }
+
+  if ( do_compile || do_exec ) {
+    if(awka_tmp){
+      remove(outfile);
+    }
+    remove(c_file);
+
+    free(c_file);
+    free(outfile);
   }
 
   return 0;

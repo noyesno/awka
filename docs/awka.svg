@@ -1,0 +1,25 @@
+<svg xmlns='http://www.w3.org/2000/svg' class="pikchr" viewBox="0 0 584.64 112.32">
+<!-- with pikchr from https://pikchr.org/home/pikchrshow -->
+<path d="M2,110L74,110L74,23L52,2L2,2Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M52,2L52,23L74,23"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="38" y="56" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">app.awk</text>
+<polygon points="146,56 134,60 134,51" style="fill:rgb(0,0,0)"/>
+<path d="M74,56L140,56"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<circle cx="182" cy="56" r="36"  style="fill:none;stroke-width:3.24;stroke:rgb(0,128,128);" />
+<text x="182" y="56" text-anchor="middle" fill="rgb(0,128,128)" dominant-baseline="central">awka</text>
+<polygon points="290,56 278,60 278,51" style="fill:rgb(0,0,0)"/>
+<path d="M218,56L284,56"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M290,110L362,110L362,23L340,2L290,2Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M340,2L340,23L362,23"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="326" y="56" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">app.c</text>
+<polygon points="434,56 422,60 422,51" style="fill:rgb(0,0,0)"/>
+<path d="M362,56L428,56"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);stroke-dasharray:7.2,7.2;" />
+<text x="398" y="44" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">compile</text>
+<text x="398" y="67" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">gcc</text>
+<path d="M434,110L506,110L506,23L484,2L434,2Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M484,2L484,23L506,23"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="470" y="56" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">app.out</text>
+<polygon points="578,56 566,60 566,51" style="fill:rgb(0,0,0)"/>
+<path d="M506,56L572,56"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);stroke-dasharray:7.2,7.2;" />
+<text x="542" y="44" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">execute</text>
+</svg>
