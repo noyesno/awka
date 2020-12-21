@@ -2,6 +2,8 @@
 
 ![C/C++ CI](https://github.com/noyesno/awka/workflows/C/C++%20CI/badge.svg)
 
+![](docs/awka.svg)
+
 This is a fork and enhanced version of [Awka](http://awka.sourceforge.net/index.html).
 
 
