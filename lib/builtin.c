@@ -21,6 +21,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <errno.h>
+#include <unistd.h>
 
 #ifndef NO_TIME_H
 #  include <time.h>
