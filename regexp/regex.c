@@ -151,9 +151,9 @@ char *realloc ();
 #  define SWITCH_ENUM_CAST(x) (x)
 # endif
 
-
 /* Get the interface, including the syntax bits.  */
 #include <regex.h>
+#include "dfa.h"
 
 /* isalpha etc. are used for the character classes.  */
 #include <ctype.h>
@@ -600,7 +600,6 @@ extract_number_and_incr (destination, source)
 /* It is useful to test things that ``must'' be true when debugging.  */
 # include <assert.h>
 
-#include "dfa.h"
 
 static int debug;
 
@@ -6038,21 +6037,23 @@ awka_regexec (preg, string, nmatch, pmatch, eflags)
     int count=0, try_backref=0;
     
     save = string[len];
-    ret = dfaexec((struct dfa *) preg->dfa, string, string+len, 1, &count, &try_backref);
+    char *after_match = dfaexec((struct dfa *) preg->dfa, string, string+len, 1, &count, &try_backref);
     string[len] = save;
 
     // @noyesno at Mar, 2017
     // When come here, already see want_reg_info == 0, should simply return match result.
     // Only question is whether we should move to re_search() if backreferencing happened.
-    if(ret){
+
+    if (after_match==NULL) {
+      return REG_NOMATCH;
+    } else {
       preg->max_sub = 1;
       // TODO: if(try_backref){ ... }
       return REG_NOERROR;
-    } else {
-      return REG_NOMATCH;
     }
 
-    if (ret && !try_backref && !(eflags & REG_NEEDSTART))
+    // TODO: clean up code here
+    if (!try_backref && !(eflags & REG_NEEDSTART))
     {
       preg->max_sub = 1;
       // @noyesno: When come here, no need to check value of `ret`. Match is found!
@@ -6060,8 +6061,6 @@ awka_regexec (preg, string, nmatch, pmatch, eflags)
       return REG_NOERROR;
       return ret >= 0 ? (int) REG_NOERROR : (int) REG_NOMATCH;
     }
-    else if (!ret)
-      return REG_NOMATCH;
   }
 
   if (want_reg_info)

@@ -36,6 +36,7 @@
 #include  "fin.h"
 #include  "repl.h"
 #include  "code.h"
+#include  "bi_funct.h"
 
 #include <unistd.h>
 

@@ -154,5 +154,5 @@ static void
 write_error()
 {
    errmsg(errno, "write failure") ;
-   awka_exit(2) ;
+   exit(2) ;
 }
