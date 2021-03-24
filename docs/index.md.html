@@ -1,0 +1,60 @@
+<meta charset="utf-8" lang="en">
+
+  **Awka - Awk to C Translator**
+
+
+# Introduction
+
+## Awka
+
+
+> Awka - Open Source, AWK to C Conversion
+> 
+> Awka is not an interpreter like Gawk, Mawk or Nawk, but instead it converts the program to ANSI-C, then compiles this using gcc or a native C compiler to create a binary executable.
+> 
+
+
+**Awka** project home is http://awka.sourceforge.net/index.html
+
+## Revive Awka
+
+Awka is an "old" project. Its last release 0.7.5 was on June 20 2001.
+
+And to fill my usage requirement, some of my update to the code go much furhter than traditional Awk.
+
+**Revive Awka** project home is https://github.com/noyesno/awka
+
+
+# Awka Quick Guide
+
+## Awka Usage
+
+![](awka.svg)
+
+
+~~~~~~~
+$ awka app.awk
+~~~~~~~
+
+## Awka Documents
+
+  * [awka](awka.html) - AWK language to ANSI C translator and library  
+  * [awka-elm](awka-elm.html) - Awka Extended Library Methods
+  * [awka-elmref](awka-elmref.html) - Awka API Reference for use with Awka-ELM libraries
+
+# Awka FAQ
+
+## Why compile Awk script into C program?
+
+  * C program probably run faster.
+  * "AWK programs are limited to what the interpreter provides".
+  * "C code can be compiled with other code into a larger application."
+  * "migrate stable functions from AWK to C" to impove performance.
+  * Reuse existing C functions in Awk script.
+  * A way of protect your Awk script.
+
+Actually, the mixing use of Awk and C provide provide an interesting way of writing programs.
+
+<link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/slides.css?"><script>markdeepOptions={tocStyle:'none'}</script>
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden}</style><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?" charset="utf-8"></script>
+
