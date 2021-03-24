@@ -39,6 +39,9 @@ extern char *calloc(), *malloc(), *realloc();
 extern void free();
 #endif
 
+// Failing to pick this up on FreeBSD
+#include <string.h>
+
 #if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
 #include <string.h>
 #undef index

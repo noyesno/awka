@@ -37,6 +37,8 @@
 #include  "repl.h"
 #include  "code.h"
 
+#include <unistd.h>
+
 #ifndef          NO_FCNTL_H
 #include  <fcntl.h>
 #endif

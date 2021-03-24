@@ -52,5 +52,7 @@ unsigned PROTO ( fillbuff, (int, char *, unsigned) ) ;
 extern  FIN  *main_fin ;  /* for the main input stream */
 void   PROTO( open_main, (void) ) ;
 
+#if MSDOS
 void  PROTO(setmode, (int,int)) ;
+#endif
 #endif  /* FIN_H */
