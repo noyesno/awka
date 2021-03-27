@@ -1050,8 +1050,14 @@ rm_escape(s)
          else if (isoctal(*p))
          {
             t = p ;
-            *q++ = octal(&t) ;
-            p = t ;
+            int c = octal(&t) ;
+            if( c==0 && (t-p)==1 ){
+              *q++ = *(p-1) ;
+              *q++ = *p++ ;
+            } else {
+              *q++ = c;
+               p = t ;
+            }
          }
          else if (*p == 'x' && ishex(*(unsigned char *) (p + 1)))
          {
@@ -1118,7 +1124,10 @@ collect_string()
       }
 
 out:
-   yylval.ptr = (PTR) new_STRING( e_flag ? rm_escape(string_buff) : string_buff) ; 
+   AWKA_DEBUG("token string 1 = \"%s\"\n", string_buff);
+   unsigned char *s = e_flag ? rm_escape(string_buff) : string_buff ; 
+   AWKA_DEBUG("token string 2 = \"%s\"\n", s);
+   yylval.ptr = (PTR) new_STRING(s);
    return STRING_ ;
 }
 

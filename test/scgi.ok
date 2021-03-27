@@ -1,0 +1,10 @@
+CONTENT_LENGTH=42
+SCGI=1
+REQUEST_METHOD=POST
+REQUEST_URI=/deepthought
+------ body ------
+
+What is the answer to life?
+The 42 is the
+------------------
+ answer.

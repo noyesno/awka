@@ -105,6 +105,20 @@ int func_no = 0;
 int which_side = _a_RHS;
 int max_base_gc = 1, max_fn_gc = 1, cur_base_gc = 1, cur_fn_gc = 1;
 
+static int getstringsize(const char *p){
+  int n=0;
+  char c;
+  while(c = *p++){
+    if (c=='\\' && *p && (1 || *p=='0' || *p=='n' || *p=='r' || *p=='t' || *p=='\"' || *p=='\\')){
+      p++;
+      n++;
+    }else{
+      n++;
+    }
+  }
+  return n;
+}
+
 char *
 codeptr(int inst, int len)
 {
@@ -1310,7 +1324,12 @@ awka_assign(int inst, int *earliest, char *context)
         if (0 && !strcmp(r2, "a_bivar[a_FS]")){
            sprintf(ret, "awka_NFget(); awka_strcpy(%s, %s) /* 1 */", r2, getstringvalue(p));
         } else {
-           sprintf(ret, "awka_strcpy(%s, %s) /* 1 */", r2, getstringvalue(p));
+           const char *string_value = getstringvalue(p);
+           if(string_value[0]=='\"'){
+             sprintf(ret, "awka_strncpy(%s, %s, %d) /* 1 */", r2, string_value, getstringsize(string_value)-2);
+           }else{
+             sprintf(ret, "awka_strcpy(%s, %s) /* 1 */", r2, string_value);
+           }
         }
         /* sprintf(ret, "awka_strcpy(%s, %s->ptr)", r2, p); */
         setvaltype(r2, _VALTYPE_STR);
@@ -4590,8 +4609,10 @@ translate()
   for (i=0; i<litd_used; i++)
     fprintf(outfp,"  awka_varinit(_litd%d_awka); awka_setd(_litd%d_awka) = %s;\n",i,i,litd_val[i]);
   
-  for (i=0; i<lits_used; i++)
-    fprintf(outfp,"  awka_varinit(_lits%d_awka); awka_strcpy(_lits%d_awka, \"%s\");\n",i,i,lits_val[i]);
+  for (i=0; i<lits_used; i++){
+    const char *string_value = lits_val[i];
+    fprintf(outfp,"  awka_varinit(_lits%d_awka); awka_strncpy(_lits%d_awka, \"%s\", %d);\n",i, i, string_value, getstringsize(string_value));
+  }
   
   for (i=0; i<litr_used; i++)
     fprintf(outfp,"  awka_varinit(_litr%d_awka); awka_strcpy(_litr%d_awka, \"%s\"); awka_getre(_litr%d_awka);\n",i,i,litr_val[i],i);

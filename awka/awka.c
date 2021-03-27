@@ -36,7 +36,7 @@
 #include "awka_exe.h"
 #include "mem.h"
 
-#define strdup_cat(s, suffix) strcat(strcpy(malloc(strlen(s)+strlen(suffix))+1, s), suffix)
+#define strdup_cat(s, suffix) strcat(strcpy(malloc(strlen(s)+strlen(suffix)+1), s), suffix)
 
 char ** _arraylist = NULL;
 int _array_no = 0, _array_allc = 0;
@@ -149,10 +149,18 @@ isarray(char *var)
 -----------------------------------------------------------------------------
 */
 
+static char* tmpfile_prefix(const char *pattern){
+    char tmp_file[512];
+    strcpy(tmp_file, pattern);
+    int fd = mkstemp(tmp_file);
+    char *file_path = strdup_cat(tmp_file, "");
+    close(fd);
+    return file_path;
+}
+
 static int awka_output_file(int awka_tmp, char *uoutfile, char **c_file, char **outfile){
   char *outfile_prefix = NULL;
   char *outfile_suffix;
-  char tmp_file[512] = "./awka-XXXXXX.c";
 
 #if defined(__CYGWIN32__) || defined(__DJGPP__)
   outfile_suffix = ".exe";
@@ -161,10 +169,7 @@ static int awka_output_file(int awka_tmp, char *uoutfile, char **c_file, char **
 #endif
 
   if (awka_tmp) {
-    strcat(tmp_file, "./awka-XXXXXX");
-    int fd = mkstemp(tmp_file);
-    outfile_prefix = strdup_cat(tmp_file, "");
-    close(fd);
+    outfile_prefix = tmpfile_prefix("./awka-XXXXXX");
   } if (!uoutfile) {
     outfile_prefix = strdup_cat("./awka-app", "");
   } else {
@@ -305,7 +310,6 @@ int main(int argc, char *argv[])
         return -1;
       }
     }
-
     translate();       //% -- transtate Awk script to C code
     fclose(outfp);
   }

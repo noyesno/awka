@@ -13,6 +13,8 @@
 #define A_MIN(a, b) ((a) > (b) ? (b) : (a))
 #define A_MAX(a, b) ((a) > (b) ? (a) : (b))
 
+<include debug.h
+
 <include ../config.h
 
 #if defined(__cplusplus)

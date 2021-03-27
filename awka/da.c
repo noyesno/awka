@@ -134,6 +134,9 @@ set_bslash()
   bslash['r'] |= 2;
   bslash['t'] |= 2;
   bslash['n'] |= 2;
+
+  bslash['0'] |= 2;
+
   /* bslash['"'] |= 2; */
   /* bslash['\\'] |= 2;  */
 
@@ -214,7 +217,7 @@ fixbackslashes(char *str, int which)
           else if (*q == '\\')
             p++;
         }
-        else if (*p == '\n')
+        else if (*p == '\n')  /* unescape '\n' */
         {
           q = p+1;
           while (*(q++))
@@ -451,7 +454,9 @@ awka_insertop(int op, char *cval, char *carg, int minst, char *file, int line)
 
   if (val && op == _PUSHS)
   {
+    AWKA_DEBUG("1 progcode[prog_no].val=\"%s\" %ld\n", progcode[prog_no].val, strlen(progcode[prog_no].val));
     progcode[prog_no].val = fixbackslashes(progcode[prog_no].val, op);
+    AWKA_DEBUG("2 progcode[prog_no].val=\"%s\" %ld\n", progcode[prog_no].val, strlen(progcode[prog_no].val));
     /* double_backslashes(progcode[prog_no].val); */
   }
 

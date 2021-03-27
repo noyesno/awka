@@ -677,10 +677,11 @@ _awka_io_fillbuff(_a_IOSTREAM *s)
   return 1;
 }
 
-#define _RS_REGEXP 1
-#define _RS_NL     2
-#define _RS_CHAR   3
-#define _RS_NLCHAR 4
+#define _RS_REGEXP       1
+#define _RS_BLANK_LINES  2
+#define _RS_CHAR         3
+#define _RS_NEWLINE      4
+#define _RS_LENGTH       5
 
 /*
  * awka_io_readline
@@ -717,25 +718,32 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
 
   switch (a_bivar[a_RS]->type)
   {
-    case a_VARDBL:
-    case a_VARNUL:
+    case a_VARDBL:                   // integer
+      rs_type = _RS_LENGTH;
+      break;
+    case a_VARNUL:                   // unused variable
       awka_gets(a_bivar[a_RS]);
-    case a_VARSTR:
+    case a_VARSTR:                   // string
     case a_VARUNK:
-      if (a_bivar[a_RS]->slen <= 1)
-      {
+      AWKA_DEBUG("RS length = %d", a_bivar[a_RS]->slen);
+      if (a_bivar[a_RS]->slen == 1) {
         recsep = a_bivar[a_RS]->ptr[0];
-        rs_type = _RS_CHAR;
-        if (!recsep) 
-          rs_type = _RS_NL;
-        break;
+        rs_type = _RS_CHAR;          //  char
+        if (recsep=='\0')     rs_type = _RS_CHAR;        // RS = '\0'  TODO:
+        else if(recsep=='\n') rs_type = _RS_NEWLINE;     // RS = '\n' 
+      } else if (a_bivar[a_RS]->slen == 0) {             // RS = "" 
+        AWKA_DEBUG("RS use \"\"");
+        rs_type = _RS_BLANK_LINES;
+        recsep = '\0';
+      } else {
+        a_bivar[a_RS]->ptr = (char *) _awka_compile_regexp_SPLIT(
+                                a_bivar[a_RS]->ptr, a_bivar[a_RS]->slen );
+        a_bivar[a_RS]->type = a_VARREG;
+        rs_type = _RS_REGEXP;        //  regular expression
       }
-      
-      a_bivar[a_RS]->ptr = (char *) _awka_compile_regexp_SPLIT(
-                              a_bivar[a_RS]->ptr, a_bivar[a_RS]->slen );
-      a_bivar[a_RS]->type = a_VARREG;
+      break;
     case a_VARREG:
-      rs_type = _RS_REGEXP;
+      rs_type = _RS_REGEXP;          //  regular expression
   }
 
   while (1)
@@ -748,9 +756,10 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
       switch (rs_type)
       {
         case _RS_CHAR:
+        case _RS_NEWLINE:
             p = memchr(s->current, recsep, s->end - s->current);
             break;
-        case _RS_NL:
+        case _RS_BLANK_LINES:
             q = s->current;
             while (*q == '\n' && q < s->end) q++;
             if (q == s->end) break;
@@ -767,6 +776,11 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
               end = s->current + pmatch.rm_eo;
             }
           }
+          break;
+        case _RS_LENGTH:
+          p = s->current + (int) awka_getd(a_bivar[a_RS]);
+          if( p > s->end) p=NULL;
+          break;
       }
 
       if (p)
@@ -774,7 +788,7 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
         /* RS found */
         if (fill_target)
         {
-          if (rs_type == _RS_NL)
+          if (rs_type == _RS_BLANK_LINES)
             awka_strncpy(var, q, p - q);
           else
             awka_strncpy(var, s->current, p - s->current);
@@ -789,11 +803,16 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
             awka_strncpy(a_bivar[a_RT], p, end - p);
             s->current = end;
             break;
-          case _RS_NL:
+          case _RS_BLANK_LINES:
             s->current = (p+2 > s->end ? s->end : p+2);
             break;
           case _RS_CHAR:
+          case _RS_NEWLINE:
             s->current = p+1;
+            break;
+          case _RS_LENGTH:
+            s->current = p;
+            break;
         }
   
         return 1;
@@ -809,7 +828,7 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
       /* end of file already reached */
       if (fill_target)
       {
-        if (rs_type == _RS_NL && s->end > s->current)
+        if (rs_type == _RS_BLANK_LINES && s->end > s->current)
         {
           /* scrub trailing newline characters */
           p = s->end - 1;
@@ -821,7 +840,7 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
            
         if (s->end > s->current)
         {
-          if (rs_type == _RS_NL)
+          if (rs_type == _RS_BLANK_LINES)
             awka_strncpy(var, q, (p - q));
           else
             awka_strncpy(var, s->current, (s->end - s->current));
@@ -865,16 +884,14 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
       s->end = s->buf + j;
     }
 
-    if (s->interactive)
-    {
+    if ( s->interactive ) {
       /* line buffered */
-      if (!fgets(s->end, s->alloc - (s->end - s->buf) - 1, s->fp))
+      if (!fgets(s->end, s->alloc - (s->end - s->buf) - 1, s->fp)){
         eof = TRUE;
-      else
+      }else{
         s->end = s->end + strlen(s->end);
-    }
-    else
-    {
+      }
+    } else {
       /* block buffered */
       if (!(i = fread(s->end, 1, s->alloc - (s->end - s->buf) - 1, s->fp)))
         eof = TRUE;

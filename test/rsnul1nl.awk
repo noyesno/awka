@@ -1,2 +1,2 @@
 BEGIN { RS = "" }
-{ print }
+{ print "---", NR, "---"; print }

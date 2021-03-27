@@ -1691,6 +1691,15 @@ _awka_formatstr(char which, a_VARARG *va)
     if (*(++cp) == '%') 
     {
       cp++;
+      lcp = cp;
+
+      if (which)
+        fputs("%", _a_iostream[which-1].fp);
+      else {
+        _a_fs_checkbuf(2);
+        strcpy(bp, "%");
+        bp++;
+      }
       continue;
     }
 
@@ -1871,11 +1880,11 @@ _awka_formatstr(char which, a_VARARG *va)
   if (cp > lcp)
   {
     if (which)
-      fprintf(_a_iostream[which-1].fp, lcp);
+      fputs(lcp, _a_iostream[which-1].fp);
     else
     {
       _a_fs_checkbuf( (cp - lcp) + 1 );
-      sprintf(bp, lcp);
+      strcpy(bp, lcp);
     }
   }
 

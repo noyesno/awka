@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "types.h"
+#include "../lib/debug.h"
 
 #ifndef TRUE
 #  define TRUE  1

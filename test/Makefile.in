@@ -42,7 +42,7 @@ MATHLIB = $(MLIB) $(SLIB)
 srcdir = @srcdir@
 VPATH = @srcdir@
 
-bigtest:	basic unix-tests awka.extensions
+bigtest:	basic revive-awka unix-tests awka.extensions
 
 basic:	msg swaplns messages a_cat pdb_find_salt argarray longwrds \
 	getline getline2 fstabplus compare arrayref rs fsrs rand fun dubois \
@@ -63,6 +63,8 @@ unix-tests: poundbang fflush getlnhd pipeio1 pipeio2 strftlng
 awka.extensions: posix posix2 manyfiles nondec asort
 
 extra:	regtest inftest
+
+revive-awka: rslen rsnull scgi
 
 next::
 	@$(AWKA) -f next.awk >x.c
@@ -97,6 +99,24 @@ rsnul1nl::
 	@$(CC) -g x.c -L../lib -I../lib ../lib/libawka.a $(MATHLIB) -o xx
 	@./xx rsnul1nl.in >_$@
 	$(CMP) $(srcdir)/rsnul1nl.ok _$@ && rm -f _$@
+
+rsnull::
+	@ $(AWKA) -f $@.awk > x.c
+	@ $(CC) -g x.c -L../lib -I../lib ../lib/libawka.a $(MATHLIB) -o xx
+	@/bin/echo -n -e "abc\0def\0hij" | ./xx > _$@
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rslen::
+	@ $(AWKA) -f $@.awk > $@.c
+	@ $(CC) -g $@.c -L../lib -I../lib ../lib/libawka.a $(MATHLIB) -o $@.exe
+	@/bin/echo -n -e "123456789" | ./$@.exe > _$@
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f $@.exe $@.c _$@
+
+scgi::
+	@ $(AWKA) -f $@.awk > $@.c
+	@ $(CC) -g $@.c -L../lib -I../lib ../lib/libawka.a $(MATHLIB) -o $@.exe
+	@ ./$@.exe $@.in > $@.out
+	$(CMP) $(srcdir)/$@.ok $@.out && rm -f $@.exe $@.c $@.out
 
 getnr2tm::
 	@$(AWKA) -f getnr2tm.awk >x.c
