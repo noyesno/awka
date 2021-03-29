@@ -1,2 +1,2 @@
-#define AWKAVERSION "0.7.5"
-#define DATE_STRING "12 July 2001"
+#define AWKAVERSION "0.7.6"
+#define DATE_STRING "Mar 25, 2021"
