@@ -2469,6 +2469,12 @@ awka_fclose( int i )
 {
   int ret = -1, j;
 
+  if (i >= _a_ioused){
+    return ret;
+  }
+
+  _a_IOSTREAM *s = &_a_iostream[i];
+
   if (i < _a_ioused)
   {
     if (_a_iostream[i].io != _a_IO_CLOSED)
@@ -2476,12 +2482,18 @@ awka_fclose( int i )
       if (_a_iostream[i].fp)
       {
         fflush(_a_iostream[i].fp);
-        if (_a_iostream[i].pipe == 1)
+        if (_a_iostream[i].pipe == 1) {
           ret = pclose(_a_iostream[i].fp);
-        else if (_a_iostream[i].pipe == 2)
-          ;  /* two-way process */
-        else
-        {
+        } else if (_a_iostream[i].pipe == 2) {
+          /* two-way process */
+          switch(s->type){
+            case AWKA_STREAM_SOCKET:
+              fclose(_a_iostream[i].fp);
+              break;
+            default:
+              awka_error("runtime error: Unsupported close of pipe = 2\n");
+          }
+        } else {
           if (strcmp(_a_iostream[i].name, "/dev/stdout") &&
               strcmp(_a_iostream[i].name, "/dev/stderr"))
             fclose(_a_iostream[i].fp);

@@ -17,9 +17,20 @@
 #define _a_IO_APPEND 4
 #define _a_IO_EOF    8
 
+enum AwkaStreamType {
+  AWKA_STREAM_UNKNOWN,
+  AWKA_STREAM_FILE,
+  AWKA_STREAM_PIPE,
+  AWKA_STREAM_SOCKET
+};
+
+typedef enum AwkaStreamType AwkaStreamType;
+
 typedef struct {
+  AwkaStreamType type;
   char *name;       /* name of output file or device */
   FILE *fp;         /* file pointer */
+  int   fd;         /* file descriptor */
   char *buf;        /* input buffer */
   char *current;    /* where up to in buffer */
   char *end;        /* end of data in buffer */
