@@ -18,10 +18,14 @@ void _awka_kill_fn();
 extern "C" {
 #endif
 
+typedef a_VAR * (*awka_fn_t)( a_VARARG *);
+
 struct awka_fn_struct {
-  char *name;
+  const char *name;
   a_VAR * (*fn)( a_VARARG *);
 };
+
+void awka_register_fn(int idx, const char *name, awka_fn_t fn);
 
 #if defined(__cplusplus)
 }
@@ -32,7 +36,8 @@ struct gvar_struct {
   a_VAR *var;
 };
 
-void     awka_initgvar(int, char *, a_VAR *);
+void awka_register_gvar(int, char *, a_VAR *);
+
 #ifndef _INIT_C
 extern char **awka_filein;
 extern int awka_filein_no;

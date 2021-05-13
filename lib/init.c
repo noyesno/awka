@@ -109,15 +109,26 @@ findivar(char *c)
   }
 }
 
+struct gvar_struct *_gvar;
+
 void
-awka_initgvar(int idx, char *name, a_VAR *var)
+awka_register_gvar(int idx, char *name, a_VAR *var)
 {
+  if(name==NULL && var==NULL){
+    int n = idx;
+    malloc( &_gvar, (n+1)*sizeof(struct gvar_struct) );
+    _gvar[n].name = NULL;
+    _gvar[n].var  = NULL;
+   return;
+  }
+
   int i = strlen(name);
   malloc( &_gvar[idx].name, i+1);
   strncpy(_gvar[idx].name, name, i-4);
   _gvar[idx].name[i-4] = 0;
   _gvar[idx].var = var;
 }
+
 
 void
 _awka_initstreams()
@@ -361,6 +372,21 @@ _awka_kill_fn()
   _awkafn = NULL;
 }
 
+void awka_register_fn(int idx, const char *name, awka_fn_t fn){
+  if(name==NULL && fn==NULL){
+    int n = idx;
+    // TODO: use awka_malloc
+    // _awkafn = (struct awka_fn_struct *) malloc( (n+1) * sizeof(struct awka_fn_struct));
+    malloc(&_awkafn, (n+1) * sizeof(struct awka_fn_struct));
+    _awkafn[n].name = NULL;
+    _awkafn[n].fn   = NULL;
+    return;
+  }
+
+  _awkafn[idx].name = name;
+  _awkafn[idx].fn   = fn;
+}
+
 void
 awka_init(int argc, char *argv[], char *patch_string, char *date_string)
 {
@@ -539,7 +565,7 @@ awka_parsecmdline(int first)
           fprintf(stderr,"   - library version %s, %s\n\n",AWKAVERSION,DATE_STRING);
           exit(0);
 
-        case 'v':
+        case 'v': {
           _setp;
           if (!first) break;
           strcpy(tmp, p);
@@ -552,15 +578,11 @@ awka_parsecmdline(int first)
           if (p1 == p2-1)
             awka_error("command line parse: null value for 'var' in 'var=value' after -v.\n");
           
-          j = 0;
-          while (_gvar[j].name)
-          {
-            if (!strcmp(_gvar[j].name, tmp))
-              break;
-            j++;
-          }
-          if (!_gvar[j].name)
-          {
+          const char *var_name  = tmp;
+          const char *var_value = p2;
+          int gvar_ok = awka_setvarbyname(tmp, p2);
+
+          if (gvar_ok==0) {
             if ((j = findivar(tmp)) == -1)
               awka_error("command line parse: variable '%s' not defined.\n",tmp);
             if (!a_bivar[ivar[j].var])
@@ -570,12 +592,10 @@ awka_parsecmdline(int first)
             awka_strcpy(a_bivar[ivar[j].var], p2);
             a_bivar[ivar[j].var]->type = a_VARUNK;
             break;
-          }
-          else if (_gvar[j].var->type == a_VARARR)
+          } else if (gvar_ok < 0){
             awka_error("command line parse: array variable '%s' used as scalar.\n",tmp);
-          awka_strcpy(_gvar[j].var, p2);
-          _gvar[j].var->type = a_VARUNK;
-          break;
+          }
+        } break;
 
         case 'W':
           _setp;

@@ -2098,9 +2098,9 @@ awka_setvarbyname( char *name, char *value )
   }
 
   if (!_gvar[i].name)
-    return 0;
+    return 0;   // not found
   else if (_gvar[i].var->type == a_VARARR)
-    return 0; 
+    return -1;  // is array 
   
   awka_strcpy(_gvar[i].var, value);
   _gvar[i].var->type = a_VARUNK;
@@ -2168,7 +2168,7 @@ start:
           {
             /* var=value on commandline support (without -v) */
             *equals = '\0';
-            if (awka_setvarbyname(awka_filein[_awka_curfile], equals+1))
+            if (awka_setvarbyname(awka_filein[_awka_curfile], equals+1)>0)
             {
               _awka_curfile++;
               awka_setd(a_bivar[a_ARGIND]) = _awka_fileoffset + _awka_curfile;

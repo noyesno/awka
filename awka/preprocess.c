@@ -992,12 +992,11 @@ preprocess()
     }
   }
 
-  fprintf(outfp, "\nstruct gvar_struct *_gvar;\n");
-  fprintf(outfp, "\na_VAR **_lvar;\n");
+  fprintf(outfp, "\nstatic a_VAR **_lvar;\n");
 
   if (litd_used)
   {
-    fprintf(outfp, "a_VAR *_litd0_awka=NULL");
+    fprintf(outfp, "static a_VAR *_litd0_awka=NULL");
     for (i=1; i<litd_used; i++)
       fprintf(outfp, ", *_litd%d_awka=NULL",i);
     fprintf(outfp, ";\n");
@@ -1005,27 +1004,27 @@ preprocess()
 
   if (lits_used)
   {
-    fprintf(outfp, "a_VAR *_lits0_awka=NULL");
+    fprintf(outfp, "static a_VAR *_lits0_awka=NULL");
     for (i=1; i<lits_used; i++)
-      fprintf(outfp, ", *_lits%d_awka=NULL",i);
+      fprintf(outfp, ",\n\t*_lits%d_awka=NULL",i);
     fprintf(outfp, ";\n");
   }
 
   if (litr_used)
   {
-    fprintf(outfp, "a_VAR *_litr0_awka=NULL");
+    fprintf(outfp, "static a_VAR *_litr0_awka=NULL");
     for (i=1; i<litr_used; i++)
       fprintf(outfp, ", *_litr%d_awka=NULL",i);
     fprintf(outfp, ";\n");
   }
 
   for (i=0; i<func_no; i++)
-    fprintf(outfp, "a_VAR * %s_fn(a_VARARG *);\n",functions[i]);
+    fprintf(outfp, "static a_VAR * %s_fn(a_VARARG *);\n",functions[i]);
   if (begin_used)
-    fprintf(outfp, "void BEGIN();\n");
+    fprintf(outfp, "static void BEGIN();\n");
   if (main_used)
-    fprintf(outfp, "void MAIN();\n");
+    fprintf(outfp, "static void MAIN();\n");
   if (end_used)
-    fprintf(outfp, "void END();\n");
+    fprintf(outfp, "static void END();\n");
 }
 

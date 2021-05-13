@@ -76,6 +76,8 @@ awka_rshift(a_VAR *va, a_VAR *vb)
 
 #endif
 
+int awka_setvarbyname(char *name, char *value);
+
 a_VAR *    awka_getstringvar(char);
 a_VAR *    awka_getdoublevar(char);
 a_VAR *    awka_strconcat2(char, a_VAR *, a_VAR *);
@@ -124,6 +126,14 @@ a_VAR *    awka_fsize(char keep, a_VARARG *va );
 int        awka_globline(const char *pattern);
 
 #define awka_length0   awka_length(awka_doln(0,0))
+
+extern int _dol0_used;
+extern char _dol0_only;
+extern char _env_used;
+
+#define awka_dol0_used(v) _dol0_used = v;
+#define awka_dol0_only(v) _dol0_only = v;
+#define awka_env_used(v)  _env_used = v;
                           
 #ifndef BUILTIN_HOME
 extern int _awka_file_read;

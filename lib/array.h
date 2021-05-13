@@ -87,7 +87,10 @@ extern int  _awka_dol0_len;
 extern char _dol0_only;
 #endif
 
+extern int _split_req;
 extern int _split_max;
+static inline void awka_split_req(int v) { _split_req = v; }
+static inline void awka_split_max(int v) { _split_max = v; }
 
 static INLINE a_VAR *
 awka_NFget()

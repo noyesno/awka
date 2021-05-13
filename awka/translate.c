@@ -4467,19 +4467,12 @@ translate()
     fprintf(outfp, "#include <%s>\n", incfile[i]);
   fprintf(outfp, "\n");
   
-  fprintf(outfp,"int _split_req = 0, _split_max = INT_MAX;\n\n");
-  fprintf(outfp,"extern int _dol0_used;\n");
-  fprintf(outfp,"extern char _dol0_only;\n");
-  fprintf(outfp,"extern char _env_used;\n");
-  fprintf(outfp,"extern int _max_base_gc, _max_fn_gc;\n");
-  fprintf(outfp,"extern struct awka_fn_struct *_awkafn;\n");
-
   if (int_argv)
   {
     fprintf(outfp, "extern int _int_argc;\n");
     fprintf(outfp, "extern char ** _int_argv;\n");
   }
-  fprintf(outfp, "jmp_buf context;\n");
+  fprintf(outfp, "static jmp_buf context;\n");
 
   if (preproc == FALSE)
   {
@@ -4524,7 +4517,7 @@ translate()
           fprintf(outfp, "\n}\n\n");
         mode = BEGIN;
         revert_gc();
-        fprintf(outfp, "\nvoid\nBEGIN()\n{\n");
+        fprintf(outfp, "\nstatic void\nBEGIN()\n{\n");
         indent = 1;
         prev = cur;
         progcode[cur].func = awka_nullfunc;
@@ -4544,7 +4537,7 @@ translate()
           fprintf(outfp, "\n}\n\n");
         mode = END;
         revert_gc();
-        fprintf(outfp, "\nvoid\nEND()\n{\n");
+        fprintf(outfp, "\nstatic void\nEND()\n{\n");
         indent = 1;
         prev = cur;
         progcode[cur].func = awka_nullfunc;
@@ -4563,7 +4556,7 @@ translate()
           fprintf(outfp, "\n}\n\n");
         mode = MAIN;
         revert_gc();
-        fprintf(outfp, "\nvoid\nMAIN()\n{\n");
+        fprintf(outfp, "\nstatic void\nMAIN()\n{\n");
         p = code0ptr(cur, 50);
         sprintf(p, "int i, _curfile;\n");
         p = code0ptr(cur, 100);
@@ -4599,8 +4592,9 @@ translate()
   else
     fprintf(outfp,"main(int argc, char *argv[])\n{\n");
   
-  fprintf(outfp,"  _max_base_gc = %d;\n",max_base_gc+1);
-  fprintf(outfp,"  _max_fn_gc = %d;\n\n",max_fn_gc+1);
+  fprintf(outfp,"  awka_config_max_base_gc(%d);\n",max_base_gc+1);
+  fprintf(outfp,"  awka_config_max_fn_gc(%d);\n\n",max_fn_gc+1);
+  fprintf(outfp,"  awka_split_req(0); awka_split_max(INT_MAX);\n\n");
 
   for (i=0; i<var_used; i++)
     fprintf(outfp,"  awka_varinit(%s);\n",varname[i].name);
@@ -4628,10 +4622,10 @@ translate()
   fprintf(outfp, "    _lvar[%d] = NULL;\n", i+lits_used+litd_used);
   fprintf(outfp, "  }\n");
   
-  fprintf(outfp,"\n  malloc( &_gvar, %d * sizeof(struct gvar_struct) );\n",var_used+1);
+  fprintf(outfp,"\n  awka_register_gvar(%d, NULL, NULL);\n", var_used);
   for (i=0; i<var_used; i++)
   {
-    fprintf(outfp,"  awka_initgvar(%d, \"%s\", %s);\n",i,varname[i].name,varname[i].name);
+    fprintf(outfp,"  awka_register_gvar(%d, \"%s\", %s);\n",i,varname[i].name,varname[i].name);
     if (isarray(varname[i].name))
     {
 /*       fprintf(outfp,"  free(%s->ptr); %s->ptr = NULL;\n",varname[i],varname[i]); */
@@ -4639,17 +4633,12 @@ translate()
       varname[i].type = _VARTYPE_G_ARRAY;
     }
   }
-  fprintf(outfp,"  _gvar[%d].name = NULL;\n",var_used);
-  fprintf(outfp,"  _gvar[%d].var  = NULL;\n\n",var_used);
   
-  fprintf(outfp, "  malloc( &_awkafn, %d * sizeof(struct awka_fn_struct) );\n", func_no+1);
+  fprintf(outfp, "  awka_register_fn(%d, NULL, NULL);\n", func_no);
   for (i=0; i<func_no; i++)
   {
-    fprintf(outfp, "  _awkafn[%d].name = \"%s\";\n",i,functions[i]);
-    fprintf(outfp, "  _awkafn[%d].fn   = %s_fn;\n",i,functions[i]);
+    fprintf(outfp, "  awka_register_fn(%d, \"%s\", %s_fn);\n", i, functions[i], functions[i]);
   }
-  fprintf(outfp, "  _awkafn[%d].name = NULL;\n",func_no);
-  fprintf(outfp, "  _awkafn[%d].fn   = NULL;\n\n",func_no);
 
   if (int_argv)
   {
@@ -4665,7 +4654,7 @@ translate()
   }
 
   if (env_used == 1)
-    fprintf(outfp,"\n  _env_used = 1;\n\n");
+    fprintf(outfp,"\n  awka_env_used(1);\n\n");
   
   fprintf(outfp,"  awka_init(argc, argv, \"%s\", \"%s\");\n", AWKAVERSION, DATE_STRING);
 
@@ -4677,11 +4666,11 @@ translate()
       fprintf(outfp,"\n  _split_max = %d;",split_max);
   }
   if (split_req == 1)
-    fprintf(outfp,"\n  _split_req = 1;");
+    fprintf(outfp,"\n  awka_split_req(1);");
   if (dol0_used == 1)
-    fprintf(outfp,"\n  _dol0_used = 1;");
+    fprintf(outfp,"\n  awka_dol0_used(1);");
   if (dol0_only == 1)
-    fprintf(outfp,"\n  _dol0_only = 1;");
+    fprintf(outfp,"\n  awka_dol0_only(1);");
   fprintf(outfp, "\n\n");
 
   if (begin_used)

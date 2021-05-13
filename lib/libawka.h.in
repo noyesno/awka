@@ -53,6 +53,10 @@ extern "C" {
 
 <include init.h
 
+extern int _max_base_gc, _max_fn_gc;
+static void awka_config_max_fn_gc(int n){ _max_fn_gc = n; }
+static void awka_config_max_base_gc(int n){ _max_base_gc = n; }
+
 #if defined(__cplusplus)
 }
 #endif

@@ -36,7 +36,8 @@ char fs_or_fw = 0;
 
 char _a_space[256], *nullstr = "";
 int _awka_dol0_len = 0;
-extern int _split_max;
+int _split_req;
+int _split_max;
 
 int *fw_loc, fw_allc = 0, fw_used = 0;
 int *sw_loc, sw_allc = 0, sw_used = 0;
@@ -2105,7 +2106,7 @@ _awka_dol0(int set)
   register int i, j, k, oldlen;
   register _a_HSHarray *array;
   register char *ptr, *op;
-  extern int _split_req;
+
   a_HSHNode *node;
   register a_VAR *var, *ofs, *dol0;
   static char *sformat = NULL;
@@ -2328,7 +2329,7 @@ awka_doln(int idx, int set)
   register int i, j, nf = (int) awka_NFget()->dval;
   _a_HSHarray *array = (_a_HSHarray *) a_bivar[a_DOLN]->ptr;
   static a_VAR *nullvar = NULL;
-  extern int _split_req;
+
   a_HSHNode *node;
 
   if (!idx)
