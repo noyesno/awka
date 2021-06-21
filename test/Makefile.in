@@ -475,7 +475,7 @@ manyfiles::
 	@$(AWKA) -f $(srcdir)/manyfiles.awk >x.c
 	@$(CC) -g x.c -L../lib -I../lib ../lib/libawka.a $(MATHLIB) -o xx
 	@./xx _$@ _$@
-	@echo "This number better be 1 ->" | tr -d '\012\015'
+	@echo "This number better be 1 -> " | tr -d '\012\015'
 	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l
 	@rm -rf junk _$@
 
