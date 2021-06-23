@@ -1,0 +1,205 @@
+# Generated automatically from Makefile.in by configure.
+#
+#
+SHELL = /bin/sh
+
+AWKA = ../awka/awka
+GAWK = gawk
+MAWK = mawk
+PERL = perl
+TCL = tclsh
+
+AWKAV = $(AWKA) -v | head -n3
+GAWKV = $(GAWK) -V | head -n1
+MAWKV = $(MAWK) -W Version 2>&1 | head -n1
+PERLV = $(PERL) -v | head -n2
+TCLV = echo 'puts [ concat "TCL" " " [info patchlevel]]' | $(TCL) -
+
+TIME = /usr/bin/time
+CMP = cmp
+CC  = gcc
+EXE = 
+MLIB = -lm
+SLIB = 
+
+MATHLIB = $(MLIB) $(SLIB)
+
+srcdir = .
+
+
+bench:   start array array2 array3 array4 io cast expr function loop recurse split parsecsv regexp end
+
+###############
+
+versions::
+	@$(AWKAV) 
+	@$(MAWKV)
+	@$(GAWKV)
+	@$(PERLV) 
+	@$(TCLV)
+	@echo "-----------------------------" 
+
+start::
+	@echo "Generating benchmarks..."
+	@date >res.out
+	@echo "-----------------------------" >>res.out
+
+array::
+	@echo 'ARRAY'
+	@echo 'ARRAY:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+	
+array2::
+	@echo 'ARRAY2'
+	@echo 'ARRAY2:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+	
+array3::
+	@echo 'ARRAY3'
+	@echo 'ARRAY3:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+	
+array4::
+	@echo 'ARRAY4'
+	@echo 'ARRAY4:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+io::
+	@echo 'IO'
+	@echo 'IO:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+cast::
+	@echo 'CAST'
+	@echo 'CAST:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+expr::
+	@echo 'EXPR'
+	@echo 'EXPR:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+function::
+	@echo 'FUNCTION'
+	@echo 'FUNCTION:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+loop::
+	@echo 'LOOP'
+	@echo 'LOOP:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+recurse::
+	@echo 'RECURSE'
+	@echo 'RECURSE:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+split::
+	@echo 'SPLIT'
+	@echo 'SPLIT:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+parsecsv::
+	@echo 'PARSECSV'
+	@echo 'PARSECSV:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+
+regexp::
+	@echo 'REGEXP'
+	@echo 'REGEXP:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+
+end::
+	@echo "Finished benchmarking!"
+	@$(GAWK) "/:|sec|--/" res.out
+
+
+###############
+
+
+results: res.out versions
+	@$(GAWK) "/:|sec|--/" res.out
+
+
+clean:
+	rm -fr _* core x.c a.out res.out
+
+distclean: clean
+	rm -f Makefile
+
+maintainer-clean: distclean
+
