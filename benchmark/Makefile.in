@@ -127,6 +127,7 @@ expr::
 	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
 	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 
 function::
@@ -138,6 +139,7 @@ function::
 	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
 	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 
 loop::

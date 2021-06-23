@@ -16,6 +16,6 @@ BEGIN {
   if (!base) base = 2000000
 
   for (i=0; i<base; i++)
-    x = def(12435345,93840932,98921)
+    x = def(12435345, 93840932, 98921)
     #x = def("this", "that", "the next thing")
 }
