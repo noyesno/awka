@@ -7,12 +7,14 @@ AWKA = ../awka/awka
 GAWK = gawk
 MAWK = mawk
 PERL = perl
+PYTHON = python3
 TCL = tclsh
 
 AWKAV = $(AWKA) -v | head -n3
 GAWKV = $(GAWK) -V | head -n1
 MAWKV = $(MAWK) -W Version 2>&1 | head -n1
 PERLV = $(PERL) -v | head -n2
+PYTHONV = $(PYTHON) -V
 TCLV = echo 'puts [ concat "TCL" " " [info patchlevel]]' | $(TCL) -
 
 TIME = /usr/bin/time
@@ -37,6 +39,7 @@ versions::
 	@$(GAWKV)
 	@$(PERLV) 
 	@$(TCLV)
+	@$(PYTHONV)
 	@echo "-----------------------------" 
 
 start::
@@ -53,6 +56,7 @@ array::
 	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
 	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 	
 array2::
@@ -64,6 +68,7 @@ array2::
 	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
 	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 	
 array3::
@@ -75,6 +80,7 @@ array3::
 	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
 	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 	
 array4::
@@ -86,6 +92,7 @@ array4::
 	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
 	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 
 io::
