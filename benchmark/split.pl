@@ -4,7 +4,7 @@ $str = "Newcastle Knights are the best there is";
 
 print STDERR "space split\n";
 
-for ($i=0; $i<50000; $i++) {
+for ($i=0; $i<$base; $i++) {
   @S = split(" ", $str);
   $x = @S;
   for ($j=1; $j<=$x; $j++) {

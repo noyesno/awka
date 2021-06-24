@@ -10,7 +10,7 @@ $base = 1500000;
 $v3 = "qwerty qwerty qwerty qwerty qwerty qwerty";
 $v4 = "quincy quincy quincy quincy quincy quincy";
 $nr = 0;
-$x2 = 2;
+$x = "";
 
 open(OUTPUT, '>io.txt');
 for ($i=0; $i<$base; $i++)
@@ -22,17 +22,19 @@ for ($i=0; $i<$base; $i++)
   }
 }
 close(OUTPUT);
-open(INPUT, '<io.txt');
 
+open(INPUT, '<io.txt');
 while (<INPUT>)
 {
   chop;
-  # the '3' parameter in the call to split below is really
-  # giving perl an unfair boost - the .awk example doesn't
-  # have it!
-  @fields = split(" ", $_, 3);
+  @fields = split(" ");
   $x = $fields[3];
+  if ($nr++ < 2) {
+    print($x, "\n");
+  }
+  #$nr = $nr + 1;
 }
+close(INPUT);
 
-system("rm -f io.txt");
+#system("rm -f io.txt");
 

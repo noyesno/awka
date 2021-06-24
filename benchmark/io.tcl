@@ -27,6 +27,7 @@ while {[gets $io_txt line]>-1} {
   }
   incr nr
 }
+close $io_txt
 
 #system "rm -f io.txt"
 file delete "io.txt"

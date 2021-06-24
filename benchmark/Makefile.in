@@ -29,7 +29,7 @@ MATHLIB = $(MLIB) $(SLIB)
 srcdir = .
 
 
-bench:   start array array2 array3 array4 io cast expr function loop recurse split parsecsv regexp end
+bench:   start array array2 array3 array4 array4b array4c array4d io cast expr function loop recurse split parsecsv regexp end
 
 ###############
 
@@ -38,8 +38,8 @@ versions::
 	@$(MAWKV)
 	@$(GAWKV)
 	@$(PERLV) 
-	@$(TCLV)
 	@$(PYTHONV)
+	@$(TCLV)
 	@echo "-----------------------------" 
 
 start::
@@ -95,6 +95,43 @@ array4::
 	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
 	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 
+array4b::
+	@echo 'ARRAY4b'
+	@echo 'ARRAY4b:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
+	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+array4c::
+	@echo 'ARRAY4c'
+	@echo 'ARRAY4c:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
+	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+array4d::
+	@echo 'ARRAY4d'
+	@echo 'ARRAY4d:' >>res.out
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) -O x.c -L ../lib -I../lib ../lib/libawka.a -lm
+	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
+	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
+	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
+	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+
+
 io::
 	@echo 'IO'
 	@echo 'IO:' >>res.out
@@ -104,6 +141,7 @@ io::
 	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
 	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 
 cast::
@@ -175,6 +213,7 @@ split::
 	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
 	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
+	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
 	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 
 parsecsv::

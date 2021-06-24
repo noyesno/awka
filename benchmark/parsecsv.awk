@@ -1,4 +1,5 @@
 BEGIN { 
+  if (!base) base = 50000
   FS="," 
   line[1] = "a,b,c,d"
   line[2] = "a,\"b\",c,d"
@@ -9,7 +10,7 @@ BEGIN {
   line[7] = "an \"invalid\" line,will come out how you'd expect"
   line[8] = "another,\",invalid one (two fields; second one's closing quote lost)"
 
-  for (i=0; i<50000; i++)
+  for (i=0; i<base; i++)
   {
     #while (getline dol0<"data.s1">0)
     #while (getline<"data.s1">0)

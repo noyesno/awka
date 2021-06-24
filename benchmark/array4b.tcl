@@ -5,5 +5,5 @@ for {set i 0} {$i<$base} {incr i} {
 }
 
 for {set i 5} {$i<$base} {incr i} {
-  set arr1([expr $i-1]) $arr1($i)
+  set arr1($i-1) $arr1($i)
 }
