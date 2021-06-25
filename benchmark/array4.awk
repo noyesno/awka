@@ -8,5 +8,4 @@ BEGIN {
 
   for (i=5; i<base; i++)
     arr1[i-1] = arr1[i]
-
 }
