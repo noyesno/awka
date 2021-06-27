@@ -3838,6 +3838,9 @@ awka_math(int inst, int *earliest, char *context)
     case 0:  /* Not found! */
       awka_error("math error: unknown function %s\n",code[progcode[inst].op-1].name);
       break;
+    case _ABS:
+      sprintf(ret, "fabs(%s)",r2);
+      break;
     case _ATAN2:
     case _HYPOT:
     case _MPOW:
