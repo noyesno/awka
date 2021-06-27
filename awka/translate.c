@@ -685,7 +685,7 @@ awka_buildexpr(char *oper, char *p, char *q, int pprev, int qprev, char c1, char
       break;
       
     default:
-      awka_error("%s error: Expecting var, str or dbl context for lside argument, line %d.\n",oper,progcode[inst].line);
+      awka_error("%s error: expecting var, str or dbl context for lside argument, line %d.\n",oper,progcode[inst].line);
   }
   return ret;
 }
@@ -1769,7 +1769,7 @@ awka_eq(int inst, int *earliest, char *context)
       break;
       
     default:
-      awka_error("eq error: Expecting var, str or dbl context for lside argument, line %d.\n",progcode[inst].line);
+      awka_error("eq error: expecting var, str or dbl context for lside argument, line %d.\n",progcode[inst].line);
   }
 
   *context = _DBL;
@@ -2433,7 +2433,7 @@ awka_neq(int inst, int *earliest, char *context)
       break;
       
     default:
-      awka_error("neq error: Expecting var, str or dbl context for lside argument, line %d.\n",progcode[inst].line);
+      awka_error("neq error: expecting var, str or dbl context for lside argument, line %d.\n",progcode[inst].line);
   }
 
   *context = _DBL;
@@ -3822,7 +3822,8 @@ awka_math(int inst, int *earliest, char *context)
 
   p = (* progcode[inst-1].func)(inst-1, &prev, &c1);
   r2 = buildstr("math", "%s", p, c1, _DBL, inst, inst-1);
-  if (progcode[inst].op == _ATAN2)
+  if (progcode[inst].op == _ATAN2 || progcode[inst].op == _HYPOT ||
+	progcode[inst].op == _MMOD || progcode[inst].op == _MPOW)
   {
     free(p); prev2 = prev;
     p = (*progcode[prev].func)(prev, &prev, &c1);
@@ -3831,28 +3832,25 @@ awka_math(int inst, int *earliest, char *context)
   }
   else
     ret = (char *) malloc(strlen(r2) + 50);
+
   switch (progcode[inst].op)
   {
+    case 0:  /* Not found! */
+      awka_error("math error: unknown function %s\n",code[progcode[inst].op-1].name);
+      break;
     case _ATAN2:
-      sprintf(ret, "atan2(%s, %s)",r3,r2);
+    case _HYPOT:
+    case _MPOW:
+      sprintf(ret, "%s(%s, %s)",code[progcode[inst].op-1].name,r3,r2);
       break;
-    case _COS:
-      sprintf(ret, "cos(%s)",r2);
-      break;
-    case _EXP:
-      sprintf(ret, "exp(%s)",r2);
+    case _MMOD:
+      sprintf(ret, "fmod(%s, %s)",r3,r2);
       break;
     case a_INT:
       sprintf(ret, "(int) (%s)",r2);
       break;
-    case _LOG:
-      sprintf(ret, "log(%s)",r2);
-      break;
-    case _SIN:
-      sprintf(ret, "sin(%s)",r2);
-      break;
-    case _SQRT:
-      sprintf(ret, "sqrt(%s)",r2);
+    default:  /* single parameter math function */
+      sprintf(ret, "%s(%s)",code[progcode[inst].op-1].name,r2);
       break;
   }
   free(r2);
@@ -4251,7 +4249,7 @@ translate_section(int start, int end)
     if (progcode[cur].func)
     {
       if (progcode[cur].done != FALSE)
-        awka_error("Internal Error: Program Opcode %d(%d) executed already !?\n",cur,progcode[cur].minst);
+        awka_error("internal error: program opcode %d(%d) executed already !?\n",cur,progcode[cur].minst);
       x = (* progcode[cur].func)(cur, &progcode[cur].earliest, &progcode[cur].context);
       if (x)
       {

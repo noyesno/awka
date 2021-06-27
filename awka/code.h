@@ -107,6 +107,11 @@ void  PROTO(dump_code, (void)) ;
 /* to avoid confusion with a ptr FE_PUSHA must have op code 0 */
 /* unfortunately enums are less portable than defines */
 
+/* The order needs to match awka_exe.h 
+ * and sorted alphabetically,
+ * but the order in bi_func is not specific 
+ */
+
 #define FE_PUSHA     0
 
 #define _ABORT       1
@@ -210,70 +215,99 @@ void  PROTO(dump_code, (void)) ;
 #define _TEST       99
 #define _UMINUS     100
 #define _UPLUS      101
-#define _ALENGTH    102
+#define _ABS        102
+#define _ACOS       103
+#define _ACOSH      104
+#define _ALENGTH    105
 #undef _AND  /* this shuts-up the cygnus compiler */
-#define _AND        103
-#define _ARGCOUNT   104
-#define _ARGVAL     105
-#define _ASCII      106
-#define _ASORT      107
-#define _ATAN2      108
-#define _CHAR       109
-#define _CLOSE      110
-#define _COMPL      111
-#define _COS        112
-#define _EXP        113
-#define _FFLUSH     114
-#define _GENSUB     115
-#define _GETLINE    116
-#define a_GMTIME    117
-#define _GSUB       118
-#define _INDEX      119
-#define a_INT       120
-#define _LEFT       121
-#define _LENGTH     122
-#define a_LOCALTIME 123
-#define _LOG        124
-#define _LSHIFT     125
-#define _LTRIM      126
-#define _MAX        127
-#define _MIN        128
-#define a_MKTIME    129
-#define _OR         130
-#define _RAND       131
-#define _RIGHT      132
-#define _RSHIFT     133
-#define _RTRIM      134
-#define _SIN        135
-#define _SPLIT      136
-#define _SPRINTF    137
-#define _SQRT       138
-#define _SRAND      139
-#define a_STRFTIME  140
-#define _SUB_BI     141
-#define _SUBSTR     142
-#define _SYSTEM     143
-#define _SYSTIME    144
-#define a_TIME      145
-#define _TOLOWER    146
-#define _TOTITLE    147
-#define _TOUPPER    148
-#define _TRIM       149
-#define _XOR        150
-#define _FSIZE      151
-#define _FSEEK      152
-#define _FTELL      153
+#define _AND        106
+#define _ARGCOUNT   107
+#define _ARGVAL     108
+#define _ASCII      109
+#define _ASIN       110
+#define _ASINH      111
+#define _ASORT      112
+#define _ATAN       113
+#define _ATAN2      114
+#define _ATANH      115
+#define _CEIL       116
+#define _CHAR       117
+#define _CLOSE      118
+#define _COMPL      119
+#define _COS        120
+#define _COSH       121
+#define _ERF        122
+#define _ERFC       123
+#define _EXP        124
+#define _EXP2       125
+#define _FFLUSH     126
+#define _FLOOR      127
+#define _GENSUB     128
+#define _GETLINE    129
+#define a_GMTIME    130
+#define _GSUB       131
+#define _HYPOT      132
+#define _INDEX      133
+#define a_INT       134
+#define _LEFT       135
+#define _LENGTH     136
+#define _LGAMMA     137
+#define a_LOCALTIME 138
+#define _LOG        139
+#define _LOG10      140
+#define _LOG2       141
+#define _LSHIFT     142
+#define _LTRIM      143
+#define _MAX        144
+#define _MIN        145
+#define a_MKTIME    146
+#define _MMOD       147   // C Math style mod(x,y) rather than (x % y)
+#define _OR         148
+#define _MPOW       149   // C Math style pow(x,y) rather than (x ^ y)  or (x ** y)
+#define _RAND       150
+#define _RIGHT      151
+#define _ROUND      152
+#define _RSHIFT     153
+#define _RTRIM      154
+#define _SIN        155
+#define _SINH       156
+#define _SPLIT      157
+#define _SPRINTF    158
+#define _SQRT       159
+#define _SRAND      160
+#define a_STRFTIME  161
+#define _SUB_BI     162
+#define _SUBSTR     163
+#define _SYSTEM     164
+#define _SYSTIME    165
+#define _TAN        166
+#define _TANH       167
+#define _TGAMMA     168
+#define a_TIME      169
+#define _TOLOWER    170
+#define _TOTITLE    171
+#define _TOUPPER    172
+#define _TRIM       173
+#define _TRUNC      174
 
-#define CODE_MIN 0
-#define CODE_MAX 100
 
-#define BI_MIN 101
-#define BI_MAX 149     // TODO: use 153 ?  Is original 149 a bug?
+#define _XOR        175  // was 150
+#define _FSIZE      176
+#define _FSEEK      177
+#define _FTELL      178
 
-#define _FUNCTION   154
-#define _BEGIN      155
-#define _MAIN       156
-#define _END        157
-#define END_CODE    158
+#define CODE_MIN      0
+#define CODE_MAX    100
+
+#define BI_MIN      101
+// # define BI_MAX 149     // TODO: use 153 ?  Is original 149 a bug?
+#define BI_MAX      175
+
+
+#define _FUNCTION   179   // was 154
+#define _BEGIN      180
+#define _MAIN       181
+#define _END        182
+#define END_CODE    183
 
 #endif  /* CODE_H */

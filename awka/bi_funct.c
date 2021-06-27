@@ -71,6 +71,32 @@ char *bi_names[] =
    "tolower",
    "fflush",
    "gensub",
+   /* extra non-standard math functions */
+   "tan",
+   "sinh",
+   "cosh",
+   "tanh",
+   "asin",
+   "acos",
+   "atan",
+   "acosh",
+   "asinh",
+   "atanh",
+   "hypot",
+   "log10",
+   "log2",
+   "exp2",
+   "ceil",
+   "floor",
+   "round",
+   "trunc",
+   "abs",
+   "erf",
+   "erfc",
+   "lgamma",
+   "tgamma",
+   "mod",
+   "pow",
    NULL
 };
 
@@ -96,7 +122,31 @@ BI_REC bi_funct[] =
    "tolower", bi_tolower, 1, 1,
    "fflush", bi_fflush, 0, 1,
    "gensub", bi_gensub, 3, 4,
-
+   "tan", bi_tan, 1, 1,
+   "sinh", bi_sinh, 1, 1,
+   "cosh", bi_cosh, 1, 1,
+   "tanh", bi_tanh, 1, 1,
+   "asin", bi_asin, 1, 1,
+   "acos", bi_acos, 1, 1,
+   "atan", bi_atan, 1, 1,
+   "acosh", bi_acosh, 1, 1,
+   "asinh", bi_asinh, 1, 1,
+   "atanh", bi_atanh, 1, 1,
+   "hypot", bi_hypot, 2, 2,
+   "log10", bi_log10, 1, 1,
+   "log2", bi_log2, 1, 1,
+   "exp2", bi_exp2, 1, 1,
+   "ceil", bi_ceil, 1, 1,
+   "floor", bi_floor, 1, 1,
+   "round", bi_round, 1, 1,
+   "trunc", bi_trunc, 1, 1,
+   "abs", bi_abs, 1, 1,
+   "erf", bi_erf, 1, 1,
+   "erfc", bi_erfc, 1, 1,
+   "lgamma", bi_lgamma, 1, 1,
+   "tgamma", bi_tgamma, 1, 1,
+   "mod", bi_mod, 2, 2,
+   "pow", bi_pow, 2, 2,
    (char *) 0, (PF_CP) 0, 0, 0} ;
 
 char
@@ -441,6 +491,13 @@ bi_sin(sp)
 }
 
 CELL *
+bi_atan(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
 bi_cos(sp)
    register CELL *sp ;
 {
@@ -547,3 +604,170 @@ bi_split(sp)
    return sp ;
 }
 
+CELL *
+bi_tan(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_sinh(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_cosh(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_tanh(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_acos(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_asin(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_acosh(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_asinh(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_atanh(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_hypot(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_log10(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_log2(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_exp2(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_pow(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_ceil(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_floor(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_round(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_trunc(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_abs(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_mod(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_erf(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_erfc(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_lgamma(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_tgamma(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}

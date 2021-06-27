@@ -58,6 +58,33 @@ CELL *PROTO( bi_int, (CELL *) ) ;
 CELL *PROTO( bi_sqrt, (CELL *) ) ;
 CELL *PROTO( bi_srand, (CELL *) ) ;
 CELL *PROTO( bi_rand, (CELL *) ) ;
+/* extra math functions */
+CELL *PROTO( bi_tan, (CELL *) ) ;
+CELL *PROTO( bi_cosh, (CELL *) ) ;
+CELL *PROTO( bi_sinh, (CELL *) ) ;
+CELL *PROTO( bi_tanh, (CELL *) ) ;
+CELL *PROTO( bi_acos, (CELL *) ) ;
+CELL *PROTO( bi_asin, (CELL *) ) ;
+CELL *PROTO( bi_atan, (CELL *) ) ;
+CELL *PROTO( bi_atan2, (CELL *) ) ;
+CELL *PROTO( bi_acosh, (CELL *) ) ;
+CELL *PROTO( bi_asinh, (CELL *) ) ;
+CELL *PROTO( bi_atanh, (CELL *) ) ;
+CELL *PROTO( bi_hypot, (CELL *) ) ;
+CELL *PROTO( bi_log10, (CELL *) ) ;
+CELL *PROTO( bi_log2, (CELL *) ) ;
+CELL *PROTO( bi_exp2, (CELL *) ) ;
+CELL *PROTO( bi_pow, (CELL *) ) ;
+CELL *PROTO( bi_ceil, (CELL *) ) ;
+CELL *PROTO( bi_floor, (CELL *) ) ;
+CELL *PROTO( bi_round, (CELL *) ) ;
+CELL *PROTO( bi_trunc, (CELL *) ) ;
+CELL *PROTO( bi_abs, (CELL *) ) ;
+CELL *PROTO( bi_mod, (CELL *) ) ;
+CELL *PROTO( bi_erf, (CELL *) ) ;
+CELL *PROTO( bi_erfc, (CELL *) ) ;
+CELL *PROTO( bi_lgamma, (CELL *) ) ;
+CELL *PROTO( bi_tgamma, (CELL *) ) ;
 
 /* other builtins */
 CELL *PROTO( bi_close, (CELL *) ) ;

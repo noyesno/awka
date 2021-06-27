@@ -42,29 +42,35 @@ MATHLIB = $(MLIB) $(SLIB)
 srcdir = @srcdir@
 VPATH = @srcdir@
 
-bigtest:	basic revive-awka unix-tests awka.extensions
+###########################################################################
 
-basic:	msg swaplns messages a_cat pdb_find_salt argarray longwrds \
-	getline getline2 fstabplus compare arrayref rs fsrs rand fun dubois \
-	fsbs negexp asgext anchgsub splitargv nfset reparse bil bil2 \
-	convfmt litoct resplit rswhite intprec childin splitrem aloop \
-	numsubstr pcntplus prmreuse math fldchg fldchgnf reindops range \
-	sprintfc backgsub tweakfld clsflnam mmap8k conflict amsal amsal2 \
-	amsal3 amsal4 amsal5 dynlj substr eofsplit prt1eval prtoeval retest \
-	gsubtest splitwht back89 tradanch nlfldsep splitvar intest nors hh \
-	eiso eiso2 eiso3 eiso4 fnarydel funstack clobber delarprm prdupval \
-	nfldstr foronsplit divide parsecsv arraycat argtest2 fw rsre unbuf \
-	bslash print cox gensub zeroflag getnr2tm getnr2tb \
-	numindex subslash opasnslf opasnidx arynocls getlnbuf arysubnm \
-	nlstrina nextfile next rsnul1nl
+bigtest:	basic revive-awka unix-tests awka.extensions mathextra
 
-unix-tests: poundbang fflush getlnhd pipeio1 pipeio2 strftlng 
+basic:		msg swaplns messages a_cat pdb_find_salt argarray longwrds \
+		getline getline2 fstabplus compare arrayref rs fsrs rand fun dubois \
+		fsbs negexp asgext anchgsub splitargv nfset reparse bil bil2 \
+		convfmt litoct resplit rswhite intprec childin splitrem aloop \
+		numsubstr pcntplus prmreuse math fldchg fldchgnf reindops range \
+		sprintfc backgsub tweakfld clsflnam mmap8k conflict amsal amsal2 \
+		amsal3 amsal4 amsal5 dynlj substr eofsplit prt1eval prtoeval retest \
+		gsubtest splitwht back89 tradanch nlfldsep splitvar intest nors hh \
+		eiso eiso2 eiso3 eiso4 fnarydel funstack clobber delarprm prdupval \
+		nfldstr foronsplit divide parsecsv arraycat argtest2 fw rsre unbuf \
+		bslash print cox gensub zeroflag getnr2tm getnr2tb \
+		numindex subslash opasnslf opasnidx arynocls getlnbuf arysubnm \
+		nlstrina nextfile next rsnul1nl
 
-awka.extensions: posix posix2 manyfiles nondec asort
+revive-awka: 	rslen rsnull scgi
 
-extra:	regtest inftest
+unix-tests:	 poundbang fflush getlnhd pipeio1 pipeio2 strftlng 
 
-revive-awka: rslen rsnull scgi
+awka.extensions: posix posix2 manyfiles nondec asort 
+
+mathextra: 	mathxtra
+
+extra:		regtest inftest
+
+###########################################################################
 
 next::
 	@$(AWKA) -f next.awk >x.c
@@ -842,6 +848,12 @@ nondec::
 		cp $(srcdir)/nondec.ok _$@; \
 	fi
 	$(CMP) $(srcdir)/nondec.ok _$@ && rm -f _$@
+
+mathxtra::
+	@$(AWKA) -f $(srcdir)/math_extra.awk >x.c
+	@$(CC) -g x.c -L../lib -I../lib ../lib/libawka.a $(MATHLIB) -o xx
+	@./xx >_$@
+	$(CMP) $(srcdir)/math_extra.ok _$@ && rm -f _$@
 
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~ xx xx$(EXE) x.c

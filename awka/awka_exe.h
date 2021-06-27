@@ -138,6 +138,11 @@ struct a_sc
 };
 
 #ifdef AWKA_MAIN
+/* to add new builtins
+ * insert Bukltins alphabettically (at >= BI_MIN)
+ * Re-arrange the order of awka_exe.h defines, then renumber
+ * Adjust BI_MIN and BI_MAX
+ */
 struct a_sc code[] = {
 { "abort",       awka_exit,         _ABORT,       -1,             TRUE,  0, },
 { "abort0",      awka_exit0,        _ABORT0,      -1,             TRUE,  0, },
@@ -238,42 +243,65 @@ struct a_sc code[] = {
 { "sub",         awka_sub,          _SUB,         -1,             FALSE, 0, },
 { "sub_asg",     awka_sub_asg,      _SUB_ASG,     -1,             FALSE, 0, },
 { "test",        awka_test,         _TEST,        -1,             FALSE, 0, },
+/* END of OP CODES */
+
 { "uminus",      awka_uminus,       _UMINUS,      -1,             FALSE, 0, },
 { "uplus",       awka_uplus,        _UPLUS,       -1,             FALSE, 0, },
+{ "abs",         awka_math,         _ABS,         _BI_ABS,        FALSE, 0, },
+{ "acos",        awka_math,         _ACOS,        _BI_ACOS,       FALSE, 0, },
+{ "acosh",       awka_math,         _ACOSH,       _BI_ACOSH,      FALSE, 0, },
 { "alength",     awka_alength,      _ALENGTH,     _BI_ALENGTH,    FALSE, 1, },
 { "and",         awka_builtin,      _AND,         _BI_AND,        FALSE, 1, },
 { "argcount",    awka_argcount,     _ARGCOUNT,    _BI_ARGCOUNT,   FALSE, 1, },
 { "argval",      awka_argval,       _ARGVAL,      _BI_ARGVAL,     FALSE, 1, },
 { "ascii",       awka_builtin,      _ASCII,       _BI_ASCII,      FALSE, 1, },
+{ "asin",        awka_math,         _ASIN,        _BI_ASIN,       FALSE, 0, },
+{ "asinh",       awka_math,         _ASINH,       _BI_ASINH,      FALSE, 0, },
 { "asort",       awka_asort,        _ASORT,       _BI_ASORT,      FALSE, 1, },
+{ "atan",        awka_math,         _ATAN,        _BI_ATAN,       FALSE, 0, },
 { "atan2",       awka_math,         _ATAN2,       _BI_ATAN2,      FALSE, 0, },
+{ "atanh",       awka_math,         _ATANH,       _BI_ATANH,      FALSE, 0, },
+{ "ceil",        awka_math,         _CEIL,        _BI_CEIL,       FALSE, 0, },
 { "char",        awka_builtin,      _CHAR,        _BI_CHAR,       FALSE, 2, },
 { "close",       awka_close,        _CLOSE,       _BI_CLOSE,      TRUE,  1, },
 { "compl",       awka_builtin,      _COMPL,       _BI_COMPL,      FALSE, 1, },
 { "cos",         awka_math,         _COS,         _BI_COS,        FALSE, 0, },
+{ "cosh",        awka_math,         _COSH,        _BI_COSH,       FALSE, 0, },
+{ "erf",         awka_math,         _ERF,         _BI_ERF,        FALSE, 0, },
+{ "erfc",        awka_math,         _ERFC,        _BI_ERFC,       FALSE, 0, },
 { "exp",         awka_math,         _EXP,         _BI_EXP,        FALSE, 0, },
+{ "exp2",        awka_math,         _EXP2,        _BI_EXP2,       FALSE, 0, },
 { "fflush",      awka_builtin,      _FFLUSH,      _BI_FFLUSH,     TRUE,  0, },
+{ "floor",       awka_math,         _FLOOR,       _BI_FLOOR,      FALSE, 0, },
 { "gensub",      awka_gensub,       _GENSUB,      _BI_GENSUB,     FALSE, 2, },
 { "getline",     awka_getline,      _GETLINE,     _BI_GETLINE,    FALSE, 1, },
 { "gmtime",      awka_builtin,      a_GMTIME,     _BI_GMTIME,     FALSE, 2, },
 { "gsub",        awka_gsub,         _GSUB,        _BI_SUB,        FALSE, 1, },
+{ "hypot",       awka_math,         _HYPOT,       _BI_HYPOT,      FALSE, 0, },
 { "index",       awka_index,        _INDEX,       _BI_INDEX,      FALSE, 1, },
 { "int",         awka_math,         a_INT,        _BI_INT,        FALSE, 0, },
 { "left",        awka_builtin,      _LEFT,        _BI_LEFT,       FALSE, 2, },
 { "length",      awka_length,       _LENGTH,      _BI_LENGTH,     FALSE, 1, },
+{ "lgamma",      awka_math,         _LGAMMA,      _BI_LGAMMA,     FALSE, 0, },
 { "localtime",   awka_builtin,      a_LOCALTIME,  _BI_LOCALTIME,  FALSE, 2, },
 { "log",         awka_math,         _LOG,         _BI_LOG,        FALSE, 0, },
+{ "log10",       awka_math,         _LOG10,       _BI_LOG10,      FALSE, 0, },
+{ "log2",        awka_math,         _LOG2,        _BI_LOG2,       FALSE, 0, },
 { "lshift",      awka_builtin,      _LSHIFT,      _BI_LSHIFT,     FALSE, 1, },
 { "ltrim",       awka_builtin,      _LTRIM,       _BI_LTRIM,      FALSE, 2, },
 { "max",         awka_builtin,      _MAX,         _BI_MAX,        FALSE, 1, },
 { "min",         awka_builtin,      _MIN,         _BI_MIN,        FALSE, 1, },
 { "mktime",      awka_builtin,      a_MKTIME,     _BI_MKTIME,     FALSE, 1, },
+{ "mod",         awka_math,         _MMOD,        _BI_MMOD,       FALSE, 0, },
 { "or",          awka_builtin,      _OR,          _BI_OR,         FALSE, 1, },
+{ "pow",         awka_math,         _MPOW,        _BI_MPOW,       FALSE, 0, },
 { "rand",        awka_builtin,      _RAND,        _BI_RAND,       FALSE, 1, },
 { "right",       awka_builtin,      _RIGHT,       _BI_RIGHT,      FALSE, 2, },
+{ "round",       awka_math,         _ROUND,       _BI_ROUND,      FALSE, 0, },
 { "rshift",      awka_builtin,      _RSHIFT,      _BI_RSHIFT,     FALSE, 1, },
 { "rtrim",       awka_builtin,      _RTRIM,       _BI_RTRIM,      FALSE, 2, },
 { "sin",         awka_math,         _SIN,         _BI_SIN,        FALSE, 0, },
+{ "sinh",        awka_math,         _SINH,        _BI_SINH,       FALSE, 0, },
 { "split",       awka_split,        _SPLIT,       _BI_SPLIT,      FALSE, 1, },
 { "sprintf",     awka_builtin,      _SPRINTF,     _BI_SPRINTF,    FALSE, 2, },
 { "sqrt",        awka_math,         _SQRT,        _BI_SQRT,       FALSE, 0, },
@@ -283,15 +311,20 @@ struct a_sc code[] = {
 { "substr",      awka_substr,       _SUBSTR,      _BI_SUBSTR,     FALSE, 2, },
 { "system",      awka_builtin,      _SYSTEM,      _BI_SYSTEM,     FALSE, 1, },
 { "systime",     awka_builtin,      _SYSTIME,     _BI_SYSTIME,    FALSE, 1, },
+{ "tan",         awka_math,         _TAN,         _BI_TAN,        FALSE, 0, },
+{ "tanh",        awka_math,         _TANH,        _BI_TANH,       FALSE, 0, },
+{ "tgamma",      awka_math,         _TGAMMA,      _BI_TGAMMA,     FALSE, 0, },
 { "time",        awka_builtin,      a_TIME,       _BI_TIME,       FALSE, 1, },
 { "tolower",     awka_tocase,       _TOLOWER,     _BI_TOCASE,     FALSE, 2, },
 { "totitle",     awka_tocase,       _TOTITLE,     _BI_TOCASE,     FALSE, 2, },
 { "toupper",     awka_tocase,       _TOUPPER,     _BI_TOCASE,     FALSE, 2, },
 { "trim",        awka_builtin,      _TRIM,        _BI_TRIM,       FALSE, 2, },
+{ "trunc",       awka_math,         _TRUNC,       _BI_TRUNC,      FALSE, 0, },
 { "xor",         awka_builtin,      _XOR,         _BI_XOR,        FALSE, 1  },
 { "fsize",       awka_builtin,      _FSIZE,       -1,             FALSE, 1, },
 { "fseek",       awka_builtin,      _FSEEK,       -1,             FALSE, 1, },
 { "ftell",       awka_builtin,      _FTELL,       -1,             FALSE, 1, }
+,{ NULL,          awka_nullfunc,     0,            0,              FALSE, 0  }
 };
 
 struct a_sc ext_funcs[] = {

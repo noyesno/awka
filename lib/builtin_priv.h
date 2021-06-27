@@ -63,7 +63,33 @@ BI_VARARG _a_bi_vararg[] = {
 "int", 1, 1,
 "systime", 0, 0,
 "strftime", 0, 2,
-"gensub", 3, 4
+"gensub", 3, 4,
+/* Start of non-standard MATH functions */
+"tan", 1, 1,
+"sinh", 1, 1,
+"cosh", 1, 1,
+"tanh", 1, 1,
+"asin", 1, 1,
+"acos", 1, 1,
+"atan", 1, 1,
+"acosh", 1, 1,
+"asinh", 1, 1,
+"atanh", 1, 1,
+"hypot", 2, 2,
+"log10", 1, 1,
+"log2", 1, 1,
+"exp2", 1, 1,
+"pow", 2, 2,
+"ceil", 1, 1,
+"floor", 1, 1,
+"round", 1, 1,
+"trunc", 1, 1,
+"abs", 1, 1,
+"mod", 2, 2,
+"erf", 1, 1,
+"erfc", 1, 1,
+"lgamma", 1, 1,
+"tgamma", 1, 1,
 };
 
 #ifdef _BUILTIN_H
@@ -124,9 +150,36 @@ extern BI_VARARG _a_bi_vararg[];
 #define _BI_SYSTIME   43
 #define _BI_STRFTIME  44
 #define _BI_GENSUB    45
-#define _BI_ALENGTH   46
-#define _BI_ARGCOUNT  47
-#define _BI_ARGVAL    48
-#define _BI_ASORT     49
+/* non-standard math additions to awk */
+#define _BI_TAN       46
+#define _BI_SINH      47
+#define _BI_COSH      48
+#define _BI_TANH      49
+#define _BI_ASIN      50
+#define _BI_ACOS      51
+#define _BI_ATAN      52
+#define _BI_ACOSH     53
+#define _BI_ASINH     54
+#define _BI_ATANH     55
+#define _BI_HYPOT     56
+#define _BI_LOG10     57
+#define _BI_LOG2      58
+#define _BI_EXP2      59
+#define _BI_CEIL      60
+#define _BI_FLOOR     61
+#define _BI_ROUND     62
+#define _BI_TRUNC     63
+#define _BI_ABS       64
+#define _BI_ERF       65
+#define _BI_ERFC      66
+#define _BI_LGAMMA    67
+#define _BI_TGAMMA    68
+#define _BI_MMOD      69
+#define _BI_MPOW      70
+/* end of non-standard awk math functions */
+#define _BI_ALENGTH   71
+#define _BI_ARGCOUNT  72
+#define _BI_ARGVAL    73
+#define _BI_ASORT     74
 
 #endif

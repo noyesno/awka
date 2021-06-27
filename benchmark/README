@@ -7,6 +7,7 @@ They are:-
   array.awk    (tests arrays with string elements)
   array2.awk   (tests arrays with integer elements)
   array3.awk   (speed accessing multi-dimension arrays)
+  array4.awk   (speed accessing arrays comparing string and int indices)
   io.awk       (writes out a large file, reads it in & splits $0)
   split.awk    (how fast is the split functionality?)
   function.awk (many repeated function calls passing arguments)
