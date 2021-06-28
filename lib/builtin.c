@@ -2159,9 +2159,9 @@ start:
         _awka_curfile++;
         awka_setd(a_bivar[a_ARGIND]) = _awka_fileoffset + _awka_curfile;
       }
-      awka_setd(a_bivar[a_FNR]) = 0;
       if (_awka_curfile < awka_filein_no)
       {
+        awka_setd(a_bivar[a_FNR]) = 0;
         do {
           char *equals;
           if (NULL != (equals = strchr(awka_filein[_awka_curfile], '=')))

@@ -58,7 +58,7 @@ basic:		msg swaplns messages a_cat pdb_find_salt argarray longwrds \
 		nfldstr foronsplit divide parsecsv arraycat argtest2 fw rsre unbuf \
 		bslash print cox gensub zeroflag getnr2tm getnr2tb \
 		numindex subslash opasnslf opasnidx arynocls getlnbuf arysubnm \
-		nlstrina nextfile next rsnul1nl beginexit mainexit
+		nlstrina nextfile next rsnul1nl beginexit mainexit fnrtest
 
 revive-awka: 	rslen rsnull scgi
 
@@ -859,6 +859,12 @@ mainexit::
 	@$(AWKA) -f $(srcdir)/$@.awk >x.c
 	@$(CC) -g x.c -L../lib -I../lib ../lib/libawka.a $(MATHLIB) -o xx
 	@(./xx $@.in ; echo $$?) >_$@
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+fnrtest::
+	@$(AWKA) -f $(srcdir)/$@.awk >x.c
+	@$(CC) -g x.c -L../lib -I../lib ../lib/libawka.a $(MATHLIB) -o xx
+	@./xx $@.in $@.in $@.in >_$@
 	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 mathxtra::
