@@ -1799,16 +1799,10 @@ awka_exit(int inst, int *earliest, char *context)
     }
   }
   p = (* progcode[inst-1].func)(inst-1, &prev, &c1);
-  ret = buildstr("exit", "awka_exit(%s);\n", p, c1, _DBL, inst, inst-1);
+  ret = buildstr("exit", "awka_exit_val = %s;  return;\n", p, c1, _DBL, inst, inst-1);
   free(p);
   *earliest = prev;
   *context = _NUL;
-
-  if (end_used == TRUE && mode != END && progcode[inst].op != _ABORT)
-  {
-    p = codeptr(inst, 10);
-    sprintf(p, "END();\n");
-  }
 
   return ret;
 }
@@ -1831,19 +1825,21 @@ awka_exit0(int inst, int *earliest, char *context)
       sprintf(p, "awka_alistfreeall(&_alh%d);\n",i);
     }
   }
-  ret = (char *) malloc( 20 );
-  if (awka_main && progcode[inst].op == _CLEANUP)
-    strcpy(ret, "return(0);\n");
-  else
-    strcpy(ret, "awka_exit(0);\n");
+  ret = (char *) malloc( 60 );
+  if (awka_main) {
+    if (progcode[inst].op == _CLEANUP)
+      strcpy(ret, "return((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
+    else
+      strcpy(ret, "awka_exit((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
+  }
+  else {
+    if (end_used == TRUE && mode != END)
+      strcpy(ret, "awka_exit_val = 0;  return;\n");
+    else
+      strcpy(ret, "awka_exit((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
+  }
   *earliest = inst-1;
   *context = _NUL;
-
-  if (end_used == TRUE && mode != END && progcode[inst].op == _EXIT)
-  {
-    p = codeptr(inst, 10);
-    sprintf(p, "END();\n");
-  }
 
   return ret;
 }
@@ -4474,6 +4470,7 @@ translate()
     fprintf(outfp, "extern char ** _int_argv;\n");
   }
   fprintf(outfp, "static jmp_buf context;\n");
+  fprintf(outfp,"static int awka_exit_val = -1;\n");
 
   if (preproc == FALSE)
   {
@@ -4558,6 +4555,8 @@ translate()
         mode = MAIN;
         revert_gc();
         fprintf(outfp, "\nstatic void\nMAIN()\n{\n");
+        p = code0ptr(cur, 100);
+        sprintf(p, "if (awka_exit_val >= 0) return;  /* awka_exit() from BEGIN */\n\n");
         p = code0ptr(cur, 50);
         sprintf(p, "int i, _curfile;\n");
         p = code0ptr(cur, 100);
@@ -4693,7 +4692,7 @@ translate()
   fprintf(outfp, "\n");
   
   if (!awka_main)
-    fprintf(outfp,"  awka_exit(0);\n");
+    fprintf(outfp,"  awka_exit((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
   else
     fprintf(outfp,"  awka_cleanup();\n");
   fprintf(outfp,"}\n");
