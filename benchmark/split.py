@@ -1,6 +1,6 @@
 import sys, re, os
 
-base = 200000
+base = 2000
 
 str = "Newcastle Knights are the best there is"
 

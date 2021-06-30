@@ -1,5 +1,5 @@
 BEGIN {
-  if (!base) base = 1500000
+  if (!base) base = 15000
 
   a = 133
   x[a, 458] = 3

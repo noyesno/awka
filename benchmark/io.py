@@ -7,7 +7,7 @@
 # data! ;-)
 import os
 
-base = 1500000
+base = 15000
 v3 = "qwerty qwerty qwerty qwerty qwerty qwerty"
 v4 = "quincy quincy quincy quincy quincy quincy"
 nr = 0
@@ -26,7 +26,8 @@ for S in lines:
   fields = S.split(" ")
   x = fields[3]
   if nr < 2:
-      print(x)
+      nr = nr
+      #print(x)
   nr = nr + 1
 f.close()
 

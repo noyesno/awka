@@ -10,245 +10,108 @@ PERL = perl
 PYTHON = python3
 TCL = tclsh
 
-AWKAV = $(AWKA) -v | head -n3
+AWKAV = $(AWKA) -v | head -n2
 GAWKV = $(GAWK) -V | head -n1
-MAWKV = $(MAWK) -W Version 2>&1 | head -n1
-PERLV = $(PERL) -v | head -n2
+MAWKV = $(MAWK) -W Version 2>&1 | head -n1 
+PERLV = $(PERL) -v | head -n2 | tail -n1
 PYTHONV = $(PYTHON) -V
 TCLV = echo 'puts [ concat "TCL" " " [info patchlevel]]' | $(TCL) -
 
 TIME = /usr/bin/time
 CMP = cmp
-CC  = gcc
-CFLAGS = -O2
-EXE = 
+CC  = gcc -O3
+EXE =
 MLIB = -lm
-SLIB = 
+SLIB =
 
 MATHLIB = $(MLIB) $(SLIB)
+CFLAGS =  -L ../lib -I../lib ../lib/libawka.a $(MATHLIB)
 
 srcdir = .
 
+# run a number of times to average the result
+SEQCMD = seq 5 | xargs -I{}
+
+srcdir = .
+
+###############
 
 bench:   start array array2 array3 array4 array4b array4c array4d io cast expr function loop recurse split parsecsv regexp end
 
 ###############
 
 versions::
+	@date
+	@echo "--------- Versions ----------" 
 	@$(AWKAV) 
 	@$(MAWKV)
 	@$(GAWKV)
 	@$(PERLV) 
 	@$(PYTHONV)
 	@$(TCLV)
-	@echo "-----------------------------" 
+	@echo "--------- Results -----------" 
 
 start::
 	@echo "Generating benchmarks..."
-	@date >res.out
-	@echo "-----------------------------" >>res.out
+	@date 
+	@echo "-----------------------------" 
 
-array::
-	@echo 'ARRAY'
-	@echo 'ARRAY:' >>res.out
+array array2 array3 array4 array4b array4c array4d io::
+	@echo $@ 
 	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
-	
-array2::
-	@echo 'ARRAY2'
-	@echo 'ARRAY2:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
-	
-array3::
-	@echo 'ARRAY3'
-	@echo 'ARRAY3:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
-	
-array4::
-	@echo 'ARRAY4'
-	@echo 'ARRAY4:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
-
-array4b::
-	@echo 'ARRAY4b'
-	@echo 'ARRAY4b:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
-
-array4c::
-	@echo 'ARRAY4c'
-	@echo 'ARRAY4c:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
-
-array4d::
-	@echo 'ARRAY4d'
-	@echo 'ARRAY4d:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+	@$(CC) x.c $(CFLAGS)
+	@$(SEQCMD) $(TIME) -f "$@\tAWKA\t%e sec" ./a.out 2>>$@ares.out
+	@$(SEQCMD) $(TIME) -f "$@\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>$@mres.out
+	@$(SEQCMD) $(TIME) -f "$@\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>$@gres.out
+	@$(SEQCMD) $(TIME) -f "$@\tPERL\t%e sec" $(PERL) $@.pl 2>>$@plres.out
+	@$(SEQCMD) $(TIME) -f "$@\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>$@pyres.out
+	@$(SEQCMD) $(TIME) -f "$@\tTCL \t%e sec"  $(TCL) $@.tcl 2>>$@tres.out
 
 
-io::
-	@echo 'IO'
-	@echo 'IO:' >>res.out
+cast expr function recurse split::
+	@echo $@
 	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@$(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
-
-cast::
-	@echo 'CAST'
-	@echo 'CAST:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
-
-expr::
-	@echo 'EXPR'
-	@echo 'EXPR:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
-
-function::
-	@echo 'FUNCTION'
-	@echo 'FUNCTION:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+	@$(CC) x.c $(CFLAGS)
+	@$(SEQCMD) $(TIME) -f "$@\tAWKA\t%e sec" ./a.out 2>>$@ares.out
+	@$(SEQCMD) $(TIME) -f "$@\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>$@mres.out
+	@$(SEQCMD) $(TIME) -f "$@\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>$@gres.out
+	@$(SEQCMD) $(TIME) -f "$@\tPERL\t%e sec" $(PERL) $@.pl 2>>$@plres.out
+	@$(SEQCMD) $(TIME) -f "$@\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>$@pyres.out
 
 loop::
-	@echo 'LOOP'
-	@echo 'LOOP:' >>res.out
+	@echo $@
 	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+	@$(CC) x.c $(CFLAGS)
+	@seq 2 | $(TIME) -f "$@\tAWKA\t%e sec" ./a.out 2>>$@ares.out
+	@seq 2 | $(TIME) -f "$@\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>$@mres.out
+	@seq 2 | $(TIME) -f "$@\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>$@gres.out
+	@seq 2 | $(TIME) -f "$@\tPERL\t%e sec" $(PERL) $@.pl 2>>$@plres.out
+	@seq 2 | $(TIME) -f "$@\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>$@pyres.out
 
-recurse::
-	@echo 'RECURSE'
-	@echo 'RECURSE:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
 
-split::
-	@echo 'SPLIT'
-	@echo 'SPLIT:' >>res.out
+parsecsv regexp::
+	@echo $@
 	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tPERL\t%e sec" $(PERL) $@.pl 2>>res.out
-	@$(TIME) -f "\tPYTHON\t%e sec" $(PYTHON) $@.py 2>>res.out
-	@ # $(TIME) -f "\tTCL \t%e sec"  $(TCL) $@.tcl 2>>res.out
+	@$(CC) x.c $(CFLAGS)
+	@$(SEQCMD) $(TIME) -f "$@\tAWKA\t%e sec" ./a.out 2>>$@ares.out
+	@$(SEQCMD) $(TIME) -f "$@\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>$@mres.out
+	@$(SEQCMD) $(TIME) -f "$@\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>$@gres.out
 
-parsecsv::
-	@echo 'PARSECSV'
-	@echo 'PARSECSV:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
-
-regexp::
-	@echo 'REGEXP'
-	@echo 'REGEXP:' >>res.out
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) $(CLFAGS) x.c -L ../lib -I../lib ../lib/libawka.a -lm
-	@$(TIME) -f "\tAWKA\t%e sec" ./a.out 2>>res.out
-	@$(TIME) -f "\tMAWK\t%e sec" $(MAWK) -f $@.awk 2>>res.out
-	@$(TIME) -f "\tGAWK\t%e sec" $(GAWK) -f $@.awk 2>>res.out
 
 end::
 	@echo "Finished benchmarking!"
-	@$(GAWK) "/:|sec|--/" res.out
+	@cat *res.out | $(GAWK) -f lib/benchmarksort.awk 
 
 
 ###############
 
 
-results: res.out versions
-	@$(GAWK) "/:|sec|--/" res.out
+results: versions
+	@cat *res.out | $(GAWK) -f lib/benchmarksort.awk 
 
 
 clean:
-	rm -fr _* core x.c a.out res.out
+	rm -fr _* core x.c a.out *res.out
 
 distclean: clean
 	rm -f Makefile

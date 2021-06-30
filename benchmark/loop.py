@@ -94,6 +94,8 @@ for wk1 in bWKT.keys():
                                                                                              bbw3 = bw3
                                                                                              bbw4 = bw4
 
+exit();
+
 print('')
 print('and the best World Cup 99 cricket team is...')
 print('POSITION     ', '\t', 'TEAM', '\t', 'PTS', '\t', 'PLAYER')

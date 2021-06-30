@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-$base = 100000;
+$base = 1000;
 
 for ($i=0; $i<$base; $i++) {
 	$i = int($i);

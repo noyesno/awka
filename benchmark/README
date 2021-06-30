@@ -47,6 +47,20 @@ may not be as efficient as they could/should be.  By all means
 improve them & forward me a copy.  Any takers?  Anyone?  I also
 need perl scripts for the parsecsv, loop & regexp  examples.
 
+#############################################################
+Note: 
+the results below are different from running the benchmarking
+scripts now.
+
+The number of loops for each test has been reduced to make 
+the benchmarking quicker to run, while each test is run 
+multiple times to average the results.
+
+The timing numbers are indicative, and the numbers are not the 
+actual time taken to run a test.
+
+#############################################################
+
 RESULTS for v0.7.1, 17-8-2000:
 
 CAST

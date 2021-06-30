@@ -1,5 +1,5 @@
 BEGIN { 
-  if (!base) base = 50000
+  if (!base) base = 500
   FS="," 
   line[1] = "a,b,c,d"
   line[2] = "a,\"b\",c,d"

@@ -6,7 +6,7 @@
 # another example of why Awk should be used for processing
 # data! ;-)
 
-$base = 1500000;
+$base = 15000;
 $v3 = "qwerty qwerty qwerty qwerty qwerty qwerty";
 $v4 = "quincy quincy quincy quincy quincy quincy";
 $nr = 0;
@@ -30,7 +30,7 @@ while (<INPUT>)
   @fields = split(" ");
   $x = $fields[3];
   if ($nr++ < 2) {
-    print($x, "\n");
+    #print($x, "\n");
   }
   #$nr = $nr + 1;
 }

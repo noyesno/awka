@@ -1,4 +1,4 @@
-set base 100000;
+set base 1000;
 
 for {set i 0} {$i<$base} {incr i} {
   set arr1($i) [expr ($base - $i)]

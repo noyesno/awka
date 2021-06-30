@@ -8,9 +8,9 @@ sub rec {
   }
 }
 
-$base = 2000;
+$base = 20;
 $x = 0;
 for ($i=1; $i<$base; $i++) {
     $x += rec(1, 400);
 }
-print $x."\n";
+#print $x."\n";

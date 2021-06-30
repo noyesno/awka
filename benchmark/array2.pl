@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-$base = 50000;
+$base = 500;
 
 for ($i=0; $i<50; $i++) {
     $X{$i} = $i.".".$i;

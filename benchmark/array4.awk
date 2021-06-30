@@ -1,7 +1,7 @@
 # Integer keys (or indexes) rather than string keys
 BEGIN {
   if (!base)
-    base = 100000
+    base = 1000
 
   for (i=0; i<base; i++)
     arr1[i] = base - i

@@ -4,7 +4,7 @@
 
 BEGIN {
   if (!base)
-    base = 1500000
+    base = 15000
   #print "base = "base >"/dev/stderr"
 
   v3 = "qwerty qwerty qwerty qwerty qwerty qwerty"
@@ -23,8 +23,8 @@ BEGIN {
   while (getline<"io.txt">0)
   {
     x = $3
-    if (nr++ < 2)
-      print x
+    if (nr++ < 2) {}
+      #print x
   }
 
   system("rm -f io.txt");

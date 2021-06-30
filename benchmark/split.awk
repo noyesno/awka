@@ -1,5 +1,5 @@
 BEGIN {
-  if (!base) base = 200000
+  if (!base) base = 2000
 
   str = "Newcastle Knights are the best there is"
 

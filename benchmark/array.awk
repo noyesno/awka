@@ -5,7 +5,7 @@
 
 BEGIN {
   if (!base)
-    base = 300000
+    base = 3000
 
   for (i=0; i<base; i++)
   {

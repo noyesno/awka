@@ -47,14 +47,16 @@
 #include  "files.h"
 
 /* static functions */
-static void PROTO(scan_fillbuff, (void)) ;
-static void PROTO(scan_open, (void)) ;
-static int PROTO(slow_next, (void)) ;
-static void PROTO(eat_comment, (void)) ;
-static void PROTO(eat_semi_colon, (void)) ;
+static void   PROTO(scan_fillbuff, (void)) ;
+static void   PROTO(scan_open, (void)) ;
+static int    PROTO(slow_next, (void)) ;
+static unsigned char   PROTO(next, (void)) ;
+static void   PROTO(un_next, (void)) ;
+static void   PROTO(eat_comment, (void)) ;
+static void   PROTO(eat_semi_colon, (void)) ;
 static double PROTO(collect_decimal, (int, int *)) ;
-static int PROTO(collect_string, (void)) ;
-static int PROTO(collect_RE, (void)) ;
+static int    PROTO(collect_string, (void)) ;
+static int    PROTO(collect_RE, (void)) ;
 
 
 /*-----------------------------
@@ -74,6 +76,7 @@ extern char **vardeclare;
 extern int vdec_no, vdec_allc;
 
 int _true_re = 0;
+int line_pos = 0 ;
 
 void PROTO(init_extbi, (void));
 
@@ -144,6 +147,16 @@ scan_cleanup()
    scan_code['\r'] = SC_UNEXPECTED ;
 }
 
+static unsigned char
+next()
+{
+  line_pos++;
+  return (*buffp ? *buffp++ : slow_next());
+}
+
+static void
+un_next() { buffp--; line_pos--; }
+
 /*--------------------------------
   global variables shared by yyparse() and yylex()
   and used for error messages too
@@ -157,6 +170,7 @@ int paren_cnt ;
 int brace_cnt ;
 int print_flag ;                 /* changes meaning of '>' */
 int getline_flag ;                 /* changes meaning of '<' */
+//int line_pos = 0 ;
 
 
 /*----------------------------------------
@@ -207,10 +221,12 @@ slow_next()
          ZFREE(q) ;
          scan_open() ;
          token_lineno = lineno = 1 ;
+	 line_pos = 0 ;
       }
       else  break /* real eof */ ;
    }
 
+   line_pos++;
    return *buffp++ ;                 /* note can un_next() , eof which is zero */
 }
 
@@ -250,7 +266,7 @@ eat_comment()
          {
             /* navigate to the next word */
             while (c == ' ' || c == '\t') c = next() ;
-            if (c == '\n' || c == '\0') return ;
+            if (c == '\n' || c == '\0') { line_pos = 0 ;  return ; }
 
             i = 0 ;
             while (c != ' ' && c != '\t' && c != '\n' && c != '\0')
@@ -335,7 +351,9 @@ eat_nl()                        /* eat all space including newlines */
 
                while (scan_code[c = next()] == SC_SPACE) ;
                if (c == '\n')
+	       {
                   token_lineno = ++lineno ;
+	       }
                else if (c == 0)  
                {
                   un_next() ;
@@ -356,8 +374,10 @@ eat_nl()                        /* eat all space including newlines */
              
          default:
             un_next() ;
+	    line_pos = 0;
             return ;
       }
+   line_pos = 0;
 }
 
 int
@@ -392,6 +412,7 @@ reswitch:
          if (c == '\n')
          {
             token_lineno = ++lineno ;
+	    line_pos = 0;
             goto reswitch ;
          }
 
@@ -451,7 +472,36 @@ reswitch:
          ct_ret(COMMA) ;
 
       case SC_MUL:
-         test1_ret('=', MUL_ASG, MUL) ;
+	 // * or *= or **=
+         //test1_ret('=', MUL_ASG, MUL) ;
+         switch (next())
+         {
+            case '*': // **
+               yylval.ival = '*' ;
+               string_buff[0] =
+                 string_buff[1] = '*' ;
+               string_buff[2] = 0 ;
+	       if (c = next() == '=')
+	       {
+		  // **=
+                  yylval.ival = '=' ;
+                  string_buff[2] = '=';
+                  string_buff[3] = 0;
+		  ct_ret(POW_ASG);
+	       }
+               yylval.ival = c ;
+               string_buff[2] = c;
+               string_buff[3] = 0;
+	       ct_ret(UNEXPECTED);
+
+            case '=':  // *=
+               ct_ret(MUL_ASG) ;
+
+            default:  // *
+               un_next() ;
+               ct_ret(MUL) ;
+         }
+
 
       case SC_DIV:
          {
@@ -1109,6 +1159,7 @@ collect_string()
             {
                p-- ;
                lineno++ ;
+	       line_pos = 0;
             }
             else if (c == 0)  un_next() ;
             else

@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-base = 300000
+base = 3000
 
 arr1 = {}
 for i in range(base):
