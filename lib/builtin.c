@@ -2117,14 +2117,14 @@ awka_getline( char keep, a_VAR *target, char *input, int pipe, char main )
   a_VAR *outvar;
   register int i = 0, fill_target = 1, new_file = FALSE;
   static int mlen = 100, from_filelist = TRUE, stream = -1;
-  static char *file = NULL, *mfile = NULL;
+  static char *file = NULL; //, *mfile = NULL;
 
   if (!file)
   {
     malloc( &file, mlen);
     file[0] = '\0';
-    malloc( &mfile, mlen);
-    mfile[0] = '\0';
+    //malloc( &mfile, mlen);
+    //mfile[0] = '\0';
     awka_setd(a_bivar[a_NR]) = 0;
   }
 
@@ -2227,6 +2227,7 @@ start:
         outvar->dval = -1;
         if (main == TRUE)
           awka_error("error reading from file \"%s\"\n",file);
+        _a_iostream[i].name[0] = '\0';    // ensure reading the same file again results in the same failure to read
         goto getline_end;
       }
     }

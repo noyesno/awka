@@ -61,7 +61,7 @@ basic:		msg swaplns messages a_cat pdb_find_salt argarray longwrds \
 		bslash print cox gensub zeroflag getnr2tm getnr2tb \
 		numindex subslash opasnslf opasnidx arynocls getlnbuf arysubnm \
 		nlstrina nextfile next rsnul1nl beginexit mainexit fnrtest \
-		powtest begingetline extendedchars
+		powtest begingetline extendedchars nofile
 
 revive-awka: 	rslen rsnull scgi
 
@@ -76,38 +76,46 @@ extra:		regtest inftest
 ###########################################################################
 
 next::
-	@$(AWKA) -f next.awk >x.c
+	@$(AWKA) -f $@.awk >x.c
 	@$(CC)  x.c  $(CFLAGS) -o xx
 	@./xx nextfile.in1 >_$@
-	$(CMP) $(srcdir)/next.ok _$@ && rm -f _$@
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 	
 nextfile::
-	@$(AWKA) -f nextfile.awk >x.c
+	@$(AWKA) -f $@.awk >x.c
 	@$(CC)  x.c  $(CFLAGS) -o xx
-	@./xx nextfile.in1 nextfile.in2 nextfile.in3 >_$@
-	$(CMP) $(srcdir)/nextfile.ok _$@ && rm -f _$@
+	@./xx $@.in1 $@.in2 $@.in3 >_$@
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 	
 nasty::
 	@echo '-> nasty test: sometimes fails, producing a string of 123123123 etc'
 	@echo '-> instead of aaaaa... I believe this to be caused by differences in the'
 	@echo '-> order of execution some C compilers decide on, and really its not a'
 	@echo '-> problem.  But if the test works for you, great!'
-	@$(AWKA) -f nasty.awk >x.c
+	@$(AWKA) -f $@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >_$@
-	$(CMP) $(srcdir)/nasty.ok _$@ && rm -f _$@
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 	
-zeroflag::
-	@$(AWKA) -f zeroflag.awk >x.c
+zeroflag asort subslash opasnslf opasnidx arysubnm nlstrina print gensub cox retest bslash \
+nofile a_cat eiso3 divide conflict aloop dubois splitrem fun arraycat arrayref::
+	@$(AWKA) -f $@.awk >x.c
 	@$(CC)  x.c $(CFLAGS) -o xx
 	@./xx >_$@
-	$(CMP) $(srcdir)/zeroflag.ok _$@ && rm -f _$@
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
-rsnul1nl::
-	@$(AWKA) -f rsnul1nl.awk >x.c
+rsnul1nl getnr2tm getnr2tb arynocls pdb_find_salt fw bil eiso eiso2 eiso4 \
+parsecsv range fsrs amsal amsal3 amsal5 posix2 getline2::
+	@$(AWKA) -f $@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx rsnul1nl.in >_$@
-	$(CMP) $(srcdir)/rsnul1nl.ok _$@ && rm -f _$@
+	@./xx $@.in >_$@
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rsre::
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) x.c $(CFLAGS) -o xx
+	@./xx $@.awk >_$@
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 rsnull::
 	@ $(AWKA) -f $@.awk > x.c
@@ -127,24 +135,6 @@ scgi::
 	@ ./$@.exe $@.in > $@.out
 	$(CMP) $(srcdir)/$@.ok $@.out && rm -f $@.exe $@.c $@.out
 
-getnr2tm::
-	@$(AWKA) -f getnr2tm.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx getnr2tm.in >_$@
-	$(CMP) $(srcdir)/getnr2tm.ok _$@ && rm -f _$@
-
-getnr2tb::
-	@$(AWKA) -f getnr2tb.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx getnr2tb.in >_$@
-	$(CMP) $(srcdir)/getnr2tb.ok _$@ && rm -f _$@
-
-asort::
-	@$(AWKA) -f asort.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/asort.ok _$@ && rm -f _$@
-
 printf1::
 	@echo '-> printf1: causing grief on some platforms that unfortunately I have'
 	@echo '-> no access to.  The 4th line sometimes fails to print a 0 character,'
@@ -161,30 +151,6 @@ numindex::
 	@./xx <$(srcdir)/numindex.in >_$@
 	$(CMP) $(srcdir)/numindex.ok _$@ && rm -f _$@
 
-subslash::
-	@$(AWKA) -f subslash.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/subslash.ok _$@ && rm -f _$@
-
-opasnslf::
-	@$(AWKA) -f opasnslf.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/opasnslf.ok _$@ && rm -f _$@
-
-opasnidx::
-	@$(AWKA) -f opasnidx.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/opasnidx.ok _$@ && rm -f _$@
-
-arynocls::
-	@$(AWKA) -f arynocls.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx arynocls.in >_$@
-	$(CMP) $(srcdir)/arynocls.ok _$@ && rm -f _$@
-
 getlnbuf::
 	@$(AWKA) -f getlnbuf.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
@@ -193,18 +159,6 @@ getlnbuf::
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx getlnbuf.in >_2$@
 	$(CMP) $(srcdir)/getlnbuf.ok _$@ && $(CMP) $(srcdir)/getlnbuf.ok _2$@ && rm -f _$@ _2$@
-
-arysubnm::
-	@$(AWKA) -f arysubnm.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/arysubnm.ok _$@ && rm -f _$@
-
-nlstrina::
-	@$(AWKA) -f nlstrina.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/nlstrina.ok _$@ && rm -f _$@
 
 poundbang::
 	@$(AWKA) -f poundbang >x.c;
@@ -262,59 +216,11 @@ fstabplus::
 	@echo '1		2' | ./xx >_$@
 	$(CMP) $(srcdir)/fstabplus.ok _$@ && rm -f _$@
 
-pdb_find_salt::
-	@$(AWKA) -f $(srcdir)/pdb_find_salt.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx pdb_find_salt.in >_$@
-	$(CMP) $(srcdir)/pdb_find_salt.ok _$@ && rm -f _$@
-
-print::
-	@$(AWKA) -f $(srcdir)/print.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/print.ok _$@ && rm -f _$@
-
-gensub::
-	@$(AWKA) -f $(srcdir)/gensub.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/gensub.ok _$@ && rm -f _$@
-
-cox::
-	@$(AWKA) -f $(srcdir)/cox.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/cox.ok _$@ && rm -f _$@
-
 hh::
 	@$(AWKA) -f $(srcdir)/hh.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx -v scalefile=hh.in >_$@
 	$(CMP) $(srcdir)/hh.ok _$@ && rm -f _$@
-
-retest::
-	@$(AWKA) -f $(srcdir)/retest.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/retest.ok _$@ && rm -f _$@
-
-bslash::
-	@$(AWKA) -f $(srcdir)/bslash.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/bslash.ok _$@ && rm -f _$@
-
-fw::
-	@$(AWKA) -f $(srcdir)/fw.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx fw.in >_$@
-	$(CMP) $(srcdir)/fw.ok _$@ && rm -f _$@
-
-rsre::
-	@$(AWKA) -f $(srcdir)/rsre.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx rsre.awk >_$@
-	$(CMP) $(srcdir)/rsre.ok _$@ && rm -f _$@
 
 unbuf::
 	@$(AWKA) -f $(srcdir)/unbuf.awk >x.c
@@ -322,17 +228,6 @@ unbuf::
 	@cat $(srcdir)/unbuf.awk | ./xx -vINFILE="$(srcdir)/unbuf.awk" unbuf.awk >_$@
 	$(CMP) $(srcdir)/unbuf.ok _$@ && rm -f _$@
 
-a_cat::
-	@$(AWKA) -f $(srcdir)/a_cat.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/a_cat.ok _$@ && rm -f _$@
-
-bil::
-	@$(AWKA) -f $(srcdir)/bil.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx bil.in >_$@
-	$(CMP) $(srcdir)/bil.ok _$@ && rm -f _$@
 
 bil2::
 	@$(AWKA) -f $(srcdir)/bil2.awk >x.c
@@ -340,119 +235,17 @@ bil2::
 	@./xx bil2.in1 >_$@
 	$(CMP) $(srcdir)/bil2.ok _$@ && rm -f _$@
 
-eiso::
-	@$(AWKA) -f $(srcdir)/eiso.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx eiso.in >_$@
-	$(CMP) $(srcdir)/eiso.ok _$@ && rm -f _$@
-
-eiso2::
-	@$(AWKA) -f $(srcdir)/eiso2.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx eiso2.in >_$@
-	$(CMP) $(srcdir)/eiso2.ok _$@ && rm -f _$@
-
-eiso3::
-	@$(AWKA) -f $(srcdir)/eiso3.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/eiso3.ok _$@ && rm -f _$@
-
-eiso4::
-	@$(AWKA) -f $(srcdir)/eiso4.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx eiso4.in >_$@
-	$(CMP) $(srcdir)/eiso4.ok _$@ && rm -f _$@
-
-divide::
-	@$(AWKA) -f $(srcdir)/divide.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/divide.ok _$@ && rm -f _$@
-
-parsecsv::
-	@$(AWKA) -f $(srcdir)/parsecsv.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx parsecsv.in >_$@
-	$(CMP) $(srcdir)/parsecsv.ok _$@ && rm -f _$@
-
-range::
-	@$(AWKA) -f $(srcdir)/range.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx range.in >_$@
-	$(CMP) $(srcdir)/range.ok _$@ && rm -f _$@
-
-conflict::
-	@$(AWKA) -f $(srcdir)/conflict.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/conflict.ok _$@ && rm -f _$@
-
-aloop::
-	@$(AWKA) -f $(srcdir)/aloop.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/aloop.ok _$@ && rm -f _$@
-
-dubois::
-	@$(AWKA) -f $(srcdir)/dubois.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/dubois.ok _$@ && rm -f _$@
-
-splitrem::
-	@$(AWKA) -f $(srcdir)/splitrem.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/splitrem.ok _$@ && rm -f _$@
-
-fun::
-	@$(AWKA) -f $(srcdir)/fun.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/fun.ok _$@ && rm -f _$@
-
-fsrs::
-	@$(AWKA) -f $(srcdir)/fsrs.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/fsrs.in >_$@
-	$(CMP) $(srcdir)/fsrs.ok _$@ && rm -f _$@
-
-amsal::
-	@$(AWKA) -f $(srcdir)/amsal.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/amsal.in >_$@
-	$(CMP) $(srcdir)/amsal.ok _$@ && rm -f _$@
-
 amsal2::
 	@$(AWKA) -f $(srcdir)/amsal2.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/amsal2.awk >_$@
 	$(CMP) $(srcdir)/amsal2.ok _$@ && rm -f _$@
 
-amsal3::
-	@$(AWKA) -f $(srcdir)/amsal3.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/amsal3.in >_$@
-	$(CMP) $(srcdir)/amsal3.ok _$@ && rm -f _$@
-
 amsal4::
 	@$(AWKA) -f $(srcdir)/amsal4.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/amsal4-1.in $(srcdir)/amsal4-2.in >_$@
 	$(CMP) $(srcdir)/amsal4.ok _$@ && rm -f _$@
-
-amsal5::
-	@$(AWKA) -f $(srcdir)/amsal5.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/amsal5.in >_$@
-	$(CMP) $(srcdir)/amsal5.ok _$@ && rm -f _$@
-
-arraycat::
-	@$(AWKA) -f $(srcdir)/arraycat.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/arraycat.ok _$@ && rm -f _$@
 
 longwrds::
 	@$(AWKA) -f $(srcdir)/longwrds.awk >x.c
@@ -472,12 +265,6 @@ posix::
 	@echo '1:2,3 4' | ./xx >_$@
 	$(CMP) $(srcdir)/posix.ok _$@ && rm -f _$@
 
-posix2::
-	@$(AWKA) -f $(srcdir)/posix2.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx posix2.in >_$@
-	$(CMP) $(srcdir)/posix2.ok _$@ && rm -f _$@
-
 manyfiles::
 	@rm -rf junk
 	@mkdir junk
@@ -494,12 +281,6 @@ compare::
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx 0 1 $(srcdir)/compare.in >_$@
 	$(CMP) $(srcdir)/compare.ok _$@ && rm -f _$@
-
-arrayref::
-	@$(AWKA) -f $(srcdir)/arrayref.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/arrayref.ok _$@ && rm -f _$@
 
 rs::
 	@$(AWKA) '{ print $$1, $$2}' >x.c
@@ -525,12 +306,6 @@ getline::
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/getline.awk $(srcdir)/getline.awk >_$@
 	$(CMP) $(srcdir)/getline.ok _$@ && rm -f _$@
-
-getline2::
-	@$(AWKA) -f $(srcdir)/getline2.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/getline2.in >_$@
-	$(CMP) $(srcdir)/getline2.ok _$@ && rm -f _$@
 
 rand::
 	@$(AWKA) -f $(srcdir)/rand.awk >x.c
