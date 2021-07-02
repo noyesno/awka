@@ -2421,12 +2421,25 @@ awka_doln(int idx, int set)
 /*
  * awka_alistcmp
  * compares two nodes to see which is higher in sort order
+ * 
+ * sorttype:
+ *  2 -> numeric
+ *  4 -> inverse (descending)  so 6 is inverse numeric
+ *  8 -> values not index      so 10 is numeric values, 12 is inverse str values
  */
 static INLINE int
 _awka_alistcmp(a_HSHNode *node1, a_HSHNode *node2, int sorttype)
 {
   char tmp[96], tmp2[96];
+  int tmpi1, tmpi2 = 0;
 
+  if (sorttype & 8)
+  { /* sort values - auto handles Numeric vs Alpha */
+    if (sorttype & 4)
+      return awka_varcmp(node2->var, node1->var);
+    return awka_varcmp(node1->var, node2->var);
+  } /* 8 */
+  else
   if (sorttype & 2)
   {
     /* Numeric Sort */
