@@ -162,6 +162,7 @@ void  yyerror(s)
             goto done ;
           }
 
+    yylval.ival = s[0];
     compile_error("syntax error at or near %s", s) ;
 
   }
@@ -215,56 +216,95 @@ void  errmsg VA_ALIST2(int , errnum, char *, format)
 char *
 char_repeat( int n, char c )
 {
-  char * dest = malloc(n+1);
-  memset(dest, c, n);
-  dest[n] = '\0';
-  return dest;
+  char * dest = malloc(n+1) ;
+
+  memset(dest, c, n) ;
+  dest[n] = '\0' ;
+
+  return dest ;
 }
 
 char *
-get_source_line() {
-  FILE *fp = NULL;
-  static int bufferLength = 254;
-  char *buffer = malloc( bufferLength + 1);
-  int linecount = token_lineno - 1;
+get_source_line()
+{
+  FILE *fp = NULL ;
+  static int bufferLength = 254 ;
+  char *buffer = malloc( bufferLength + 1) ;
+  register int linecount = token_lineno - 1 ;
 
-  buffer[0] = '\0';
-  if ( !pfile_name ) return (buffer);
-  if (!(fp = fopen(pfile_name, "r"))) return (buffer);
+  buffer[0] = '\0' ;
+
+  if ( !pfile_name )
+    return (buffer) ;
+
+  if (!(fp = fopen(pfile_name, "r")))
+    return (buffer) ;
 
   while(fgets(buffer, bufferLength, fp)) {
      if ( !linecount-- )
-       break;
+       break ;
   }
-  fclose(fp);
+
+  fclose(fp) ;
+
   return (buffer) ;
+}
+
+void
+update_source_pos(char *src)
+{
+  char *p = NULL, *end = NULL ;
+  char c = (char) yylval.ival ;
+  int len = strlen(src) ;
+
+  end = (src + len - 1) ;
+
+  if(line_pos >= len)
+    return ;
+
+  p = src ;
+  while(p < end) {
+    if (*p == '\t') *p = ' ' ;  // so tab treated as one char
+    if (*p++ == c && p > (src + line_pos)) {
+      line_pos = (int) (p - src) ;
+      return ;
+    }
+  }
 }
 
 void  compile_error  VA_ALIST(char *, format)
   va_list args ;
-  char *lnstr = malloc( 20 );
   char *s0, *s1, *sc, *fill ;
+  char *lnstr = malloc( 40 ) ;
 
   /* with multiple program files put program name in
      error message */
   if ( pfile_name )
   { s0 = pfile_name ; s1 = ": " ; }
   else
-  { s0 = s1 = "" ; }
+  { s0 =s1 = "" ; }
 
-  sprintf(lnstr, "line %d: ",token_lineno);
-  sc = get_source_line();
+  /* progna: filename: line n: */
+  sprintf(lnstr, "%s: %s%sline %d: ", progname, s0, s1, token_lineno) ;
 
-  fprintf(stderr, "%s: %s%s%s%s" , progname, s0, s1, lnstr, sc) ;
+  sc = get_source_line() ;
+  update_source_pos(sc) ;
 
-  fill = char_repeat((int) line_pos-1,' ');
-  fprintf(stderr, "%s: %s%s%s%s^ " , progname, s0, s1, lnstr, fill) ;
+  fprintf(stderr, "%s%s", lnstr, sc) ;
+
+  /* point to the above line of the source code */
+  fill = char_repeat((int) line_pos-1,' ') ;
+  fprintf(stderr, "%s%s^ " , lnstr, fill) ;
+
   VA_START(args, char *, format) ;
   vfprintf(stderr, format, args) ;
   va_end(args) ;
+
   fprintf(stderr, "\n") ;
-  free(sc);
-  free(lnstr);
+
+  free(sc) ;
+  free(lnstr) ;
+
   if ( ++compile_error_count == MAX_COMPILE_ERRORS ) exit(2) ;
 }
 
@@ -319,25 +359,26 @@ void rt_overflow(s, size)
 void 
 unexpected_char( void )
 {
+  char *s0, *s1, *sc, *fill ;
   int c = yylval.ival ;
-  char *lnstr = malloc( 20 );
-  char *s0, *s1, *sc, *fill;
+  char *lnstr = malloc( 20 ) ;
 
   if ( pfile_name )
   { s0 = pfile_name ; s1 = ": " ; }
   else s0 = s1 = "" ;
 
-  sprintf(lnstr, "line %d: ",token_lineno);
+  sprintf(lnstr, "line %d: ",token_lineno) ;
 
-  sc = get_source_line();
+  sc = get_source_line() ;
   fprintf(stderr, "%s: %s%s%s%s", progname, s0, s1, lnstr, sc) ;
-  free(sc);
+  free(sc) ;
 
   /* point to error location then show the error message */
-  fill = char_repeat((int) line_pos-1,' ');
+  fill = char_repeat((int) line_pos-1,' ') ;
   fprintf(stderr, "%s: %s%s%s%s^ ", progname, s0, s1, lnstr, fill) ;
-  free(fill);
-  free(lnstr);
+
+  free(fill) ;
+  free(lnstr) ;
 
   if ( c > ' ' && c < 127 )
       fprintf(stderr, "unexpected character '%c'\n" , c) ;
