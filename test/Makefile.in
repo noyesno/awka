@@ -65,29 +65,58 @@ basic:		msg swaplns messages a_cat pdb_find_salt argarray longwrds \
 
 revive-awka: 	rslen rsnull scgi
 
-unix-tests:	 poundbang fflush getlnhd pipeio1 pipeio2 strftlng 
+unix-tests:	poundbang fflush getlnhd pipeio1 pipeio2 strftlng 
 
 awka.extensions: posix posix2 manyfiles nondec asort 
 
-mathextra: 	mathxtra
-
-extra:		regtest inftest
+extra:		nasty printf1 regtest inftest 
 
 ###########################################################################
 
+msg::
+	@echo 'Any output from "cmp" is bad news, although some differences'
+	@echo 'in floating point values are probably benign -- in particular,'
+	@echo 'some systems may omit a leading zero and the floating point'
+	@echo 'precision may lead to slightly different output in a few cases.'
+	@echo ''
+
+zeroflag asort subslash opasnslf opasnidx arysubnm nlstrina print gensub cox retest bslash \
+nofile a_cat eiso3 divide conflict aloop dubois splitrem fun arraycat arrayref rand \
+convfmt intprec gnureops pcntplus prmreuse math getlnhd backgsub dynlj substr eofsplit \
+prt1eval prtoeval gsubtest splitwht foronsplit intest fnarydel delarprm \
+beginexit powtest begingetline extendedchars mathextra::
+	@echo $@
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) x.c $(CFLAGS) -o xx
+	@./xx >_$@
+	@$(CMP) $@.ok _$@ && rm -f _$@
+
+rsnul1nl numindex swaplns getnr2tm getnr2tb arynocls pdb_find_salt fw bil eiso eiso2 eiso4 \
+parsecsv range fsrs amsal amsal3 amsal5 posix2 getline2 asgext anchgsub splitargv nfset \
+reparse rswhite fldchg reindops sprintfc clsflnam tradanch nlfldsep splitvar funstack \
+fldchgnf prdupval ::
+	@echo $@
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC) x.c $(CFLAGS) -o xx
+	@./xx $@.in >_$@
+	@$(CMP) $@.ok _$@ && rm -f _$@
+
 next::
+	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC)  x.c  $(CFLAGS) -o xx
 	@./xx nextfile.in1 >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 	
 nextfile::
+	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC)  x.c  $(CFLAGS) -o xx
 	@./xx $@.in1 $@.in2 $@.in3 >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 	
 nasty::
+	@echo $@
 	@echo '-> nasty test: sometimes fails, producing a string of 123123123 etc'
 	@echo '-> instead of aaaaa... I believe this to be caused by differences in the'
 	@echo '-> order of execution some C compilers decide on, and really its not a'
@@ -97,45 +126,36 @@ nasty::
 	@./xx >_$@
 	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 	
-zeroflag asort subslash opasnslf opasnidx arysubnm nlstrina print gensub cox retest bslash \
-nofile a_cat eiso3 divide conflict aloop dubois splitrem fun arraycat arrayref::
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC)  x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
-rsnul1nl getnr2tm getnr2tb arynocls pdb_find_salt fw bil eiso eiso2 eiso4 \
-parsecsv range fsrs amsal amsal3 amsal5 posix2 getline2::
-	@$(AWKA) -f $@.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $@.in >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
 rsre::
+	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $@.awk >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 rsnull::
+	@echo $@
 	@ $(AWKA) -f $@.awk > x.c
 	@ $(CC) x.c $(CFLAGS) -o xx
 	@/bin/echo -n -e "abc\0def\0hij" | ./xx > _$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 rslen::
+	@echo $@
 	@ $(AWKA) -f $@.awk > $@.c
 	@ $(CC) $@.c $(CFLAGS) -o $@.exe
 	@/bin/echo -n -e "123456789" | ./$@.exe > _$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f $@.exe $@.c _$@
+	@$(CMP) $(srcdir)/$@.ok _$@ && rm -f $@.exe $@.c _$@
 
 scgi::
+	@echo $@
 	@ $(AWKA) -f $@.awk > $@.c
 	@ $(CC) $@.c $(CFLAGS) -o $@.exe
 	@ ./$@.exe $@.in > $@.out
-	$(CMP) $(srcdir)/$@.ok $@.out && rm -f $@.exe $@.c $@.out
+	@$(CMP) $(srcdir)/$@.ok $@.out && rm -f $@.exe $@.c $@.out
 
 printf1::
+	@echo $@
 	@echo '-> printf1: causing grief on some platforms that unfortunately I have'
 	@echo '-> no access to.  The 4th line sometimes fails to print a 0 character,'
 	@echo '-> for reasons known only to itself.  If you can provide telnet access'
@@ -143,52 +163,37 @@ printf1::
 	@$(AWKA) -f printf1.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >_$@
-	$(CMP) $(srcdir)/printf1.ok _$@ && rm -f _$@
-
-numindex::
-	@$(AWKA) -f numindex.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx <$(srcdir)/numindex.in >_$@
-	$(CMP) $(srcdir)/numindex.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/printf1.ok _$@ && rm -f _$@
 
 getlnbuf::
+	@echo $@
 	@$(AWKA) -f getlnbuf.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx getlnbuf.in >_$@
 	@$(AWKA) -f gtlnbufv.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx getlnbuf.in >_2$@
-	$(CMP) $(srcdir)/getlnbuf.ok _$@ && $(CMP) $(srcdir)/getlnbuf.ok _2$@ && rm -f _$@ _2$@
+	@$(CMP) $(srcdir)/getlnbuf.ok _$@ && $(CMP) $(srcdir)/getlnbuf.ok _2$@ && rm -f _$@ _2$@
 
 poundbang::
+	@echo $@
 	@$(AWKA) -f poundbang >x.c;
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx poundbang >_`basename $@`
-	$(CMP) $(srcdir)/poundbang.ok _`basename $@` && rm -f _`basename $@`
-
-msg::
-	@echo 'Any output from "cmp" is bad news, although some differences'
-	@echo 'in floating point values are probably benign -- in particular,'
-	@echo 'some systems may omit a leading zero and the floating point'
-	@echo 'precision may lead to slightly different output in a few cases.'
-	@echo ''
-
-swaplns::
-	@$(AWKA) -f $(srcdir)/swaplns.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/swaplns.in >_$@
-	$(CMP) $(srcdir)/swaplns.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/poundbang.ok _`basename $@` && rm -f _`basename $@`
 
 messages::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/messages.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >out2 2>out3
-	{ $(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && \
+	@{ $(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && \
 	$(CMP) $(srcdir)/out3.ok out3 && rm -f out1 out2 out3; } || \
 	{ { test -d /dev/fd || test -d /proc/self/fd; } && \
 	echo IT IS OK THAT THIS TEST FAILED; }
 
 argarray::
+	@echo $@
 	@case $(srcdir) in \
 	.)	: ;; \
 	*)	cp $(srcdir)/argarray.in . ;; \
@@ -196,9 +201,10 @@ argarray::
 	@$(AWKA) -f $(srcdir)/argarray.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@TEST=test echo just a test | ./xx -v EXE=$(EXE) ./argarray.in - >_$@
-	$(CMP) $(srcdir)/argarray.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/argarray.ok _$@ && rm -f _$@
 
 argtest2::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/argtest2.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >_$@
@@ -208,64 +214,74 @@ argtest2::
 	@$(AWKA) -f $(srcdir)/argtest2.awk -a "-We -v var=value" >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >>_$@
-	$(CMP) $(srcdir)/argtest2.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/argtest2.ok _$@ && rm -f _$@
 	
 fstabplus::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/fstabplus.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@echo '1		2' | ./xx >_$@
-	$(CMP) $(srcdir)/fstabplus.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/fstabplus.ok _$@ && rm -f _$@
 
 hh::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/hh.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx -v scalefile=hh.in >_$@
-	$(CMP) $(srcdir)/hh.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/hh.ok _$@ && rm -f _$@
 
 unbuf::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/unbuf.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@cat $(srcdir)/unbuf.awk | ./xx -vINFILE="$(srcdir)/unbuf.awk" unbuf.awk >_$@
-	$(CMP) $(srcdir)/unbuf.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/unbuf.ok _$@ && rm -f _$@
 
 
 bil2::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/bil2.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx bil2.in1 >_$@
-	$(CMP) $(srcdir)/bil2.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/bil2.ok _$@ && rm -f _$@
 
 amsal2::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/amsal2.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/amsal2.awk >_$@
-	$(CMP) $(srcdir)/amsal2.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/amsal2.ok _$@ && rm -f _$@
 
 amsal4::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/amsal4.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/amsal4-1.in $(srcdir)/amsal4-2.in >_$@
-	$(CMP) $(srcdir)/amsal4.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/amsal4.ok _$@ && rm -f _$@
 
 longwrds::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/longwrds.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/manpage >_$@
-	$(CMP) $(srcdir)/longwrds.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/longwrds.ok _$@ && rm -f _$@
 
 regtest::
+	@echo $@
 	@echo 'Some of the output from regtest is very system specific, do not'
 	@echo 'be distressed if your output differs from that distributed.'
 	@echo 'Manual inspection is called for.'
-	AWK=`pwd`/$(AWK) CC=$(CC) MATHLIB=$(MATHLIB) $(srcdir)/regtest
+	@AWK=`pwd`/$(AWK) CC=$(CC) MATHLIB=$(MATHLIB) $(srcdir)/regtest
 
 posix::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/posix.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@echo '1:2,3 4' | ./xx >_$@
-	$(CMP) $(srcdir)/posix.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/posix.ok _$@ && rm -f _$@
 
 manyfiles::
+	@echo $@
 	@rm -rf junk
 	@mkdir junk
 	@$(AWK) 'BEGIN { for (i = 1; i <= 32; i++) print i, i}' >_$@
@@ -277,347 +293,152 @@ manyfiles::
 	@rm -rf junk _$@
 
 compare::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/compare.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx 0 1 $(srcdir)/compare.in >_$@
-	$(CMP) $(srcdir)/compare.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/compare.ok _$@ && rm -f _$@
 
 rs::
+	@echo $@
 	@$(AWKA) '{ print $$1, $$2}' >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx -v RS="" $(srcdir)/rs.in >_$@
-	$(CMP) $(srcdir)/rs.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/rs.ok _$@ && rm -f _$@
 
 fsbs::
+	@echo $@
 	@$(AWKA) '{ print $$1, $$2 }' >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx -v FS='\' $(srcdir)/fsbs.in >_$@
-	$(CMP) $(srcdir)/fsbs.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/fsbs.ok _$@ && rm -f _$@
 
 inftest::
+	@echo $@
 	@echo This test is very machine specific...
 	@$(AWKA) -f $(srcdir)/inftest.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >_$@
-	$(CMP) $(srcdir)/inftest.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/inftest.ok _$@ && rm -f _$@
 
 getline::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/getline.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/getline.awk $(srcdir)/getline.awk >_$@
-	$(CMP) $(srcdir)/getline.ok _$@ && rm -f _$@
-
-rand::
-	@$(AWKA) -f $(srcdir)/rand.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/rand.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/getline.ok _$@ && rm -f _$@
 
 negexp::
+	@echo $@
 	@$(AWKA) 'BEGIN { a = -2; print 10^a }' >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >_$@
-	$(CMP) $(srcdir)/negexp.ok _$@ && rm -f _$@
-
-asgext::
-	@$(AWKA) -f $(srcdir)/asgext.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/asgext.in >_$@
-	$(CMP) $(srcdir)/asgext.ok _$@ && rm -f _$@
-
-anchgsub::
-	@$(AWKA) -f $(srcdir)/anchgsub.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/anchgsub.in >_$@
-	$(CMP) $(srcdir)/anchgsub.ok _$@ && rm -f _$@
-
-splitargv::
-	@$(AWKA) -f $(srcdir)/splitargv.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/splitargv.in >_$@
-	$(CMP) $(srcdir)/splitargv.ok _$@ && rm -f _$@
-
-nfset::
-	@$(AWKA) -f $(srcdir)/nfset.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/nfset.in >_$@
-	$(CMP) $(srcdir)/nfset.ok _$@ && rm -f _$@
-
-reparse::
-	@$(AWKA) -f $(srcdir)/reparse.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/reparse.in >_$@
-	$(CMP) $(srcdir)/reparse.ok _$@ && rm -f _$@
-
-convfmt::
-	@$(AWKA) -f $(srcdir)/convfmt.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/convfmt.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/negexp.ok _$@ && rm -f _$@
 
 litoct::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/litoct.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@echo ab | ./xx >_$@
-	$(CMP) $(srcdir)/litoct.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/litoct.ok _$@ && rm -f _$@
 
 resplit::
+	@echo $@
 	@$(AWKA) '{ FS = ":"; $$0 = $$0; print $$2 }' >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@echo a:b:c d:e:f | ./xx > _$@
-	$(CMP) $(srcdir)/resplit.ok _$@ && rm -f _$@
-
-rswhite::
-	@$(AWKA) -f $(srcdir)/rswhite.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/rswhite.in > _$@
-	$(CMP) $(srcdir)/rswhite.ok _$@ && rm -f _$@
-
-intprec::
-	@-$(AWKA) -f $(srcdir)/intprec.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx > _$@ 2>&1
-	$(CMP) $(srcdir)/intprec.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/resplit.ok _$@ && rm -f _$@
 
 childin::
+	@echo $@
 	@$(AWKA) 'BEGIN { "cat" | getline; print; close("cat") }' >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@echo hi | ./xx > _$@
-	$(CMP) $(srcdir)/childin.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/childin.ok _$@ && rm -f _$@
 
 numsubstr::
+	@echo $@
 	@$(AWKA) -f numsubstr.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@-AWKPATH=$(srcdir) ./xx $(srcdir)/numsubstr.in >_$@
-	$(CMP) $(srcdir)/numsubstr.ok _$@ && rm -f _$@
-
-gnureops::
-	@$(AWKA) -f $(srcdir)/gnureops.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/gnureops.ok _$@ && rm -f _$@
-
-pcntplus::
-	@$(AWKA) -f $(srcdir)/pcntplus.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/pcntplus.ok _$@ && rm -f _$@
-
-prmreuse::
-	@$(AWKA) -f $(srcdir)/prmreuse.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/prmreuse.ok _$@ && rm -f _$@
-
-math::
-	@$(AWKA) -f $(srcdir)/math.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/math.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/numsubstr.ok _$@ && rm -f _$@
 
 fflush::
+	@echo $@
 	@$(srcdir)/fflush.sh "$(CC)" "$(MATHLIB)" >_$@
-	$(CMP) $(srcdir)/fflush.ok _$@ && rm -f _$@
-
-fldchg::
-	@$(AWKA) -f $(srcdir)/fldchg.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/fldchg.in >_$@
-	$(CMP) $(srcdir)/fldchg.ok _$@ && rm -f _$@
-
-fldchgnf::
-	@$(AWKA) -f $(srcdir)/fldchgnf.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/fldchgnf.in >_$@
-	$(CMP) $(srcdir)/fldchgnf.ok _$@ && rm -f _$@
-
-reindops::
-	@$(AWKA) -f $(srcdir)/reindops.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/reindops.in >_$@
-	$(CMP) $(srcdir)/reindops.ok _$@ && rm -f _$@
-
-sprintfc::
-	@$(AWKA) -f $(srcdir)/sprintfc.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/sprintfc.in >_$@
-	$(CMP) $(srcdir)/sprintfc.ok _$@ && rm -f _$@
-
-getlnhd::
-	@$(AWKA) -f $(srcdir)/getlnhd.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/getlnhd.ok _$@ && rm -f _$@
-
-backgsub::
-	@$(AWKA) -f $(srcdir)/backgsub.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/backgsub.in >_$@
-	$(CMP) $(srcdir)/backgsub.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/fflush.ok _$@ && rm -f _$@
 
 tweakfld::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/tweakfld.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/tweakfld.in >_$@
 	@rm -f errors.cleanup
-	$(CMP) $(srcdir)/tweakfld.ok _$@ && rm -f _$@
-
-clsflnam::
-	@$(AWKA) -f $(srcdir)/clsflnam.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/clsflnam.in >_$@
-	$(CMP) $(srcdir)/clsflnam.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/tweakfld.ok _$@ && rm -f _$@
 
 mmap8k::
+	@echo $@
 	@$(AWKA) '{ print }' >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/mmap8k.in >_$@
-	$(CMP) $(srcdir)/mmap8k.in _$@ && rm -f _$@
-
-dynlj::
-	@$(AWKA) -f $(srcdir)/dynlj.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/dynlj.ok _$@ && rm -f _$@
-
-substr::
-	@$(AWKA) -f $(srcdir)/substr.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/substr.ok _$@ && rm -f _$@
-
-eofsplit::
-	@$(AWKA) -f $(srcdir)/eofsplit.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/eofsplit.ok _$@ && rm -f _$@
-
-prt1eval::
-	@$(AWKA) -f $(srcdir)/prt1eval.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/prt1eval.ok _$@ && rm -f _$@
-
-prtoeval::
-	@$(AWKA) -f $(srcdir)/prtoeval.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/prtoeval.ok _$@ && rm -f _$@
-
-gsubtest::
-	@$(AWKA) -f $(srcdir)/gsubtest.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/gsubtest.ok _$@ && rm -f _$@
-
-splitwht::
-	@$(AWKA) -f $(srcdir)/splitwht.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/splitwht.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/mmap8k.in _$@ && rm -f _$@
 
 back89::
+	@echo $@
 	@$(AWKA) '/a\8b/' >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $(srcdir)/back89.in >_$@
-	$(CMP) $(srcdir)/back89.ok _$@ && rm -f _$@
-
-tradanch::
-	@$(AWKA) -f $(srcdir)/tradanch.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/tradanch.in >_$@
-	$(CMP) $(srcdir)/tradanch.ok _$@ && rm -f _$@
-
-nlfldsep::
-	@$(AWKA) -f $(srcdir)/nlfldsep.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/nlfldsep.in > _$@
-	$(CMP) $(srcdir)/nlfldsep.ok _$@ && rm -f _$@
-
-splitvar::
-	@$(AWKA) -f $(srcdir)/splitvar.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/splitvar.in >_$@
-	$(CMP) $(srcdir)/splitvar.ok _$@ && rm -f _$@
-
-foronsplit::
-	@$(AWKA) -f $(srcdir)/foronsplit.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/foronsplit.ok _$@ && rm -f _$@
-
-intest::
-	@$(AWKA) -f $(srcdir)/intest.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/intest.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/back89.ok _$@ && rm -f _$@
 
 strftlng::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/strftlng.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@TZ=UTC; export TZ; ./xx >_$@
 	@if $(CMP) -s $(srcdir)/strftlng.ok _$@ ; then : ; else \
  	TZ=UTC0; export TZ; ./xx >_$@ ; \
 	fi
-	$(CMP) $(srcdir)/strftlng.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/strftlng.ok _$@ && rm -f _$@
 
 nfldstr::
+	@echo $@
 	@$(AWKA) '$$1 == 0 { print "bug" }' >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@echo | ./xx > _$@
-	$(CMP) $(srcdir)/nfldstr.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/nfldstr.ok _$@ && rm -f _$@
 
 nors::
+	@echo $@
 	@$(AWKA) '{ print $$NF }' >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@echo A B C D E | tr -d '\012\015' | ./xx - $(srcdir)/nors.in > _$@
-	$(CMP) $(srcdir)/nors.ok _$@ && rm -f _$@
-
-fnarydel::
-	@$(AWKA) -f $(srcdir)/fnarydel.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/fnarydel.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/nors.ok _$@ && rm -f _$@
 
 pipeio1::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/pipeio1.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >_$@
 	@rm -f test1 test2
-	$(CMP) $(srcdir)/pipeio1.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/pipeio1.ok _$@ && rm -f _$@
 
 pipeio2::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/pipeio2.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx -v SRCDIR=$(srcdir) >_$@
-	$(CMP) $(srcdir)/pipeio2.ok _$@ && rm -f _$@
-
-funstack::
-	@$(AWKA) -f $(srcdir)/funstack.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/funstack.in >_$@
-	$(CMP) $(srcdir)/funstack.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/pipeio2.ok _$@ && rm -f _$@
 
 clobber::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/clobber.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >_$@
-	$(CMP) $(srcdir)/clobber.ok seq && $(CMP) $(srcdir)/clobber.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/clobber.ok seq && $(CMP) $(srcdir)/clobber.ok _$@ && rm -f _$@
 	@rm -f seq
 
-delarprm::
-	@$(AWKA) -f $(srcdir)/delarprm.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/delarprm.ok _$@ && rm -f _$@
-
-prdupval::
-	@$(AWKA) -f $(srcdir)/prdupval.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx $(srcdir)/prdupval.in >_$@
-	$(CMP) $(srcdir)/prdupval.ok _$@ && rm -f _$@
-
 nondec::
+	@echo $@
 	@if grep BITOP ../config.h | grep define > /dev/null; \
 	then \
 		$(AWKA) -f $(srcdir)/nondec.awk >x.c; \
@@ -626,49 +447,23 @@ nondec::
 	else \
 		cp $(srcdir)/nondec.ok _$@; \
 	fi
-	$(CMP) $(srcdir)/nondec.ok _$@ && rm -f _$@
-
-beginexit::
-	@$(AWKA) -f $(srcdir)/$@.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/nondec.ok _$@ && rm -f _$@
 
 mainexit::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/$@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@(./xx $@.in ; echo $$?) >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 fnrtest::
+	@echo $@
 	@$(AWKA) -f $(srcdir)/$@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx $@.in $@.in $@.in >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
-powtest::
-	@$(AWKA) -f $(srcdir)/$@.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
-begingetline::
-	@$(AWKA) -f $(srcdir)/$@.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
-extendedchars::
-	@$(AWKA) -f $(srcdir)/$@.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
-mathxtra::
-	@$(AWKA) -f $(srcdir)/math_extra.awk >x.c
-	@$(CC) x.c $(CFLAGS) -o xx
-	@./xx >_$@
-	$(CMP) $(srcdir)/math_extra.ok _$@ && rm -f _$@
+########################################################################
 
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~ xx xx$(EXE) x.c
