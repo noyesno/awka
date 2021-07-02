@@ -47,6 +47,7 @@ struct ivar_idx ivar[] = {
  { "FILENAME",    "a_bivar[a_FILENAME]"    },
  { "FNR",         "a_bivar[a_FNR]"         },
  { "FS",          "a_bivar[a_FS]"          },
+ { "FUNCTAB",     "a_bivar[a_FUNCTAB]"     },
  { "NF",          "a_bivar[a_NF]"          },
  { "NR",          "a_bivar[a_NR]"          },
  { "OFMT",        "a_bivar[a_OFMT]"        },
@@ -61,7 +62,7 @@ struct ivar_idx ivar[] = {
  { "SORTTYPE",    "a_bivar[a_SORTTYPE]"    },
  { "SUBSEP",      "a_bivar[a_SUBSEP]"      }
 };
-#define IVAR_MAX 21
+#define IVAR_MAX 22
 
 #define _a_LHS 0
 #define _a_RHS 1

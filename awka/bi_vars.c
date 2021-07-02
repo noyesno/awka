@@ -61,7 +61,8 @@ static char *bi_var_names[NUM_BI_VAR] = {
 "FS" ,
 "RS" ,
 "OFMT" ,
-"CONVFMT"
+"CONVFMT" ,
+"FUNCTAB"
 } ;
 
 /* insert the builtin vars in the hash table */
@@ -73,6 +74,8 @@ void  bi_vars_init()
   
   for ( i = 0 ; i < NUM_BI_VAR ; i++ )
   { if (!strcmp(bi_var_names[i], "PROCINFO"))
+      continue;
+    if (!strcmp(bi_var_names[i], "FUNCTAB"))
       continue;
     s = insert( bi_var_names[i] ) ;
     s->type = i <= 1 ? ST_NR : ST_VAR ; 
@@ -133,9 +136,13 @@ void  bi_vars_init()
   NR->type = FNR->type = C_DOUBLE ;
 
   s = insert("PROCINFO") ;
-  s->type = ST_ARRAY;
-  s->stval.array = new_ARRAY();
+  s->type = ST_ARRAY ;
+  s->stval.array = new_ARRAY() ;
   /* PROCINFO->stval.array = new_ARRAY(); */
   /* dval is already 0.0 */
+
+  s = insert("FUNCTAB") ;
+  s->type = ST_ARRAY ;
+  s->stval.array = new_ARRAY() ;
 
 }
