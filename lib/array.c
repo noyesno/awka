@@ -2430,8 +2430,7 @@ awka_doln(int idx, int set)
 static INLINE int
 _awka_alistcmp(a_HSHNode *node1, a_HSHNode *node2, int sorttype)
 {
-  char tmp[96], tmp2[96];
-  int tmpi1, tmpi2 = 0;
+  char tmp[26], tmp2[26];
 
   if (sorttype & 8)
   { /* sort values - auto handles Numeric vs Alpha */
@@ -2496,8 +2495,8 @@ _awka_alistcmp(a_HSHNode *node1, a_HSHNode *node2, int sorttype)
       sprintf(tmp, "%d", node1->hval);
       sprintf(tmp2, "%d", node2->hval);
       if (sorttype & 4)
-        return strcmp(node2->key, node1->key);
-      return strcmp(node1->key, node2->key);
+        return strcmp(tmp2, tmp);
+      return strcmp(tmp, tmp2);
     }
   
     if (sorttype & 4)
