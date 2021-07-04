@@ -351,7 +351,7 @@ _awka_getdval( a_VAR *v, char *file, int line )
       awka_error("runtime error: awka_getd in file %s, line %d - %s\n", file,line,"array used as scalar");
   }
   
-  if (v->type2 != (char) -1)
+  if (v->type == a_VARDBL && v->type2 != (char) -1)
     v->type2 = a_DBLSET;
   return v;
 }
@@ -724,8 +724,13 @@ _awka_checkunk(a_VAR *va)
     if (!isalpha(va->ptr[0]) &&
         _awka_isnumber(va->ptr) == TRUE)
     {
-      va->type2 = a_DBLSET;
+      if(va->type != a_VARDBL)
+        va->type2 = a_DBLSET;
       va->dval = strtod(va->ptr, NULL);
+    }
+    else {
+      va->dval = 0.0;
+      va->type2 = 0;
     }
     /*
     else
@@ -798,8 +803,9 @@ awka_var2dblcmp( a_VAR *va, double d )
   if (va->type == a_VARUNK && va->type2 == 0 && va->ptr)
     _awka_checkunk(va);
 
-  if (va->type <= a_VARDBL || (va->type == a_VARUNK && va->type2 == a_DBLSET))
+  if (va->type == a_VARDBL || (va->type == a_VARUNK && va->type2 == a_DBLSET))
     return (va->dval == d ? 0 : (va->dval < d ? -1 : 1));
+
   if (!(i = strcmp(awka_gets1(va), awka_tmp_dbl2str(d))))
     return 0;
   return (i < 0 ? -1 : 1);
@@ -816,7 +822,7 @@ awka_dbl2varcmp( double d, a_VAR *va )
   if (va->type2 == 0 && va->ptr && va->type == a_VARUNK)
     _awka_checkunk(va);
 
-  if (va->type <= a_VARDBL || (va->type == a_VARUNK && va->type2 == a_DBLSET))
+  if (va->type == a_VARDBL || (va->type == a_VARUNK && va->type2 == a_DBLSET))
   {
     i = (d == va->dval ? 0 : (d < va->dval ? -1 : 1));
     return (double) i;
@@ -944,7 +950,7 @@ awka_tmp_re2var(awka_regexp *r)
 char *
 awka_tmp_dbl2str(double d)
 {
-  char *s, tmp[256];
+  char *s, tmp[25];   // max chars for %d on 64 bit machine should be 23 
   int i = (int) d, len;
 
   if ((double) i == d)

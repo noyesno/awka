@@ -63,7 +63,7 @@ basic:		msg \
 			bslash print cox gensub zeroflag getnr2tm getnr2tb \
 			numindex subslash opasnslf opasnidx arynocls getlnbuf arysubnm \
 			nlstrina nextfile next rsnul1nl beginexit mainexit fnrtest \
-			powtest begingetline extendedchars nofile sort \
+			powtest begingetline extendedchars nofile sort addcmp \
 			endbasic
 
 revive-awka: 		rslen rsnull scgi
@@ -105,7 +105,7 @@ zeroflag asort subslash opasnslf opasnidx arysubnm nlstrina print gensub cox ret
 nofile a_cat eiso3 divide conflict aloop dubois splitrem fun arraycat arrayref rand \
 convfmt intprec gnureops pcntplus prmreuse math getlnhd backgsub dynlj substr eofsplit \
 prt1eval prtoeval gsubtest splitwht foronsplit intest fnarydel delarprm \
-beginexit powtest begingetline extendedchars sort mathextra::
+beginexit powtest begingetline extendedchars sort addcmp mathextra::
 	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx

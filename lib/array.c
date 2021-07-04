@@ -2333,17 +2333,8 @@ awka_doln(int idx, int set)
   a_HSHNode *node;
 
   if (!idx)
-    return awka_dol0(set);
-
-  if (!nullvar)
   {
-    malloc( &nullvar, sizeof(a_VAR) );
-    nullvar->allc = malloc( &nullvar->ptr, 1 );
-    nullvar->ptr[0] = '\0';
-    nullvar->slen = 0;
-    nullvar->type = a_VARUNK;
-    nullvar->temp = nullvar->type2 = 0;
-    nullvar->dval = 0.0;
+    return awka_dol0(set);
   }
 
   if (_rebuildn == TRUE)
@@ -2363,7 +2354,19 @@ awka_doln(int idx, int set)
     case 0:
       /* if (idx >= array->nodeno) */ 
       if (idx >= nf || idx >= array->nodeno)
+      {
+  	    if (!nullvar)
+  	    {
+	      malloc( &nullvar, sizeof(a_VAR) );
+	      nullvar->allc = malloc( &nullvar->ptr, 1 );
+	      nullvar->ptr[0] = '\0';
+  	      nullvar->slen = 0;
+	      nullvar->type = a_VARUNK;
+	      nullvar->temp = nullvar->type2 = 0;
+	      nullvar->dval = 0.0;
+	    }
         return nullvar;
+      }
       break;
 
     default:
@@ -2414,6 +2417,7 @@ awka_doln(int idx, int set)
   }
   else
     array->slot[idx]->var->ptr = NULL;
+
   array->slot[idx]->key = _a_SPLT_LOCALSTR;
   return array->slot[idx]->var;
 }
