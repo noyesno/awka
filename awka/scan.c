@@ -46,15 +46,19 @@
 
 #include  "files.h"
 
+#define CMT_BUF_SZ  128
+
 /* static functions */
-static void PROTO(scan_fillbuff, (void)) ;
-static void PROTO(scan_open, (void)) ;
-static int PROTO(slow_next, (void)) ;
-static void PROTO(eat_comment, (void)) ;
-static void PROTO(eat_semi_colon, (void)) ;
+static void   PROTO(scan_fillbuff, (void)) ;
+static void   PROTO(scan_open, (void)) ;
+static int    PROTO(slow_next, (void)) ;
+static unsigned char   PROTO(next, (void)) ;
+static void   PROTO(un_next, (void)) ;
+static void   PROTO(eat_comment, (void)) ;
+static void   PROTO(eat_semi_colon, (void)) ;
 static double PROTO(collect_decimal, (int, int *)) ;
-static int PROTO(collect_string, (void)) ;
-static int PROTO(collect_RE, (void)) ;
+static int    PROTO(collect_string, (void)) ;
+static int    PROTO(collect_RE, (void)) ;
 
 
 /*-----------------------------
@@ -74,6 +78,9 @@ extern char **vardeclare;
 extern int vdec_no, vdec_allc;
 
 int _true_re = 0;
+
+/* position used for error reporting */
+int line_pos = 0 ;
 
 void PROTO(init_extbi, (void));
 
@@ -144,6 +151,16 @@ scan_cleanup()
    scan_code['\r'] = SC_UNEXPECTED ;
 }
 
+static inline unsigned char
+next()
+{
+  line_pos++;
+  return (*buffp ? *buffp++ : slow_next());
+}
+
+static inline void
+un_next() { buffp--; line_pos--; }
+
 /*--------------------------------
   global variables shared by yyparse() and yylex()
   and used for error messages too
@@ -207,10 +224,12 @@ slow_next()
          ZFREE(q) ;
          scan_open() ;
          token_lineno = lineno = 1 ;
+	 line_pos = 0 ;
       }
       else  break /* real eof */ ;
    }
 
+   //line_pos++;
    return *buffp++ ;                 /* note can un_next() , eof which is zero */
 }
 
@@ -221,7 +240,7 @@ eat_comment()
    
    if (warning_msg & MSG_VARDECLARE)
    {
-      char keyword[] = "VDECL: ", buf[128] ;
+      char keyword[] = "VDECL: ", buf[CMT_BUF_SZ] ;
       int i = 0, j = strlen(keyword) ;
 
       /* see if its a var_declare comment */
@@ -250,13 +269,13 @@ eat_comment()
          {
             /* navigate to the next word */
             while (c == ' ' || c == '\t') c = next() ;
-            if (c == '\n' || c == '\0') return ;
+            if (c == '\n' || c == '\0') { line_pos = 0 ; return ; }
 
             i = 0 ;
             while (c != ' ' && c != '\t' && c != '\n' && c != '\0')
             {
                buf[i++] = c ;
-               if (i == 128) break ;
+               if (i == CMT_BUF_SZ-1) break ;
                c = next() ;
             }
             buf[i] = '\0' ;
@@ -320,6 +339,7 @@ eat_nl()                        /* eat all space including newlines */
             break ;
 
          case SC_NL:
+	    line_pos = 0;
             lineno++ ;
             /* fall thru  */
 
@@ -331,11 +351,14 @@ eat_nl()                        /* eat all space including newlines */
                a csh user with backslash dyslexia.(Not a joke)
             */
             {
-               unsigned c ;
+               register unsigned c ;
 
                while (scan_code[c = next()] == SC_SPACE) ;
                if (c == '\n')
+	       {
+		  line_pos = 0;
                   token_lineno = ++lineno ;
+	       }
                else if (c == 0)  
                {
                   un_next() ;
@@ -364,7 +387,7 @@ int
 yylex()
 {
    register int c, funct, nexts ;
-   static int prev_token = -1;
+   static int prev_token = -1 ;
 
    token_lineno = lineno ;
 
@@ -392,6 +415,7 @@ reswitch:
          if (c == '\n')
          {
             token_lineno = ++lineno ;
+	        line_pos = 0 ;
             goto reswitch ;
          }
 
@@ -451,7 +475,36 @@ reswitch:
          ct_ret(COMMA) ;
 
       case SC_MUL:
-         test1_ret('=', MUL_ASG, MUL) ;
+	 // * or *= or **=
+         //test1_ret('=', MUL_ASG, MUL) ;
+         switch (next())
+         {
+            case '*': // **
+               yylval.ival = '*' ;
+               string_buff[0] =
+                 string_buff[1] = '*' ;
+               string_buff[2] = 0 ;
+	           if (c = next() == '=')
+	           {
+		          // **=
+                  yylval.ival = '=' ;
+                  string_buff[2] = '=' ;
+                  string_buff[3] = 0 ;
+		          ct_ret(POW_ASG) ;
+	           }
+               yylval.ival = c ;
+               string_buff[2] = c ;
+               string_buff[3] = 0 ;
+	           ct_ret(UNEXPECTED) ;
+
+            case '=':  // *=
+               ct_ret(MUL_ASG) ;
+
+            default:  // *
+               un_next() ;
+               ct_ret(MUL) ;
+         }
+
 
       case SC_DIV:
          {
@@ -500,6 +553,8 @@ reswitch:
       case SC_RPAREN:
          if (--paren_cnt < 0)
          {
+            string_buff[0] = ')' ;
+            string_buff[1] = 0 ;
             compile_error("extra ')'") ;
             paren_cnt = 0 ;
             goto reswitch ;
@@ -508,14 +563,18 @@ reswitch:
          ct_ret(RPAREN) ;
 
       case SC_LBOX:
+         string_buff[0] = '[' ;
+         string_buff[1] = 0 ;
          ct_ret(LBOX) ;
 
       case SC_RBOX:
+         string_buff[0] = ']' ;
+         string_buff[1] = 0 ;
          ct_ret(RBOX) ;
 
       case SC_MATCH:
          string_buff[0] = '~' ;
-         string_buff[0] = 0 ;
+         string_buff[1] = 0 ;
          yylval.ival = 1 ;
          ct_ret(MATCH) ;
 
@@ -583,14 +642,14 @@ reswitch:
            eat_nl();
            if (print_flag && paren_cnt == 0)
            {
-             print_flag = 0;
-             yylval.ival = COP_OUT;
-             string_buff[0] = '|';
-             string_buff[1] = '&';
-             string_buff[2] = 0;
-             ct_ret(COPROCESS_OUT);
+             print_flag = 0 ;
+             yylval.ival = COP_OUT ;
+             string_buff[0] = '|' ;
+             string_buff[1] = '&' ;
+             string_buff[2] = 0 ;
+             ct_ret(COPROCESS_OUT) ;
            }
-           ct_ret(COPROCESS);
+           ct_ret(COPROCESS) ;
          }
          else
          {
@@ -644,7 +703,8 @@ reswitch:
                we will eat it.        Note what we do below:
                physical law -- conservation of semi-colons */
 
-            if (brace_cnt == 0)         eat_semi_colon() ;
+            if (brace_cnt == 0)
+               eat_semi_colon() ;
             eat_nl() ;
             ct_ret(RBRACE) ;
          }
@@ -659,7 +719,7 @@ reswitch:
       case SC_DIGIT:
       case SC_DOT:
          {
-            double d;
+            double d ;
             int flag ;
             static double double_zero = 0.0 ;
             static double double_one = 1.0 ;
@@ -683,7 +743,7 @@ reswitch:
 
       case SC_DOLLAR:                /* '$' */
          {
-            double d;
+            double d ;
             int flag ;
 
             while (scan_code[c = next()] == SC_SPACE) ;
@@ -697,8 +757,10 @@ reswitch:
             /* compute field address at compile time */
             if ((d = collect_decimal(c, &flag)) == 0.0)
             {
-               if (flag)  ct_ret(flag) ; /* an error */
-               else  yylval.cp = &field[0] ;
+               if (flag)
+                  ct_ret(flag) ; /* an error */
+               else
+                  yylval.cp = &field[0] ;
             }
             else
             {
@@ -729,21 +791,23 @@ reswitch:
                      (c = scan_code[*p++ = next()]) == SC_IDCHAR ||
                      c == SC_DIGIT) ;
 
-            funct = 0;
-            nexts = 1;
+            funct = 0 ;
+            nexts = 1 ;
             if (c == SC_SPACE)
             {
                *(p-1) = 0 ;
                if (bi_funct_find(string_buff))
                {
-                 while ((scan_code[c = next()]) == SC_SPACE) nexts++;
-                 if (c == '(') funct = TRUE;
+                 while ((scan_code[c = next()]) == SC_SPACE)
+                    nexts++ ;
+                 if (c == '(')
+                    funct = TRUE ;
                }
             }
             else if (*(p-1) == '(')
-              funct = 1;
+               funct = 1 ;
             while (nexts--)
-              un_next() ;
+               un_next() ;
             *--p = 0 ;
 
             switch ((stp = find(string_buff, funct))->type)
@@ -753,10 +817,10 @@ reswitch:
                   /* check for function call before defined */
                   if (next() == '(')
                   {
-                     stp = find(string_buff, 2);
+                     stp = find(string_buff, 2) ;
                      stp->type = ST_FUNCT ;
                      stp->stval.fbp = (FBLOCK *)
-                        zmalloc(sizeof(FBLOCK)) ;
+                         zmalloc(sizeof(FBLOCK)) ;
                      stp->stval.fbp->name = stp->name ;
                      stp->stval.fbp->code = (INST *) 0 ;
                      yylval.fbp = stp->stval.fbp ;
@@ -806,22 +870,23 @@ reswitch:
 
                case ST_BUILTIN:
                   /* if (current_token == FUNCTION) goto _st_none; */
-                  if (funct == 0) goto _st_none;
+                  if (funct == 0)
+                     goto _st_none ;
                   yylval.bip = stp->stval.bip ;
                   /* if (is_ext_builtin(string_buff) && prev_token == FUNCTION)  */
                   if (is_ext_builtin(string_buff))
                   {
-                    stp->type = ST_NONE;
-                    stp->name = (char *) malloc(strlen(string_buff)+1);
-                    strcpy(stp->name, string_buff);
+                    stp->type = ST_NONE ;
+                    stp->name = (char *) malloc(strlen(string_buff)+1) ;
+                    strcpy(stp->name, string_buff) ;
                     yylval.stp = stp ;
                     if (prev_token == FUNCTION)
-                      current_token = ID;
+                       current_token = ID ;
                     else
-                      current_token = FUNCT_ID; 
+                       current_token = FUNCT_ID ;
                   }
                   else
-                    current_token = BUILTIN ;
+                     current_token = BUILTIN ;
                   break ;
 
                case ST_LENGTH:
@@ -865,7 +930,7 @@ collect_decimal(c, flag)
 {
    register unsigned char *p = (unsigned char *) string_buff + 1 ;
    unsigned char *endp ;
-   double d;
+   double d ;
 
    *flag = 0 ;
    /* memset(string_buff, 0, MIN_SPRINTF); */
@@ -886,7 +951,7 @@ collect_decimal(c, flag)
       if (p[-1] != '.')
       {
          un_next() ;
-         *p = 0;
+         *p = 0 ;
          p-- ;
       }
    }
@@ -970,7 +1035,8 @@ octal(start_p)
    if (isoctal(*p))
    {
       x = (x << 3) + *p++ - '0' ;
-      if (isoctal(*p))        x = (x << 3) + *p++ - '0' ;
+      if (isoctal(*p))
+         x = (x << 3) + *p++ - '0' ;
    }
    *start_p = p ;
    return x & 0xff ;
@@ -987,8 +1053,10 @@ hex(start_p)
    register unsigned x ;
    unsigned t ;
 
-   if (scan_code[*p] == SC_DIGIT)  x = *p++ - '0' ;
-   else         x = hex_value(*p++) ;
+   if (scan_code[*p] == SC_DIGIT)
+      x = *p++ - '0' ;
+   else
+      x = hex_value(*p++) ;
 
    if (scan_code[*p] == SC_DIGIT)  x = (x << 4) + *p++ - '0' ;
    else if ('A' <= *p && *p <= 'f' && (t = hex_value(*p)))
@@ -1001,7 +1069,7 @@ hex(start_p)
    return x ;
 }
 
-#define         ET_END            9
+#define   ET_END   9
 
 static struct
 {
@@ -1009,16 +1077,16 @@ static struct
 }
 escape_test[ET_END + 1] =
 {
-   'n', '\n',
-   't', '\t',
-   'f', '\f',
-   'b', '\b',
-   'r', '\r',
-   'a', '\07',
-   'v', '\013',
-   '\\', '\\',
-   '\"', '\"',
-   0, 0
+   'n',  '\n' ,
+   't',  '\t' ,
+   'f',  '\f' ,
+   'b',  '\b' ,
+   'r',  '\r' ,
+   'a',  '\07' ,
+   'v',  '\013' ,
+   '\\', '\\' ,
+   '\"', '\"' ,
+   0,    0
 } ;
 
 
@@ -1051,11 +1119,11 @@ rm_escape(s)
          {
             t = p ;
             int c = octal(&t) ;
-            if( c==0 && (t-p)==1 ){
+            if ( c==0 && (t-p)==1 ) {
               *q++ = *(p-1) ;
               *q++ = *p++ ;
             } else {
-              *q++ = c;
+              *q++ = c ;
                p = t ;
             }
          }
@@ -1073,7 +1141,8 @@ rm_escape(s)
             *q++ = *p++ ;
          }
       }
-      else  *q++ = *p++ ;
+      else
+         *q++ = *p++ ;
    }
 
    *q = 0 ;
@@ -1109,6 +1178,7 @@ collect_string()
             {
                p-- ;
                lineno++ ;
+	           line_pos = 0 ;
             }
             else if (c == 0)  un_next() ;
             else
@@ -1124,10 +1194,10 @@ collect_string()
       }
 
 out:
-   AWKA_DEBUG("token string 1 = \"%s\"\n", string_buff);
+   AWKA_DEBUG("token string 1 = \"%s\"\n", string_buff) ;
    unsigned char *s = e_flag ? rm_escape(string_buff) : string_buff ; 
-   AWKA_DEBUG("token string 2 = \"%s\"\n", s);
-   yylval.ptr = (PTR) new_STRING(s);
+   AWKA_DEBUG("token string 2 = \"%s\"\n", s) ;
+   yylval.ptr = (PTR) new_STRING(s) ;
    return STRING_ ;
 }
 
@@ -1136,33 +1206,35 @@ static int
 collect_RE()
 {
    register unsigned char *p = (unsigned char *) string_buff ;
-   int c, paren=0, box=0;
+   int c, paren=0, box=0 ;
    STRING *sval ;
 
    while (1)
       switch (scan_code[*p++ = next()])
       {
          case SC_LPAREN:
-            paren++;
-            break;
+            paren++ ;
+            break ;
 
          case SC_RPAREN:
-            if (--paren < 0) paren=0;
-            break;
+            if (--paren < 0)
+               paren=0 ;
+            break ;
 
          case SC_LBOX:
-            box = 1;
-            break;
+            box = 1 ;
+            break ;
 
          case SC_RBOX:
-            if (--box < 0) box=0;
-            break;
+            if (--box < 0)
+               box=0 ;
+            break ;
 
          case SC_DIV:                /* done */
             if (!box && !paren)
             {
-              *--p = 0 ;
-              goto out ;
+               *--p = 0 ;
+               goto out ;
             }
             break;
 
@@ -1180,7 +1252,7 @@ collect_RE()
             switch (c = next())
             {
                case '/':
-                  _true_re = 1;
+                  _true_re = 1 ;
                   p[-1] = '/' ;
                   break ;
 
@@ -1231,7 +1303,8 @@ fillbuff(fd, target, size)
             goto out ;
 
          default:
-            target += r ; size -= r ;
+            target += r ;
+            size -= r ;
             break ;
       }
 
@@ -1239,4 +1312,3 @@ out :
    *target = 0 ;
    return entry_size - size ;
 }
-

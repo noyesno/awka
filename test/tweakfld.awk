@@ -197,7 +197,8 @@ function polaz2yawpitch(polar, az) {
 # set TIGHT/LOOSE to N/A if it is not one of the two allowed values
 function tight_na() {
     if( $nf_tight !~ /TIGHT|LOOSE/ ) {
-        $nf_tight == "N/A"
+        $nf_tight = "N/A"
+        #$nf_tight == "N/A"
     }
 }
 

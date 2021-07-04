@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-$base = 1500000;
+$base = 15000;
 
 $a = 133;
 $x{$a,458} = 3;

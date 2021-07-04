@@ -33,7 +33,7 @@ SHARED_LIB = @SHARED_LIB@
 BUILDLIB = libawka.a $(SHARED_LIB)
 #######################################
 
-MAKEFILEIN = Makefile.in lib/Makefile.in awka/Makefile.in test/Makefile.in
+MAKEFILEIN = Makefile.in lib/Makefile.in awka/Makefile.in test/Makefile.in benchmark/Makefile.in
 
 all: awka_exe libawka
 
@@ -66,10 +66,10 @@ clean:
 	cd test; $(MAKE) clean
 
 distclean:  clean
-	rm -f config.h Makefile lib/Makefile awka/Makefile test/Makefile \
+	rm -f config.h Makefile lib/Makefile awka/Makefile test/Makefile benchmark/Makefile \
 	    config.status config.log config.cache
 	rm -f defines.out maxint.out
-	rm -f benchmark/*.c benchmark/core benchmark/*.o benchmark/x*
+	rm -f benchmark/*.c benchmark/core benchmark/*.o benchmark/x* benchmark/*.out
 
 configure:  configure.in awka.ac.m4
 	autoconf
@@ -78,4 +78,9 @@ check:	awka_exe libawka
 	cd test; $(MAKE) -k
 
 test:	check
+
+timeit:  awka_exe libawka
+	cd benchmark; $(MAKE) -k
+
+benchmark:  timeit
 

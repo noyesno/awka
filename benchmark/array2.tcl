@@ -1,4 +1,4 @@
-set base 50000;
+set base 500;
 
 for {set i 0} {$i<50} {incr i} {
   set X($i) "$i.$i"

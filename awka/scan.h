@@ -39,6 +39,7 @@ the GNU General Public License, version 2, 1991.
 #include  "parse.h"
 #endif
 
+int line_pos;
 
 extern  char scan_code[256] ;
 
@@ -87,9 +88,6 @@ void  PROTO(eat_nl, (void) ) ;
 void  PROTO( unexpected_char, (void) ) ;
 
 #define  ct_ret(x)  return current_token = (x)
-
-#define  next() (*buffp ? *buffp++ : slow_next())
-#define  un_next()  buffp--
 
 #define  test1_ret(c,x,d)  if ( next() == (c) ) ct_ret(x) ;\
                            else { un_next() ; ct_ret(d) ; }

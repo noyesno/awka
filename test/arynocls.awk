@@ -34,16 +34,16 @@
 # The program bug is to not close the file in sub2.
 
 function sub1(x) {
-# while (getline < "a" == 1) i++
+#  while (getline < "a" == 1) i++
   while (getline < INPUT == 1) i++
-# close("a")
+#  close("a")
   close(INPUT)
 }
 
 function sub2(x) {
   i=0
   delete y
-# while (getline < "a" == 1) z[++i] = $1
+#  while (getline < "a" == 1) z[++i] = $1
   while (getline < INPUT == 1) z[++i] = $1
   for(i in z) y[i] = x[i] + z[i]
 }
@@ -54,6 +54,7 @@ function sub3(x, y, z) {
 }
 
 BEGIN {
+  INPUT = "a"
   sub1(x)
   sub2(x)
   sub3(x, y, z)

@@ -12,7 +12,8 @@ sub def {
   return abc($d, $e, $f);
 }
 
-$base = 2000000;
+$base = 20000;
 for ($i=0; $i<$base; $i++) {
-    $x = def("this", "that", "the next thing");
+    $x = def(12435345, 93840932, 98921);
+    #$x = def("this", "that", "the next thing");
 }

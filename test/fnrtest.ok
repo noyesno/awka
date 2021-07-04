@@ -1,0 +1,20 @@
+Starting FNR: 0 NR: 0
+File: fnrtest.in
+Onchange FNR: 1 NR: 1
+FNR: 1 NR: 1
+FNR: 2 NR: 2
+FNR: 3 NR: 3
+FNR: 4 NR: 4
+File: fnrtest.in
+Onchange FNR: 1 NR: 5
+FNR: 1 NR: 5
+FNR: 2 NR: 6
+FNR: 3 NR: 7
+FNR: 4 NR: 8
+File: fnrtest.in
+Onchange FNR: 1 NR: 9
+FNR: 1 NR: 9
+FNR: 2 NR: 10
+FNR: 3 NR: 11
+FNR: 4 NR: 12
+Ending FNR: 4 NR: 12

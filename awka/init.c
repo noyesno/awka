@@ -311,13 +311,13 @@ process_cmdline(argc, argv)
 
          case 'X':
             awka_comp = TRUE;
-            awka_exe = FALSE;
+            awka_exe  = FALSE;
             awka_main = FALSE;
             break;
 
          case 'x':
-            awka_exe = TRUE;
             awka_comp = FALSE;
+            awka_exe  = TRUE;
             awka_main = FALSE;
             break;
 
@@ -353,50 +353,53 @@ process_cmdline(argc, argv)
          case 'h':
             fprintf(stderr,"\nusage: awka [-c fn] [-X] [-x -t] [-w flags] [-f filename] program_string [--] [exe-args]\n");
             fprintf(stderr,"       awka [-h] [-v]\n\n");
-            fprintf(stderr,"    -f     AWK Program file(s)\n");
-            fprintf(stderr,"    -c fn  Awka will generate a 'fn' function rather\n");
-            fprintf(stderr,"           than a main function\n");
-            fprintf(stderr,"    -x     Translates, compiles then executes program\n");
-            fprintf(stderr,"    -t     If -x specified, the temporary C and executable\n");
-            fprintf(stderr,"           files will be deleted following execution.\n");
-            fprintf(stderr,"           Without this argument, -x will produce awka_out.c\n");
+            fprintf(stderr,"    -f      AWK Program file(s)\n");
+            fprintf(stderr,"    -c fn   Awka will generate a 'fn' function rather\n");
+            fprintf(stderr,"            than a main function\n");
+            fprintf(stderr,"    -x      Translates, compiles and executes the program,\n");
 #ifdef __CYGWIN32__
-            fprintf(stderr,"           and awka_out.exe in the current directory.\n");
+            fprintf(stderr,"            and will produce the awka-app.exe file\n");
 #else
-            fprintf(stderr,"           and awka.out in the current directory.\n");
+            fprintf(stderr,"            and will produce the awka-app.out file\n");
 #endif
-            fprintf(stderr,"    -X     This will create the C file awka_out.c and compile\n");
+            fprintf(stderr,"            in the current directory.\n");
+            fprintf(stderr,"    -t      If -x is specified, the temporary C and executable\n");
+            fprintf(stderr,"            files will be deleted following execution.\n");
+            fprintf(stderr,"    -X      Translates, compiles (not execute) the program, and leaves\n");
 #ifdef __CYGWIN32__
-            fprintf(stderr,"           an executable 'awka_out.exe'.  Awka will stop after\n");
+            fprintf(stderr,"            the 'awka-app.exe' executable file in the current directory.\n");
 #else
-            fprintf(stderr,"           an executable 'awka.out'.  Awka will stop after\n");
+            fprintf(stderr,"            the 'awka-app.out' executable file in the current directory.\n");
 #endif
-            fprintf(stderr,"           the compile is complete.\n");
-            fprintf(stderr,"    -o fil If -x used, this will create an executable called 'fil'\n");
+            fprintf(stderr,"    -o fil  If -x used, this will create an executable called 'fil'\n");
 #ifdef __CYGWIN32__
-            fprintf(stderr,"           instead of the default 'awka_out.exe'\n");
+            fprintf(stderr,"            instead of the default 'awka_out.exe'\n");
 #else
-            fprintf(stderr,"           instead of the default 'awka.out'\n");
+            fprintf(stderr,"            instead of the default 'awka.out'\n");
             fprintf(stderr,"\n");
-            fprintf(stderr,"    -I dir Compiler include directory.\n");
-            fprintf(stderr,"    -L dir Compiler link library directory.\n");
+            fprintf(stderr,"    -I dir  Compiler include directory.\n");
+            fprintf(stderr,"    -i fil  Compiler include file.\n");
+            fprintf(stderr,"    -L dir  Compiler link library directory.\n");
+            fprintf(stderr,"    -l fil  Compiler link library file.\n");
+            fprintf(stderr,"    -s      Statically link libawka (default is dynamic)\n");
+            //fprintf(stderr,"    -D      Dump extra information then exit\n");
             fprintf(stderr,"\n");
 #endif
-            fprintf(stderr,"    --     If -x specified, all arguments after this point\n");
-            fprintf(stderr,"           will be passed to the compiled executable.\n");
-            fprintf(stderr,"    -a str The executable command-line arguments in 'str' will\n");
-            fprintf(stderr,"           be hard-coded in the translated C output.\n");
-            fprintf(stderr,"    -w flg Prints various warnings to stderr, useful in debugging\n");
-            fprintf(stderr,"           large, complex programs.  The argument can contain the\n");
-            fprintf(stderr,"           following characters:-\n");
-            fprintf(stderr,"       'a' print a list of all global variables & their usage\n");
-            fprintf(stderr,"       'b' warn about variables set but not referenced.\n");
-            fprintf(stderr,"       'c' warn about variables referenced but not set.\n");
-            fprintf(stderr,"       'd' report global vars used in any function.\n");           
-            fprintf(stderr,"       'e' report global vars used in just one function.\n");           
-            fprintf(stderr,"       'f' require global variables to be listed in a VDECL comment\n");
-            fprintf(stderr,"       'g' warn about assignments used as truth expressions\n");
-            fprintf(stderr,"    -v     Prints version information\n\n");
+            fprintf(stderr,"    --      If -x specified, all arguments after this point\n");
+            fprintf(stderr,"            will be passed to the compiled executable.\n");
+            fprintf(stderr,"    -a str  The executable command-line arguments in 'str' will\n");
+            fprintf(stderr,"            be hard-coded in the translated C output.\n");
+            fprintf(stderr,"    -w flg  Prints various warnings to stderr, useful in debugging\n");
+            fprintf(stderr,"            large, complex programs.  The argument can contain the\n");
+            fprintf(stderr,"            following characters:-\n");
+            fprintf(stderr,"       'a'  print a list of all global variables & their usage\n");
+            fprintf(stderr,"       'b'  warn about variables set but not referenced.\n");
+            fprintf(stderr,"       'c'  warn about variables referenced but not set.\n");
+            fprintf(stderr,"       'd'  report global vars used in any function.\n");
+            fprintf(stderr,"       'e'  report global vars used in just one function.\n");
+            fprintf(stderr,"       'f'  require global variables to be listed in a VDECL comment\n");
+            fprintf(stderr,"       'g'  warn about assignments used as truth expressions\n");
+            fprintf(stderr,"    -v      Prints version information\n\n");
             exit(0);
 
          default:

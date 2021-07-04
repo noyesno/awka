@@ -47,6 +47,7 @@ struct ivar_idx ivar[] = {
  { "FILENAME",    "a_bivar[a_FILENAME]"    },
  { "FNR",         "a_bivar[a_FNR]"         },
  { "FS",          "a_bivar[a_FS]"          },
+ { "FUNCTAB",     "a_bivar[a_FUNCTAB]"     },
  { "NF",          "a_bivar[a_NF]"          },
  { "NR",          "a_bivar[a_NR]"          },
  { "OFMT",        "a_bivar[a_OFMT]"        },
@@ -61,7 +62,7 @@ struct ivar_idx ivar[] = {
  { "SORTTYPE",    "a_bivar[a_SORTTYPE]"    },
  { "SUBSEP",      "a_bivar[a_SUBSEP]"      }
 };
-#define IVAR_MAX 21
+#define IVAR_MAX 22
 
 #define _a_LHS 0
 #define _a_RHS 1
@@ -685,7 +686,7 @@ awka_buildexpr(char *oper, char *p, char *q, int pprev, int qprev, char c1, char
       break;
       
     default:
-      awka_error("%s error: Expecting var, str or dbl context for lside argument, line %d.\n",oper,progcode[inst].line);
+      awka_error("%s error: expecting var, str or dbl context for lside argument, line %d.\n",oper,progcode[inst].line);
   }
   return ret;
 }
@@ -1769,7 +1770,7 @@ awka_eq(int inst, int *earliest, char *context)
       break;
       
     default:
-      awka_error("eq error: Expecting var, str or dbl context for lside argument, line %d.\n",progcode[inst].line);
+      awka_error("eq error: expecting var, str or dbl context for lside argument, line %d.\n",progcode[inst].line);
   }
 
   *context = _DBL;
@@ -1799,16 +1800,10 @@ awka_exit(int inst, int *earliest, char *context)
     }
   }
   p = (* progcode[inst-1].func)(inst-1, &prev, &c1);
-  ret = buildstr("exit", "awka_exit(%s);\n", p, c1, _DBL, inst, inst-1);
+  ret = buildstr("exit", "awka_exit_val = %s;  return;\n", p, c1, _DBL, inst, inst-1);
   free(p);
   *earliest = prev;
   *context = _NUL;
-
-  if (end_used == TRUE && mode != END && progcode[inst].op != _ABORT)
-  {
-    p = codeptr(inst, 10);
-    sprintf(p, "END();\n");
-  }
 
   return ret;
 }
@@ -1831,19 +1826,21 @@ awka_exit0(int inst, int *earliest, char *context)
       sprintf(p, "awka_alistfreeall(&_alh%d);\n",i);
     }
   }
-  ret = (char *) malloc( 20 );
-  if (awka_main && progcode[inst].op == _CLEANUP)
-    strcpy(ret, "return(0);\n");
-  else
-    strcpy(ret, "awka_exit(0);\n");
+  ret = (char *) malloc( 60 );
+  if (awka_main) {
+    if (progcode[inst].op == _CLEANUP)
+      strcpy(ret, "return((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
+    else
+      strcpy(ret, "awka_exit((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
+  }
+  else {
+    if (end_used == TRUE && mode != END)
+      strcpy(ret, "awka_exit_val = 0;  return;\n");
+    else
+      strcpy(ret, "awka_exit((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
+  }
   *earliest = inst-1;
   *context = _NUL;
-
-  if (end_used == TRUE && mode != END && progcode[inst].op == _EXIT)
-  {
-    p = codeptr(inst, 10);
-    sprintf(p, "END();\n");
-  }
 
   return ret;
 }
@@ -2433,7 +2430,7 @@ awka_neq(int inst, int *earliest, char *context)
       break;
       
     default:
-      awka_error("neq error: Expecting var, str or dbl context for lside argument, line %d.\n",progcode[inst].line);
+      awka_error("neq error: expecting var, str or dbl context for lside argument, line %d.\n",progcode[inst].line);
   }
 
   *context = _DBL;
@@ -3822,7 +3819,8 @@ awka_math(int inst, int *earliest, char *context)
 
   p = (* progcode[inst-1].func)(inst-1, &prev, &c1);
   r2 = buildstr("math", "%s", p, c1, _DBL, inst, inst-1);
-  if (progcode[inst].op == _ATAN2)
+  if (progcode[inst].op == _ATAN2 || progcode[inst].op == _HYPOT ||
+	progcode[inst].op == _MMOD || progcode[inst].op == _MPOW)
   {
     free(p); prev2 = prev;
     p = (*progcode[prev].func)(prev, &prev, &c1);
@@ -3831,28 +3829,28 @@ awka_math(int inst, int *earliest, char *context)
   }
   else
     ret = (char *) malloc(strlen(r2) + 50);
+
   switch (progcode[inst].op)
   {
+    case 0:  /* Not found! */
+      awka_error("math error: unknown function %s\n",code[progcode[inst].op-1].name);
+      break;
+    case _ABS:
+      sprintf(ret, "fabs(%s)",r2);
+      break;
     case _ATAN2:
-      sprintf(ret, "atan2(%s, %s)",r3,r2);
+    case _HYPOT:
+    case _MPOW:
+      sprintf(ret, "%s(%s, %s)",code[progcode[inst].op-1].name,r3,r2);
       break;
-    case _COS:
-      sprintf(ret, "cos(%s)",r2);
-      break;
-    case _EXP:
-      sprintf(ret, "exp(%s)",r2);
+    case _MMOD:
+      sprintf(ret, "fmod(%s, %s)",r3,r2);
       break;
     case a_INT:
       sprintf(ret, "(int) (%s)",r2);
       break;
-    case _LOG:
-      sprintf(ret, "log(%s)",r2);
-      break;
-    case _SIN:
-      sprintf(ret, "sin(%s)",r2);
-      break;
-    case _SQRT:
-      sprintf(ret, "sqrt(%s)",r2);
+    default:  /* single parameter math function */
+      sprintf(ret, "%s(%s)",code[progcode[inst].op-1].name,r2);
       break;
   }
   free(r2);
@@ -4251,7 +4249,7 @@ translate_section(int start, int end)
     if (progcode[cur].func)
     {
       if (progcode[cur].done != FALSE)
-        awka_error("Internal Error: Program Opcode %d(%d) executed already !?\n",cur,progcode[cur].minst);
+        awka_error("internal error: program opcode %d(%d) executed already !?\n",cur,progcode[cur].minst);
       x = (* progcode[cur].func)(cur, &progcode[cur].earliest, &progcode[cur].context);
       if (x)
       {
@@ -4473,6 +4471,7 @@ translate()
     fprintf(outfp, "extern char ** _int_argv;\n");
   }
   fprintf(outfp, "static jmp_buf context;\n");
+  fprintf(outfp,"static int awka_exit_val = -1;\n");
 
   if (preproc == FALSE)
   {
@@ -4557,6 +4556,8 @@ translate()
         mode = MAIN;
         revert_gc();
         fprintf(outfp, "\nstatic void\nMAIN()\n{\n");
+        p = code0ptr(cur, 100);
+        sprintf(p, "if (awka_exit_val >= 0) return;  /* awka_exit() from BEGIN */\n\n");
         p = code0ptr(cur, 50);
         sprintf(p, "int i, _curfile;\n");
         p = code0ptr(cur, 100);
@@ -4692,7 +4693,7 @@ translate()
   fprintf(outfp, "\n");
   
   if (!awka_main)
-    fprintf(outfp,"  awka_exit(0);\n");
+    fprintf(outfp,"  awka_exit((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
   else
     fprintf(outfp,"  awka_cleanup();\n");
   fprintf(outfp,"}\n");

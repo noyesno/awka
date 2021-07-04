@@ -1,5 +1,5 @@
 BEGIN {
-  if (!base) base = 1800000
+  if (!base) base = 18000
 
   v1 = 3
   v3 = "qwerty qwerty qwerty qwerty qwerty qwerty"

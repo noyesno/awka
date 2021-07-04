@@ -1,7 +1,7 @@
 # Contributed by Eiso AB <eiso@chem.rug.nl>
 
 BEGIN {
-  if (!base) base = 30000
+  if (!base) base = 300
 
   Switch["123"] = " abc "
   Switch["82"] = " def "

@@ -1,0 +1,84 @@
+Str index SORTTYPE: 0
+b -> z
+d -> g
+f -> m
+p -> a
+u -> x
+Str index SORTTYPE: 2
+f -> m
+p -> a
+d -> g
+u -> x
+b -> z
+Str index SORTTYPE: 4
+u -> x
+p -> a
+f -> m
+d -> g
+b -> z
+Str index SORTTYPE: 6
+f -> m
+p -> a
+d -> g
+u -> x
+b -> z
+Str index SORTTYPE: 8
+p -> a
+d -> g
+f -> m
+u -> x
+b -> z
+Str index SORTTYPE: 10
+p -> a
+d -> g
+f -> m
+u -> x
+b -> z
+Str index SORTTYPE: 12
+b -> z
+u -> x
+f -> m
+d -> g
+p -> a
+Num index SORTTYPE: 0
+0 -> g
+1 -> a
+2 -> x
+3 -> m
+5 -> z
+Num index SORTTYPE: 2
+0 -> g
+1 -> a
+2 -> x
+3 -> m
+5 -> z
+Num index SORTTYPE: 4
+5 -> z
+3 -> m
+2 -> x
+1 -> a
+0 -> g
+Num index SORTTYPE: 6
+5 -> z
+3 -> m
+2 -> x
+1 -> a
+0 -> g
+Num index SORTTYPE: 8
+1 -> a
+0 -> g
+3 -> m
+2 -> x
+5 -> z
+Num index SORTTYPE: 10
+1 -> a
+0 -> g
+3 -> m
+2 -> x
+5 -> z
+Num index SORTTYPE: 12
+5 -> z
+2 -> x
+3 -> m
+0 -> g
+1 -> a

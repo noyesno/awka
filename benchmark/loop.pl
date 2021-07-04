@@ -126,6 +126,8 @@ foreach $wk1 (keys %bWKT) {
     }
 }
 
+exit;
+
 print '';
 print 'and the best World Cup 99 cricket team is...';
 print 'POSITION     ', 'TEAM', 'PTS', 'PLAYER';

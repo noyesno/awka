@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-$base = 300000;
+$base = 3000;
 
 for ($i=0; $i<$base; $i++) {
 	$x = $i."";

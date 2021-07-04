@@ -170,7 +170,7 @@ static int awka_output_file(int awka_tmp, char *uoutfile, char **c_file, char **
 
   if (awka_tmp) {
     outfile_prefix = tmpfile_prefix("./awka-XXXXXX");
-  } if (!uoutfile) {
+  } else if (!uoutfile) {
     outfile_prefix = strdup_cat("./awka-app", "");
   } else {
     outfile_prefix = strdup_cat(uoutfile, "");
@@ -185,6 +185,9 @@ static int awka_output_file(int awka_tmp, char *uoutfile, char **c_file, char **
   } else {
     *outfile = strdup_cat(outfile_prefix, outfile_suffix);
   }
+
+  if (awka_tmp)
+    remove(outfile_prefix);  /* remove blank file from tmpfile_prefix() */
 
   free(outfile_prefix);
 

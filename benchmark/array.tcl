@@ -1,4 +1,4 @@
-set base 300000;
+set base 3000;
 
 for {set i 0} {$i<$base} {incr i} {
   set x "$i"

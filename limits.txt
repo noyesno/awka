@@ -1,0 +1,27 @@
+The built in limits of AWKA - not necessarily limits but initial settings
+
+AWKA
+----
+starting input file buf size            4096
+number of field splits                   255
+string split buffer size                 400
+sprintf size                            combination of Nr splits and split buffer
+memory page size                         256
+code warnings before warn                 16
+nr P fileds (NF,RS,RS,CONVFMT,OFMT         5
+input file buf size                     4096 (as defined above)
+nr scan codes                            256
+eval stack size                          256
+max number of fields                   32767 = 128*256-1
+
+LIBAWKA
+-------
+variable arguments:                      254
+sprintf buffer size                     2048
+garbage collector bin size                30
+temporary strings size                    32
+IO buffer size                         16384
+RE max dup size                        32767
+RE compiled pattern size              131072
+RE match_2 reported regs size             30
+

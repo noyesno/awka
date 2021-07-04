@@ -51,9 +51,10 @@ the GNU General Public License, version 2, 1991.
 #define  ARGIND      (bi_vars+12)
 #define  RT          (bi_vars+13)
 #define  PROCINFO    (bi_vars+14)
+#define  FUNCTAB     (bi_vars+15)
 
 /* #define  NUM_BI_VAR  9 */
-#define  NUM_BI_VAR  20
+#define  NUM_BI_VAR  21
 
 extern CELL bi_vars[NUM_BI_VAR] ;
 
