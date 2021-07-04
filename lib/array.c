@@ -33,6 +33,7 @@ char fs_or_fw = 0;
 #include "array_priv.h"
 #include "number.h"
 #include "garbage.h"
+#include "builtin_priv.h"
 
 char _a_space[256], *nullstr = "";
 int _awka_dol0_len = 0;
@@ -1889,6 +1890,7 @@ _awka_arraysplitwidth( char *str, a_VAR *v, int max )
   int i, j, len = strlen(str), flen, curlen = 0, count = 0;
   _a_HSHarray *array;
   a_HSHNode *node;
+  a_VAR *tmpv;
 
   awka_gets(a_bivar[a_FIELDWIDTHS]);
   if (!format)
@@ -1983,6 +1985,10 @@ _awka_arraysplitwidth( char *str, a_VAR *v, int max )
     array->slot[j]->var->type = a_VARNUL;
   }
   array->nodeno = count;
+
+  tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
+  strcpy(tmpv->ptr, "FIELDWIDTHS");
+
   return array->nodeno;
 }
 
@@ -1999,6 +2005,7 @@ awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char main_split )
   _a_HSHarray *array;
   int i, oldnodeno;
   double ret;
+  a_VAR *tmpv;
 
   /* check arguments */
   if (v->type != a_VARARR && v->type != a_VARNUL && !(v->type == a_VARSTR && v->ptr[0] == '\0'))
@@ -2066,6 +2073,9 @@ awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char main_split )
       _awka_getreval(fs, __FILE__, __LINE__, _RE_SPLIT);
   }
 
+  tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
+  strcpy(tmpv->ptr, "FS");
+
   if (i && fs->type != a_VARREG)
   { 
     switch (ptr[0])
@@ -2109,6 +2119,7 @@ _awka_dol0(int set)
 
   a_HSHNode *node;
   register a_VAR *var, *ofs, *dol0;
+  a_VAR *tmpv = NULL;
   static char *sformat = NULL;
   static int s_allc = 0;
 
@@ -2236,6 +2247,9 @@ _awka_dol0(int set)
               dol0->ptr[0] = '\0';
               _awka_dol0_len = dol0->slen = 0;
             }
+
+            tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
+	    strcpy(tmpv->ptr, "FS");
           }
           else
           {
@@ -2294,6 +2308,9 @@ _awka_dol0(int set)
             }
             *op = '\0';
             dol0->slen = op - dol0->ptr;
+
+            tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
+	    strcpy(tmpv->ptr, "FIELDWIDTHS");
           }
         }
         else

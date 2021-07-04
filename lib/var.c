@@ -993,3 +993,38 @@ awka_strcpy(a_VAR *v, char *s)
 }
 #endif
 
+char *
+awka_strncpy(a_VAR *v, char *s, int _slen)
+{
+  a_VAR *tmpv = NULL;
+
+  _awka_set_FW(v);
+  if (v->type == a_VARREG)
+    _awka_re2s(v);
+  if (v->type != a_VARSTR && v->type != a_VARUNK)
+    awka_setsval(v, __FILE__, __LINE__);
+  if (v->ptr && v->allc <= _slen+1)
+    v->allc = realloc( (void **) &v->ptr, _slen+1 );
+  else if (!v->ptr)
+    v->allc = malloc( (void **) &v->ptr, _slen+1 );
+  v->slen = _slen;
+  memcpy(v->ptr, s, _slen);
+  v->ptr[_slen] = '\0';
+  v->type = a_VARSTR;
+  v->type2 = 0;
+
+  if ( v == a_bivar[a_FS] )
+  {
+    tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
+    tmpv->slen = 2;
+    strncpy( tmpv->ptr, "FS", 3 );
+  }
+  if ( v == a_bivar[a_FIELDWIDTHS] || v == a_bivar[a_SAVEWIDTHS] )
+  {
+    tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
+    tmpv->slen = 11;   /* sized to 12 bytes originally in  init.c */
+    strncpy( tmpv->ptr, "FIELDWIDTHS", 12 );
+  }
+  return v->ptr;
+}
+

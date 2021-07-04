@@ -300,25 +300,9 @@ awka_strcpy(a_VAR *v, char *s)
 }
 #endif
 
-static char *
-awka_strncpy(a_VAR *v, char *s, int _slen)
-{ 
-  _awka_set_FW(v);
-  if (v->type == a_VARREG)
-    _awka_re2s(v);
-  if (v->type != a_VARSTR && v->type != a_VARUNK) 
-    awka_setsval(v, __FILE__, __LINE__);
-  if (v->ptr && v->allc <= _slen+1)
-    v->allc = realloc( (void **) &v->ptr, _slen+1 );
-  else if (!v->ptr)
-    v->allc = malloc( (void **) &v->ptr, _slen+1 );
-  v->slen = _slen;
-  memcpy(v->ptr, s, _slen);
-  v->ptr[_slen] = '\0';
-  v->type = a_VARSTR;
-  v->type2 = 0;
-  return v->ptr;
-}
+char *
+awka_strncpy(a_VAR *v, char *s, int _slen);
+/* see var.c */
 
 static void
 awka_setstrlen(a_VAR *v, register int slen)

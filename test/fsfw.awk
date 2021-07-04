@@ -1,14 +1,25 @@
 #
-# this test of FIELDWIDTHS and SAVEWIDTHS
-#
-# SAVEWIDTH is Awka specific, so the output
-# will be different for Gawk/Mawk/...
+# test that PROCINFO["FS"] updates as
+# changes are made to 
+# FIELDWIDTHS, FS and SAVEWIDTHS
 #
 BEGIN {
   FIELDWIDTHS = "13 2 9 9 9 4 3 6 20"
   OFS = "~"
 }
 {
+  if(!once) {
+    once = 1
+    print PROCINFO["FS"]
+    FIELDWIDTHS = ""
+    print PROCINFO["FS"]
+    FS = " "
+    SAVEWIDTHS = "13 2 9 9 9 4 3 6 20"
+    print PROCINFO["FS"]
+    FS = " "
+    print PROCINFO["FS"]
+    FIELDWIDTHS = "13 2 9 9 9 4 3 6 20"
+  }
   print $5
 }
 END {

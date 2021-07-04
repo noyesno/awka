@@ -55,21 +55,22 @@ basic:		msg \
 		backgsub beginexit begingetline bil bil2 bslash childin clobber \
 		clsflnam compare conflict convfmt cox delarprm divide dubois dynlj \
 		eiso eiso2 eiso3 eiso4 eofsplit extendedchars fldchg fldchgnf fnarydel \
-		fnrtest foronsplit fsbs fsrs fstabplus fun funstack fw gensub getline \
-		getline2 getlnbuf getnr2tb getnr2tm gsubtest hh intest intprec isarray \
-		litoct longwrds mainexit math messages mmap8k negexp next nextfile \
-		nfldstr nfset nlfldsep nlstrina nofile nors numindex numsubstr opasnidx \
-		opasnslf parsecsv pcntplus pdb_find_salt powtest prdupval print prmreuse \
-		prt1eval prtoeval rand range reindops reparse resplit retest rs rsnul1nl \
-		rsre rswhite sort splitargv splitrem splitvar splitwht sprintfc subslash \
-		substr swaplns tradanch tweakfld unbuf zeroflag \
+		fnrtest foronsplit fsbs fsfw fsrs fstabplus fun funstack fw gensub \
+		getline getline2 getlnbuf getnr2tb getnr2tm gsubtest hh intest \
+		intprec isarray litoct longwrds mainexit math messages mmap8k \
+		negexp next nextfile nfldstr nfset nlfldsep nlstrina nofile \
+		nors numindex numsubstr opasnidx opasnslf parsecsv pcntplus \
+		pdb_find_salt powtest prdupval print prmreuse prt1eval prtoeval \
+		rand range reindops reparse resplit retest rs rsnul1nl \
+		rsre rswhite sort splitargv splitrem splitvar splitwht \
+		sprintfc subslash substr swaplns tradanch tweakfld unbuf zeroflag \
 		endbasic
 
-revive-awka: 		rslen rsnull scgi
+revive-awka:		rslen rsnull scgi
 
 unix-tests:		poundbang fflush getlnhd pipeio1 pipeio2 strftlng 
 
-awka.extensions: 	posix posix2 manyfiles nondec asort 
+awka.extensions:	posix posix2 manyfiles nondec asort 
 
 extra:			nasty printf1 regtest inftest 
 
@@ -111,9 +112,9 @@ prt1eval prtoeval rand retest sort splitrem splitwht subslash substr zeroflag ::
 	@$(CMP) $@.ok _$@ && rm -f _$@
 
 amsal amsal3 amsal5 anchgsub arynocls asgext bil clsflnam eiso eiso2 eiso4 fldchg \
-fldchgnf fsrs funstack fw getline2 getnr2tb getnr2tm nfset nlfldsep numindex parsecsv \
-pdb_find_salt posix2 prdupval range reindops reparse rsnul1nl rswhite splitargv \
-splitvar sprintfc swaplns tradanch :
+fldchgnf fsfw fsrs funstack fw getline2 getnr2tb getnr2tm nfset nlfldsep numindex \
+parsecsv pdb_find_salt posix2 prdupval range reindops reparse rsnul1nl rswhite \
+splitargv splitvar sprintfc swaplns tradanch ::
 	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
