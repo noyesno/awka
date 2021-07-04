@@ -46,6 +46,8 @@
 
 #include  "files.h"
 
+#define CMT_BUF_SZ  128
+
 /* static functions */
 static void   PROTO(scan_fillbuff, (void)) ;
 static void   PROTO(scan_open, (void)) ;
@@ -238,7 +240,7 @@ eat_comment()
    
    if (warning_msg & MSG_VARDECLARE)
    {
-      char keyword[] = "VDECL: ", buf[128] ;
+      char keyword[] = "VDECL: ", buf[CMT_BUF_SZ] ;
       int i = 0, j = strlen(keyword) ;
 
       /* see if its a var_declare comment */
@@ -273,7 +275,7 @@ eat_comment()
             while (c != ' ' && c != '\t' && c != '\n' && c != '\0')
             {
                buf[i++] = c ;
-               if (i == 128) break ;
+               if (i == CMT_BUF_SZ-1) break ;
                c = next() ;
             }
             buf[i] = '\0' ;
