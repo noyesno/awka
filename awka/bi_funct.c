@@ -97,6 +97,7 @@ char *bi_names[] =
    "tgamma",
    "mod",
    "pow",
+   "isarray",
    NULL
 };
 
@@ -147,6 +148,7 @@ BI_REC bi_funct[] =
    "tgamma", bi_tgamma, 1, 1,
    "mod", bi_mod, 2, 2,
    "pow", bi_pow, 2, 2,
+   "isarray", bi_isarray, 1, 1,
    (char *) 0, (PF_CP) 0, 0, 0} ;
 
 char
@@ -212,7 +214,8 @@ str_str(target, key, key_len)
          {
             int k1 = key[1] ;
             while (target = strchr(target, k))
-               if (target[1] == k1)  return target ;               else  target++ ;
+               if (target[1] == k1)  return target ;
+	       else  target++ ;
             /*failed*/
             return (char *) 0 ;
          }
@@ -767,6 +770,13 @@ bi_lgamma(sp)
 
 CELL *
 bi_tgamma(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_isarray(sp)
    register CELL *sp ;
 {
    return sp ;

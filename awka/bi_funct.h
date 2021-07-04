@@ -126,6 +126,8 @@ CELL *PROTO( bi_alength, (CELL *) ) ;
 CELL *PROTO( bi_argcount, (CELL *) ) ;
 CELL *PROTO( bi_argval,   (CELL *) ) ;
 
+CELL *PROTO( bi_isarray,   (CELL *) ) ;
+
 char bi_funct_find(char *) ;
 
 #endif  /* BI_FUNCT_H  */

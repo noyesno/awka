@@ -89,7 +89,8 @@ BI_VARARG _a_bi_vararg[] = {
 "erf", 1, 1,
 "erfc", 1, 1,
 "lgamma", 1, 1,
-"tgamma", 1, 1
+"tgamma", 1, 1,
+"isarray",1,1
 };
 
 #define A_BI_VARARG_SIZE  71
@@ -185,5 +186,6 @@ extern BI_VARARG _a_bi_vararg[];
 #define _BI_ARGCOUNT  72
 #define _BI_ARGVAL    73
 #define _BI_ASORT     74
+#define _BI_ISARRAY   75
 
 #endif

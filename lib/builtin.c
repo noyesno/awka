@@ -1185,7 +1185,7 @@ awka_left(char keep, a_VAR *va, a_VAR *vb)
 
   /* check argument list */
   if (awka_getd1(vb) < 1)
-    awka_error("runtime error: Second Argument must be >= 1 in call to Left, got %d\n",(int) vb->dval);
+    awka_error("runtime error: Second Argument must be >= 1 in call to Left, got %d.\n",(int) vb->dval);
 
   /* create a variable */
   _awka_getstringvar;
@@ -1221,7 +1221,7 @@ awka_right(char keep, a_VAR *va, a_VAR *vb)
 
   /* check argument list */
   if (awka_getd1(vb) < 1)
-    awka_error("runtime error: Second Argument must be >= 1 in call to Right, got %d\n",(int) vb->dval);
+    awka_error("runtime error: Second Argument must be >= 1 in call to Right, got %d.\n",(int) vb->dval);
 
   /* create a variable */
   _awka_getstringvar;
@@ -1260,7 +1260,7 @@ awka_ascii(char keep, a_VARARG *va)
   _awka_checkbiargs( va, "awka_ascii", _BI_ASCII );
   if (va->used == 2)
     if (awka_getd1(va->var[1]) < 0)
-      awka_error("runtime error: Second Argument must be >= 0 in call to Ascii, got %d\n",(int) va->var[1]->dval);
+      awka_error("runtime error: Second Argument must be >= 0 in call to Ascii, got %d.\n",(int) va->var[1]->dval);
 
   /* create a variable */
   _awka_getdoublevar;
@@ -1741,7 +1741,7 @@ _awka_formatstr(char which, a_VARARG *va)
     }
 
     if (!*cp)
-      awka_error("%s: incomplete symbol after %%, specifier %d\n",caller,cur_arg);
+      awka_error("%s: incomplete symbol after %%, specifier %d.\n",caller,cur_arg);
 
     /* swallow minimum width specification */
     while (isdigit(*cp)) cp++;
@@ -1749,7 +1749,7 @@ _awka_formatstr(char which, a_VARARG *va)
     if (*cp == '.')  /* precision */
     {
       if (*(++cp) == '\0')
-        awka_error("%s: incomplete symbol after %%, specifier %d\n",caller,cur_arg);
+        awka_error("%s: incomplete symbol after %%, specifier %d.\n",caller,cur_arg);
       else 
         while (isdigit(*cp)) cp++; 
     }
@@ -1758,7 +1758,7 @@ _awka_formatstr(char which, a_VARARG *va)
     switch (*cp++)
     {
       case '\0':
-        awka_error("%s: incomplete symbol after %%, specifier %d\n",caller,cur_arg);
+        awka_error("%s: incomplete symbol after %%, specifier %d.\n",caller,cur_arg);
         break;
 
       case 'c':
@@ -1807,7 +1807,7 @@ _awka_formatstr(char which, a_VARARG *va)
         break;
 
       default:
-        awka_error("%s: unknown format specification (%d) '%s'\n",caller,cur_arg,awka_gets1(va->var[cur_arg]));
+        awka_error("%s: unknown format specification (%d) '%s'.\n",caller,cur_arg,awka_gets1(va->var[cur_arg]));
     }
 
     /* prepare format string */
@@ -2226,7 +2226,7 @@ start:
         /* error opening file */
         outvar->dval = -1;
         if (main == TRUE)
-          awka_error("error reading from file \"%s\"\n",file);
+          awka_error("error reading from file \"%s\".\n",file);
         _a_iostream[i].name[0] = '\0';    // ensure reading the same file again results in the same failure to read
         goto getline_end;
       }
@@ -2492,7 +2492,7 @@ awka_fclose( int i )
               fclose(_a_iostream[i].fp);
               break;
             default:
-              awka_error("runtime error: Unsupported close of pipe = 2\n");
+              awka_error("runtime error: Unsupported close of pipe = 2.\n");
           }
         } else {
           if (strcmp(_a_iostream[i].name, "/dev/stdout") &&
@@ -2536,6 +2536,23 @@ awka_fclose( int i )
   }
 
   return ret;
+}
+
+/*
+ * awka_isarray
+ * awk builtin extended function 'isarray'
+ */
+a_VAR *
+awka_isarray(char keep, a_VARARG *va)
+{
+  a_VAR *outvar;
+
+  /* create a variable */
+  _awka_getdoublevar;
+
+  if(va->used != 1) awka_error("runtime error: isarray expects only one parameter.\n");
+  outvar->dval = (va->var[0]->type == a_VARARR);
+  return(outvar);
 }
 
 int

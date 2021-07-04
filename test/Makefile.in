@@ -47,32 +47,31 @@ VPATH = @srcdir@
 ###########################################################################
 
 bigtest:	basic revive-awka unix-tests awka.extensions mathextra \
-			endbig
+		endbig
 
 basic:		msg \
-			swaplns messages a_cat pdb_find_salt argarray longwrds \
-			getline getline2 fstabplus compare arrayref rs fsrs rand fun dubois \
-			fsbs negexp asgext anchgsub splitargv nfset reparse bil bil2 \
-			convfmt litoct resplit rswhite intprec childin splitrem aloop \
-			numsubstr pcntplus prmreuse math fldchg fldchgnf reindops range \
-			sprintfc backgsub tweakfld clsflnam mmap8k conflict amsal amsal2 \
-			amsal3 amsal4 amsal5 dynlj substr eofsplit prt1eval prtoeval retest \
-			gsubtest splitwht back89 tradanch nlfldsep splitvar intest nors hh \
-			eiso eiso2 eiso3 eiso4 fnarydel funstack clobber delarprm prdupval \
-			nfldstr foronsplit divide parsecsv arraycat argtest2 fw rsre unbuf \
-			bslash print cox gensub zeroflag getnr2tm getnr2tb \
-			numindex subslash opasnslf opasnidx arynocls getlnbuf arysubnm \
-			nlstrina nextfile next rsnul1nl beginexit mainexit fnrtest \
-			powtest begingetline extendedchars nofile sort addcmp \
-			endbasic
+		a_cat addcmp aloop amsal amsal2 amsal3 amsal4 amsal5 anchgsub \
+		argarray argtest2 arraycat arrayref arynocls arysubnm asgext back89 \
+		backgsub beginexit begingetline bil bil2 bslash childin clobber \
+		clsflnam compare conflict convfmt cox delarprm divide dubois dynlj \
+		eiso eiso2 eiso3 eiso4 eofsplit extendedchars fldchg fldchgnf fnarydel \
+		fnrtest foronsplit fsbs fsrs fstabplus fun funstack fw gensub getline \
+		getline2 getlnbuf getnr2tb getnr2tm gsubtest hh intest intprec isarray \
+		litoct longwrds mainexit math messages mmap8k negexp next nextfile \
+		nfldstr nfset nlfldsep nlstrina nofile nors numindex numsubstr opasnidx \
+		opasnslf parsecsv pcntplus pdb_find_salt powtest prdupval print prmreuse \
+		prt1eval prtoeval rand range reindops reparse resplit retest rs rsnul1nl \
+		rsre rswhite sort splitargv splitrem splitvar splitwht sprintfc subslash \
+		substr swaplns tradanch tweakfld unbuf zeroflag \
+		endbasic
 
 revive-awka: 		rslen rsnull scgi
 
-unix-tests:			poundbang fflush getlnhd pipeio1 pipeio2 strftlng 
+unix-tests:		poundbang fflush getlnhd pipeio1 pipeio2 strftlng 
 
 awka.extensions: 	posix posix2 manyfiles nondec asort 
 
-extra:				nasty printf1 regtest inftest 
+extra:			nasty printf1 regtest inftest 
 
 ###########################################################################
 
@@ -100,22 +99,21 @@ endbig::
 	@echo 
 	@echo 'try    make extra     if you are feeling lucky'
 	@echo
-
-zeroflag asort subslash opasnslf opasnidx arysubnm nlstrina print gensub cox retest bslash \
-nofile a_cat eiso3 divide conflict aloop dubois splitrem fun arraycat arrayref rand \
-convfmt intprec gnureops pcntplus prmreuse math getlnhd backgsub dynlj substr eofsplit \
-prt1eval prtoeval gsubtest splitwht foronsplit intest fnarydel delarprm \
-beginexit powtest begingetline extendedchars sort addcmp mathextra::
+a_cat addcmp aloop arraycat arrayref arysubnm asort backgsub beginexit begingetline \
+bslash conflict convfmt cox delarprm divide dubois dynlj eiso3 eofsplit extendedchars \
+fnarydel foronsplit fun gensub getlnhd gnureops gsubtest intest intprec isarray \
+math mathextra nlstrina nofile opasnidx opasnslf pcntplus powtest print prmreuse \
+prt1eval prtoeval rand retest sort splitrem splitwht subslash substr zeroflag ::
 	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >_$@
 	@$(CMP) $@.ok _$@ && rm -f _$@
 
-rsnul1nl numindex swaplns getnr2tm getnr2tb arynocls pdb_find_salt fw bil eiso eiso2 eiso4 \
-parsecsv range fsrs amsal amsal3 amsal5 posix2 getline2 asgext anchgsub splitargv nfset \
-reparse rswhite fldchg reindops sprintfc clsflnam tradanch nlfldsep splitvar funstack \
-fldchgnf prdupval ::
+amsal amsal3 amsal5 anchgsub arynocls asgext bil clsflnam eiso eiso2 eiso4 fldchg \
+fldchgnf fsrs funstack fw getline2 getnr2tb getnr2tm nfset nlfldsep numindex parsecsv \
+pdb_find_salt posix2 prdupval range reindops reparse rsnul1nl rswhite splitargv \
+splitvar sprintfc swaplns tradanch :
 	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx

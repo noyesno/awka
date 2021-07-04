@@ -249,65 +249,66 @@ void  PROTO(dump_code, (void)) ;
 #define _HYPOT      132
 #define _INDEX      133
 #define a_INT       134
-#define _LEFT       135
-#define _LENGTH     136
-#define _LGAMMA     137
-#define a_LOCALTIME 138
-#define _LOG        139
-#define _LOG10      140
-#define _LOG2       141
-#define _LSHIFT     142
-#define _LTRIM      143
-#define _MAX        144
-#define _MIN        145
-#define a_MKTIME    146
-#define _MMOD       147   // C Math style mod(x,y) rather than (x % y)
-#define _OR         148
-#define _MPOW       149   // C Math style pow(x,y) rather than (x ^ y)  or (x ** y)
-#define _RAND       150
-#define _RIGHT      151
-#define _ROUND      152
-#define _RSHIFT     153
-#define _RTRIM      154
-#define _SIN        155
-#define _SINH       156
-#define _SPLIT      157
-#define _SPRINTF    158
-#define _SQRT       159
-#define _SRAND      160
-#define a_STRFTIME  161
-#define _SUB_BI     162
-#define _SUBSTR     163
-#define _SYSTEM     164
-#define _SYSTIME    165
-#define _TAN        166
-#define _TANH       167
-#define _TGAMMA     168
-#define a_TIME      169
-#define _TOLOWER    170
-#define _TOTITLE    171
-#define _TOUPPER    172
-#define _TRIM       173
-#define _TRUNC      174
+#define _ISARRAY    135
+#define _LEFT       136
+#define _LENGTH     137
+#define _LGAMMA     138
+#define a_LOCALTIME 139
+#define _LOG        140
+#define _LOG10      141
+#define _LOG2       142
+#define _LSHIFT     143
+#define _LTRIM      144
+#define _MAX        145
+#define _MIN        146
+#define a_MKTIME    147
+#define _MMOD       148   // C Math style mod(x,y) rather than (x % y)
+#define _OR         149
+#define _MPOW       150   // C Math style pow(x,y) rather than (x ^ y)  or (x ** y)
+#define _RAND       151
+#define _RIGHT      152
+#define _ROUND      153
+#define _RSHIFT     154
+#define _RTRIM      155
+#define _SIN        156
+#define _SINH       157
+#define _SPLIT      158
+#define _SPRINTF    159
+#define _SQRT       160
+#define _SRAND      161
+#define a_STRFTIME  162
+#define _SUB_BI     163
+#define _SUBSTR     164
+#define _SYSTEM     165
+#define _SYSTIME    166
+#define _TAN        167
+#define _TANH       168
+#define _TGAMMA     169
+#define a_TIME      170
+#define _TOLOWER    171
+#define _TOTITLE    172
+#define _TOUPPER    173
+#define _TRIM       174
+#define _TRUNC      175
 
 
-#define _XOR        175  // was 150
-#define _FSIZE      176
-#define _FSEEK      177
-#define _FTELL      178
+#define _XOR        176  // was 150
+#define _FSIZE      177
+#define _FSEEK      178
+#define _FTELL      179
 
 #define CODE_MIN      0
 #define CODE_MAX    100
 
 #define BI_MIN      101
 // # define BI_MAX 149     // TODO: use 153 ?  Is original 149 a bug?
-#define BI_MAX      175
+#define BI_MAX      176
 
 
-#define _FUNCTION   179   // was 154
-#define _BEGIN      180
-#define _MAIN       181
-#define _END        182
-#define END_CODE    183
+#define _FUNCTION   180   // was 154
+#define _BEGIN      181
+#define _MAIN       182
+#define _END        183
+#define END_CODE    184
 
 #endif  /* CODE_H */
