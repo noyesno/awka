@@ -105,6 +105,7 @@ char **functions = NULL;
 int func_no = 0;
 int which_side = _a_RHS;
 int max_base_gc = 1, max_fn_gc = 1, cur_base_gc = 1, cur_fn_gc = 1;
+extern char *awk_input_files;
 
 static int getstringsize(const char *p){
   int n=0;
@@ -4657,7 +4658,7 @@ translate()
   if (env_used == 1)
     fprintf(outfp,"\n  awka_env_used(1);\n\n");
   
-  fprintf(outfp,"  awka_init(argc, argv, \"%s\", \"%s\");\n", AWKAVERSION, DATE_STRING);
+  fprintf(outfp,"  awka_init(argc, argv, \"%s\", \"%s\", \"%s\");\n", AWKAVERSION, DATE_STRING, awk_input_files);
 
   if (split_max != 0 && split_max != INT_MAX)
   {

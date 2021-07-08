@@ -66,30 +66,46 @@ static int    PROTO(collect_RE, (void)) ;
  *----------------------------*/
 
 char *pfile_name ;
-STRING *program_string;
+STRING *program_string = (STRING *) 0 ;
 PFILE *pfile_list ;
 static unsigned char *buffer ;
 unsigned char *buffp = NULL ;
  /* unsigned so it works with 8 bit chars */
-static int program_fd ;
-static int eof_flag ;
+static int program_fd = 0 ;
+static int eof_flag = 0 ;
 
-extern char **vardeclare;
-extern int vdec_no, vdec_allc;
+extern char **vardeclare ;
+extern int vdec_no, vdec_allc ;
 
-int _true_re = 0;
+int _true_re = 0 ;
 
 /* position used for error reporting */
 int line_pos = 0 ;
 
-void PROTO(init_extbi, (void));
+void PROTO(init_extbi, (void)) ;
 
+/*
+ * +------------------+------------+------------+----------------+-----------------------------------+
+ * | Inout Type       | program_fd | pfile_name | cmdine_program | eof_flag (1)                      |
+ * +------------------+------------+------------+----------------+-----------------------------------+
+ * |                  |            |            |                |                                   |
+ * | inline script    |     -1     |  <null>    | <script text>  | read files if any                 |
+ * |                  |            |            |                |                                   |
+ * | read from stdin  |      0     |   "-"      |    <null>      | finished                          |
+ * |                  |            |            |                |                                   |
+ * | file(s)          |    > 0     |  <null>    |    <null>      | read next file (from pfile_list)  |
+ * |                  |            |            |                |                                   |
+ * +------------------+------------+------------+----------------+-----------------------------------+
+ */
 void
 scan_init(cmdline_program)
    char *cmdline_program ;
 {
+   buffp = buffer = (unsigned char *) zmalloc(BUFFSZ + 1) ;
+
    if (cmdline_program)
    {
+//fprintf(stderr, "scan_init inline: %s\n", cmdline_program) ;
       program_fd = -1 ;                 /* command line program */
       program_string = new_STRING0(strlen(cmdline_program) + 1) ;
       strcpy(program_string->str, cmdline_program) ;
@@ -98,18 +114,19 @@ scan_init(cmdline_program)
       buffp = (unsigned char *) program_string->str ;
       eof_flag = 1 ;
    }
-   else         /* program from file[s] */
+   else             /* program from file[s] */
    {
+//fprintf(stderr, "scan_init file\n") ;
       scan_open() ;
-      buffp = buffer = (unsigned char *) zmalloc(BUFFSZ + 1) ;
+      //buffp = buffer = (unsigned char *) zmalloc(BUFFSZ + 1) ;
       scan_fillbuff() ;
    }
 
 #ifdef OS2  /* OS/2 "extproc" is similar to #! */
    if (strnicmp(buffp, "extproc ", 8) == 0)
-     eat_comment();
+     eat_comment() ;
 #endif
-   eat_nl() ;                         /* scan to first token */
+   eat_nl() ;       /* scan to first token */
    if (next() == 0)
    {
       /* no program */
@@ -121,26 +138,56 @@ scan_init(cmdline_program)
 }
 
 static void
-scan_open()                        /* open pfile_name */
+scan_open()         /* open pfile_name */
 {
-   if (pfile_name[0] == '-' && pfile_name[1] == 0)
+   if (!pfile_list) 
    {
+      if (program_fd <= 0) 
+         return ;
+
+      errmsg(0, "missing file list.") ;
+      exit(2) ;
+   }
+
+   PFILE *q ;
+
+   pfile_name = pfile_list->fname ;
+//fprintf(stderr, "scan_open: input file: %s (%s)\n", pfile_name, pfile_list->fname) ;
+   q = pfile_list ;
+   pfile_list = pfile_list->link ;
+   ZFREE(q) ;
+
+   if(!pfile_name) 
+   {
+      errmsg(errno, "file name is missing from the file list.") ;
+      exit(2) ;
+   } 
+   else if (pfile_name[0] == '-' && pfile_name[1] == 0)
+   {
+      /* read from stdin (piped input from previous command) */
       program_fd = 0 ;
+      pfile_name = (char *) 0 ;
+      /* fill_scanbuff will open and read stdin */
    }
    else if ((program_fd = open(pfile_name, O_RDONLY, 0)) == -1)
    {
-      errmsg(errno, "cannot open %s", pfile_name) ;
+      errmsg(errno, "cannot open %s.", pfile_name) ;
       exit(2) ;
    }
+//fprintf(stderr, "scan_open: fd: %d\n", program_fd) ;
 }
 
 void
 scan_cleanup()
 {
-   if (program_fd >= 0)         zfree(buffer, BUFFSZ + 1) ;
-   else         free_STRING(program_string) ;
+   //if (program_fd >= 0 || pfile_name[0] == '-')
+      zfree(buffer, BUFFSZ + 1) ;
+   //else
+   if (program_fd < 0)
+      free_STRING(program_string) ;
 
-   if (program_fd > 0)        close(program_fd) ;
+   if (program_fd > 0)
+      close(program_fd) ;
 
    /* redefine SPACE as [ \t\n] */
 
@@ -154,8 +201,8 @@ scan_cleanup()
 static inline unsigned char
 next()
 {
-  line_pos++;
-  return (*buffp ? *buffp++ : slow_next());
+  line_pos++ ; 
+  return (*buffp ? *buffp++ : slow_next()) ;
 }
 
 static inline void
@@ -189,7 +236,43 @@ static void
 scan_fillbuff()
 {
    unsigned r ;
+   int c, i = BUFFSZ-1 ;
+   FILE *f = NULL ;
 
+   if(program_fd < 0)    /* inline script */
+   {
+//fprintf(stderr, "scan_fillbuff: program_fd < 0\n") ;	   
+      buffer[0] = '\0' ;
+      buffp = buffer ;
+      return ;
+   }
+
+   if(program_fd == 0)   /* read from stdin */
+   {
+      if (eof_flag) 
+	return ;
+      /* reading from stdin    ** not portable to windows OS */
+      if(program_fd == 0 && !(f = fopen("/dev/stdin", "r")))
+      {
+         errmsg( (i=ferror(f)), "unable to open stdin for reading") ;
+	 exit(i) ;
+      }
+      buffp = buffer ;
+//fprintf(stderr, "scan_fillbuf: reading from stdin\n") ;
+      while((c = fgetc(f)) != EOF) {
+         *buffp++ = (char) c ;
+         if (!--i) break ;
+      }
+      fclose(f) ;
+      *buffp++ = '\n' ;
+      *buffp = '\0' ;
+      buffp = buffer ;
+      eof_flag = 1 ;
+//fprintf(stderr, "scan_fillbuf: input buffer is: %s\n",buffer) ;
+      return ;
+   }
+
+//fprintf(stderr, "scan_fillbuff - reading from file: %s\n", pfile_name) ;
    r = fillbuff(program_fd, (char *) buffer, BUFFSZ) ;
    if (r < BUFFSZ)
    {
@@ -212,24 +295,48 @@ slow_next()
          buffp = buffer ;
          scan_fillbuff() ;
       }
-      else if (pfile_list /* open another program file */ )
+      else if (pfile_list)   /* open another program file */
       {
          PFILE *q ;
 
-         if (program_fd > 0)  close(program_fd) ;
-         eof_flag = 0 ;
+         if (program_fd > 0)  
+	 {
+	    close(program_fd) ;
+            eof_flag = 0 ;
+	 }
+
          pfile_name = pfile_list->fname ;
          q = pfile_list ;
          pfile_list = pfile_list->link ;
          ZFREE(q) ;
-         scan_open() ;
+
+//fprintf(stderr, "slow_next: input file: %s\n", pfile_name) ;
+//fprintf(stderr, "slow_next: next file list entry: %p\n", pfile_list) ;
+         if (pfile_name[0] == '-' && pfile_name[1] == 0)
+         {
+            /* read from stdin (piped input from previous command) */
+            program_fd = 0 ;
+	    eof_flag = 0 ;
+            pfile_name = (char *) 0 ;
+	    buffp = buffer ;
+	    buffer[0] = 0 ;
+            /* fill_scanbuff will open and read stdin */
+         }
+         else if ((program_fd = open(pfile_name, O_RDONLY, 0)) == -1)
+         {
+            errmsg(errno, "cannot open %s.", pfile_name) ;
+            exit(2) ;
+         }
+        // scan_open() ;
          token_lineno = lineno = 1 ;
 	 line_pos = 0 ;
+         scan_fillbuff() ;
+         buffp = buffer ;
       }
       else  break /* real eof */ ;
    }
 
-   //line_pos++;
+//fprintf(stderr, "slow_next: %d\n", *buffp) ;
    return *buffp++ ;                 /* note can un_next() , eof which is zero */
 }
 
@@ -303,7 +410,7 @@ eat_comment()
             }
          }
 
-         return;
+         return ;
       }
    }
 
@@ -339,7 +446,7 @@ eat_nl()                        /* eat all space including newlines */
             break ;
 
          case SC_NL:
-	    line_pos = 0;
+	    line_pos = 0 ;
             lineno++ ;
             /* fall thru  */
 
@@ -356,7 +463,7 @@ eat_nl()                        /* eat all space including newlines */
                while (scan_code[c = next()] == SC_SPACE) ;
                if (c == '\n')
 	       {
-		  line_pos = 0;
+		  line_pos = 0 ;
                   token_lineno = ++lineno ;
 	       }
                else if (c == 0)  
@@ -639,7 +746,7 @@ reswitch:
          }
          else if (c == '&')
          {
-           eat_nl();
+           eat_nl() ;
            if (print_flag && paren_cnt == 0)
            {
              print_flag = 0 ;
@@ -869,7 +976,7 @@ reswitch:
                   break ;
 
                case ST_BUILTIN:
-                  /* if (current_token == FUNCTION) goto _st_none; */
+                  /* if (current_token == FUNCTION) goto _st_none ; */
                   if (funct == 0)
                      goto _st_none ;
                   yylval.bip = stp->stval.bip ;
@@ -933,7 +1040,7 @@ collect_decimal(c, flag)
    double d ;
 
    *flag = 0 ;
-   /* memset(string_buff, 0, MIN_SPRINTF); */
+   /* memset(string_buff, 0, MIN_SPRINTF) ; */
    string_buff[0] = c ;
 
    if (c == '.')
@@ -1236,7 +1343,7 @@ collect_RE()
                *--p = 0 ;
                goto out ;
             }
-            break;
+            break ;
 
          case SC_NL:
             p[-1] = 0 ;

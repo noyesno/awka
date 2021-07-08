@@ -30,6 +30,16 @@ the GNU General Public License, version 2, 1991.
 
 #include "symtype.h"
 
+
+#define  EXIT_ERR_NO	1
+#define  EXIT_ERR_c	2
+#define  EXIT_ERR_w	3
+#define  EXIT_ERR_BAD   4
+#define  EXIT_ERR_a	5
+#define  EXIT_ERR_o	6
+#define  EXIT_ERR_MISS  7
+#define  EXIT_ERR_NOx   8
+
 /* nodes to link file names for multiple
    -f option */
 
@@ -56,5 +66,27 @@ void  PROTO( field_init, (void) ) ;
 void  PROTO( fpe_init, (void) ) ;
 void  PROTO( load_environ, (ARRAY)) ;
 void  PROTO( set_stderr, (void)) ;
+
+static inline char *
+quote_escape(char *s) {
+  /* hard limited to 5 pairs of quotes */
+  register char *p = s;
+  int i = strlen(s);
+  char *tstr = (char *) malloc(i+10); 
+
+  strncpy(tstr, s, i);
+  p = tstr;
+  while(*p) {
+    if(*p == '\\') {
+      memmove(p+1, p, strlen(p));
+      *(p++) = '\\';
+    }
+    if(*p++ == '"') {
+      memmove(p, p-1, strlen(p-1));
+      *((p++)-1) = '\\';
+    }
+  }
+  return tstr;
+}
 
 #endif   /* INIT_H  */
