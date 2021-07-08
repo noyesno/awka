@@ -53,7 +53,7 @@ basic:		msg \
 		a_cat addcmp aloop amsal amsal2 amsal3 amsal4 amsal5 anchgsub \
 		argarray argtest2 arraycat arrayref arynocls arysubnm asgext back89 \
 		backgsub beginexit begingetline bil bil2 bslash childin clobber \
-		clsflnam compare conflict convfmt cox delarprm divide dubois dynlj \
+		clsflnam compare compl conflict convfmt cox delarprm divide dubois dynlj \
 		eiso eiso2 eiso3 eiso4 eofsplit extendedchars fldchg fldchgnf fnarydel \
 		fnrtest foronsplit fsbs fsfw fsrs fstabplus fun funstack fw gensub \
 		getline getline2 getlnbuf getnr2tb getnr2tm gsubtest hh intest \
@@ -100,10 +100,11 @@ endbig::
 	@echo 
 	@echo 'try    make extra     if you are feeling lucky'
 	@echo
+
 a_cat addcmp aloop arraycat arrayref arysubnm asort backgsub beginexit begingetline \
-bslash conflict convfmt cox delarprm divide dubois dynlj eiso3 eofsplit extendedchars \
-fnarydel foronsplit fun gensub getlnhd gnureops gsubtest intest intprec isarray \
-math mathextra nlstrina nofile opasnidx opasnslf pcntplus powtest print prmreuse \
+bslash compl conflict convfmt cox delarprm divide dubois dynlj eiso3 eofsplit \
+extendedchars fnarydel foronsplit fun gensub getlnhd gnureops gsubtest intest intprec \
+isarray math mathextra nlstrina nofile opasnidx opasnslf pcntplus powtest print prmreuse \
 prt1eval prtoeval rand retest sort splitrem splitwht subslash substr zeroflag ::
 	@echo $@
 	@$(AWKA) -f $@.awk >x.c
