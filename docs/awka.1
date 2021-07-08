@@ -36,10 +36,6 @@ awka \- AWK language to ANSI C translator and library
 [\-\fBX\fR]
 [\-\fBx\fR]
 [\-\fBt\fR]
-[\-\fBo
-.IR filename ]
-[\-\fBa
-.IR args ]
 [\-\fBw
 .IR args ]
 [\-\fBI
@@ -50,10 +46,14 @@ awka \- AWK language to ANSI C translator and library
 .IR lib-dir ]
 [\-\fBl
 .IR lib-file ]
+[\-\fBs\fR]
 [\-\fBf
 .IR progname ]
-[\-\fBd\fR]
-[program] [\-\|\-\] [exe-args]
+[program] [\-] [\-\|\-\] [exe-args]
+[\-\fBa
+.IR args ]
+[\-\fBo
+.IR filename ]
 .br
 .B awka
 [\-\fBversion\fR]
@@ -112,17 +112,6 @@ To be used in conjunction with -\fBx\fR.  The C file and the
 executable will be removed following execution of the 
 program.
 .TP
-\-\fBo \fRfilename
-To be used in conjunction with -\fBx\fR and -\fBX\fR.  The generated
-executable will be called 'filename' rather than the default 'awka.out'.
-.TP
-\-\fBa \fRargs
-This embeds executable command-line arguments within the translated
-code itself.  For example, \fIawka -X -a "-We" file.awk\fR will create
-an awka.out that will already have -We in its command-line when it is
-run.  To see what arguments have been embedded in an executable, 
-use -showarg at runtime.
-.TP
 \-\fBw \fRargs
 Prints various warnings to stderr, useful in debugging large, complex
 AWK programs.  None of these are errors \- all are acceptable uses of the AWK
@@ -169,6 +158,9 @@ Again, see the \fIawka-elm\fR manpage for details on awka extension
 libraries.  Like the three previous options, you can use this as often
 as you like on a commandline.
 .TP
+\-\fBs
+Statically link libawka (default is dynamic)
+.TP
 \-\fBf \fRprogname
 Specifies the name of an AWK language program to be 
 translated to C.  Multiple -\fBf\fR arguments may be specified.
@@ -176,6 +168,10 @@ translated to C.  Multiple -\fBf\fR arguments may be specified.
 .I program
 An AWK language program on the command-line, usually surrounded by single
 quotes (').
+.TP
+\-\|
+Read from stdin an AWK language program.  No further commands will be
+read.
 .TP
 \-\|\-
 All arguments following this will be passed to the compiled
@@ -185,6 +181,17 @@ sense when -x has been specified.
 \fBexe-args
 Arguments to be passed directly to the executable when it
 is run.  
+.TP
+\-\fBa \fRargs
+This embeds executable command-line arguments within the translated
+code itself.  For example, \fIawka -X -a "-We" file.awk\fR will create
+an awka.out that will already have -We in its command-line when it is
+run.  To see what arguments have been embedded in an executable, 
+use -showarg at runtime.
+.TP
+\-\fBo \fRfilename
+To be used in conjunction with -\fBx\fR and -\fBX\fR.  The generated
+executable will be called 'filename' rather than the default 'awka.out'.
 .TP
 \-\fBh
 Prints a short summary of command-line options.
@@ -216,6 +223,9 @@ Sets FS to value.
 .TP
 \-\fBshowarg
 Displays any embedded command-line arguments, then exits.
+.TP
+\-\fBV
+Shows which version of awka generated the .c code for the executable.
 .TP
 \-\fBawkaversion
 Shows which version of awka generated the .c code for the executable.
@@ -374,15 +384,93 @@ parameters work in the same as for \fBargval\fR.  The variable specified by
 gensub(\fIr,s,f[,v]\fR)
 Implementation of Gawk's gensub function.  It should perform exactly the same
 as it does in Gawk.  See Gawk's documentation for details on how to use gensub.
+.TP
+acos(\fIx\fR)
+Returns the arc-cosine between 0 and πi radians for \fIx\fR between -1 and 1.
+.TP
+asin(\fIx\fR)
+Returns the arc-sine between -pi/2 and πi/2 radians for \fIx\fR between -1 and 1.
+.TP
+atan(\fIx\fR)
+Returns the arc-tangent between -pi/2 and πi/2 radians for \fIx\fR.
+.TP
+cosh(\fIx\fR)
+Returns the hyperbolic cosine of \fIx\fR.
+.TP
+sinh(\fIx\fR)
+Returns the hyperbolic sine of \fIx\fR.
+.TP
+tanh(\fIx\fR)
+Returns the hyperbolic tangent of \fIx\fR.
+.TP
+acosh(\fIx\fR)
+Returns the hyperbolic arc-cosine of \fIx\fR.
+.TP
+asinh(\fIx\fR)
+Returns the hyperbolic arc-sine of \fIx\fR.
+.TP
+atanh(\fIx\fR)
+Returns the hyperbolic arc-tangent of \fIx\fR.
+.TP
+hypot(\fIx,y\fR)
+Returns the Euclidean norm (square root of the sum of squares) of \fIx\fR and \fIy\fR.
+.TP
+log10(\fIx\fR)
+Returns the base 10 logarithm of \fIx\fR.
+.TP
+log2(\fIx\fR)
+Returns the base 2 logarithm of \fIx\fR.
+.TP
+exp2(\fIx\fR)
+Returns the base 2 exponential (2^\fIx\fR) of \fx\fR.
+.TP
+ceil(\fIx\fR)
+Returns the nearest integer rounded up of \fx\fR.
+.TP
+floor(\fIx\fR)
+Returns the nearest integer rounded down of \fx\fR.
+.TP
+floor(\fIx\fR)
+Returns the nearest rounded integer of \fx\fR.
+.TP
+trunc(\fIx\fR)
+Returns the truncated integer part (with no rounding) of \fx\fR.
+.TP
+abs(\fIx\fR)
+Returns the absolute value of \fx\fR.
+.TP
+erf(\fIx\fR)
+Returns the (Gauss) error function of \fx\fR.
+.TP
+erfc(\fIx\fR)
+Returns the complementary error function of \fx\fR.
+.TP
+lgamma(\fIx\fR)
+Returns the natural logarithm Gamma value of \fx\fR.
+.TP
+tgamma(\fIx\fR)
+Returns the Gamma function of \fx\fR.
+.TP
+mod(\fIx,y\fR)
+Returns the modulus \fx\fR % \fy\fR.
+.TP
+pow(\fIx,y\fR)
+Returns the \fx\fR ^ \fy\fR (\fx\fR to the power of \fy\fR).
+.TP
+isarray(\fIx\fR)
+Returns true (1) if \fx\fR is an array, else false (0).
+.TP
+PROCINFO
+The  elements  of  this array provide access to information about the running AWK program. AWKA does not implement subarrays, so the "identifiers" are implemented like "identifiers,isarry"
 .PP
 .PP
 The \fBSORTTYPE\fR variable controls if and how arrays are sorted when accessed using 'for (i in j)'.
 The value of this variable is a bitmask, which may be set to a combination of the following values:-
 .DS
-  0  No Sorting
-1  Alphabetical Sorting
-2  Numeric Sorting
-4  Reverse Order
+  0  No Sorting, Indices
+2  Reverse Order
+4  Numeric Sorting
+8  Sorting of values rather than indices
 .DE
 A value for \fBSORTTYPE\fR of 5, therefore, indicates that the array is to be sorted Alphabetically,
 in Reverse order.
@@ -423,7 +511,7 @@ compile and execution of the AWK program.
 .DE
 Afterwards, you could run the executable directly, as in:-
 .DS 
-  awka.out input.txt
+  awka-app.out input.txt
 .DE
 Running the same program using an interpreter such as
 \fBmawk\fR would be done as follows:-
@@ -433,7 +521,7 @@ Running the same program using an interpreter such as
 The following will run the program, passing it -v on the
 command-line without it being interpreted as an 'option':-
 .DS
-  awka.out -We -v input.txt, OR
+  awka-app.out -We -v input.txt, OR
 awka -x -f myprog.awk -- -We -v input.txt
 .DE
 (d) Producing and running the executable, ensuring it
@@ -441,7 +529,15 @@ awka -x -f myprog.awk -- -We -v input.txt
 .DS
   awka -x -t -f myprog.awk -f other.awk -- input.txt
 .DE
-(e) A simplistic example of how awka might be used in a Makefile:-
+(e) Using an inline AWK script rather than a AWK file:-
+.DS
+  awka -x -t 'BEGIN { "Hello world" }'
+.DE
+(f) Piping the AWK script into AWKA:-
+.DS
+  cat myprog.awk | awka -x -t -
+.DE
+(g) A simplistic example of how awka might be used in a Makefile:-
 .DS
   myprog:  myprog.o
        gcc myprog.o -lawka -lm -o myprog
