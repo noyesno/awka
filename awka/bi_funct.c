@@ -98,6 +98,7 @@ char *bi_names[] =
    "mod",
    "pow",
    "isarray",
+   "typeof",
    NULL
 };
 
@@ -149,6 +150,7 @@ BI_REC bi_funct[] =
    "mod", bi_mod, 2, 2,
    "pow", bi_pow, 2, 2,
    "isarray", bi_isarray, 1, 1,
+   "typeof", bi_typeof, 1, 1,
    (char *) 0, (PF_CP) 0, 0, 0} ;
 
 char
@@ -777,6 +779,13 @@ bi_tgamma(sp)
 
 CELL *
 bi_isarray(sp)
+   register CELL *sp ;
+{
+   return sp ;
+}
+
+CELL *
+bi_typeof(sp)
    register CELL *sp ;
 {
    return sp ;

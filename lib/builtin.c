@@ -2555,6 +2555,57 @@ awka_isarray(char keep, a_VARARG *va)
   return(outvar);
 }
 
+/*
+ * awka_typeof
+ * awk builtin extended function 'typeof'
+ */
+a_VAR *
+awka_typeof(char keep, a_VARARG *va)
+{
+  a_VAR *outvar;
+
+  /* create a variable */
+  _awka_getstringvar;
+
+  if(va->used != 1) awka_error("runtime error: isarray expects only one parameter.\n");
+  switch(va->var[0]->type)
+  {
+    case a_VARNUL:
+      awka_strscpy(outvar, "untyped");
+      break;
+
+    case a_VARDBL:
+      awka_strscpy(outvar, "number");
+      break;
+
+    case a_VARSTR:
+      awka_strscpy(outvar, "string");
+      break;
+
+    case a_VARARR:
+      awka_strscpy(outvar, "array");
+      break;
+
+    case a_VARREG:
+      awka_strscpy(outvar, "regexp");
+      break;
+
+    case a_VARUNK:
+      if (va->var[0]->type2 == a_DBLSET)
+        awka_strscpy(outvar, "strnum");
+      else if (va->var[0]->type2 == a_STRSET)
+        awka_strscpy(outvar, "string");
+      else
+        awka_strscpy(outvar, "unassigned");
+      break;
+
+    default:
+      awka_strscpy(outvar, "untyped");
+      break;
+  }
+  return(outvar);
+}
+
 int
 awka_globline(const char *pattern)
 {

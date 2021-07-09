@@ -124,6 +124,7 @@ a_VAR *    awka_fseek(char keep, a_VARARG *va );
 a_VAR *    awka_ftell(char keep, a_VARARG *va );
 a_VAR *    awka_fsize(char keep, a_VARARG *va );
 a_VAR *    awka_isarray(char keep, a_VARARG *va );
+a_VAR *    awka_typeof(char keep, a_VARARG *va );
 int        awka_globline(const char *pattern);
 
 #define awka_length0   awka_length(awka_doln(0,0))

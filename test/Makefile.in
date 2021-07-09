@@ -63,7 +63,8 @@ basic:		msg \
 		pdb_find_salt powtest prdupval print prmreuse prt1eval prtoeval \
 		rand range reindops reparse resplit retest rs rsnul1nl \
 		rsre rswhite sort splitargv splitrem splitvar splitwht \
-		sprintfc subslash substr swaplns tradanch tweakfld unbuf zeroflag \
+		sprintfc subslash substr swaplns tradanch tweakfld typeof \
+		unbuf zeroflag \
 		endbasic
 
 revive-awka:		rslen rsnull scgi
@@ -105,7 +106,7 @@ a_cat addcmp aloop arraycat arrayref arysubnm asort backgsub beginexit begingetl
 bslash compl conflict convfmt cox delarprm divide dubois dynlj eiso3 eofsplit \
 extendedchars fnarydel foronsplit fun gensub getlnhd gnureops gsubtest intest intprec \
 isarray math mathextra nlstrina nofile opasnidx opasnslf pcntplus powtest print prmreuse \
-prt1eval prtoeval rand retest sort splitrem splitwht subslash substr zeroflag ::
+prt1eval prtoeval rand retest sort splitrem splitwht subslash substr typeof zeroflag ::
 	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC) x.c $(CFLAGS) -o xx
