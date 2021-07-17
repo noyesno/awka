@@ -243,7 +243,7 @@ code_pop(target)
    if (error_state)  return 0 ;
 
 #ifdef        DEBUG
-   if (!mc_top)         bozo("mc underflow") ;
+   if (!mc_top)         bozo("code_pop: memory copy underflow") ;
 #endif
 
    p = mc_top ; mc_top = p->link ;

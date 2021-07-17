@@ -105,7 +105,6 @@ scan_init(cmdline_program)
 
    if (cmdline_program)
    {
-//fprintf(stderr, "scan_init inline: %s\n", cmdline_program) ;
       program_fd = -1 ;                 /* command line program */
       program_string = new_STRING0(strlen(cmdline_program) + 1) ;
       strcpy(program_string->str, cmdline_program) ;
@@ -116,9 +115,7 @@ scan_init(cmdline_program)
    }
    else             /* program from file[s] */
    {
-//fprintf(stderr, "scan_init file\n") ;
       scan_open() ;
-      //buffp = buffer = (unsigned char *) zmalloc(BUFFSZ + 1) ;
       scan_fillbuff() ;
    }
 
@@ -152,7 +149,6 @@ scan_open()         /* open pfile_name */
    PFILE *q ;
 
    pfile_name = pfile_list->fname ;
-//fprintf(stderr, "scan_open: input file: %s (%s)\n", pfile_name, pfile_list->fname) ;
    q = pfile_list ;
    pfile_list = pfile_list->link ;
    ZFREE(q) ;
@@ -174,7 +170,6 @@ scan_open()         /* open pfile_name */
       errmsg(errno, "cannot open %s.", pfile_name) ;
       exit(2) ;
    }
-//fprintf(stderr, "scan_open: fd: %d\n", program_fd) ;
 }
 
 void
@@ -241,7 +236,6 @@ scan_fillbuff()
 
    if(program_fd < 0)    /* inline script */
    {
-//fprintf(stderr, "scan_fillbuff: program_fd < 0\n") ;	   
       buffer[0] = '\0' ;
       buffp = buffer ;
       return ;
@@ -250,15 +244,14 @@ scan_fillbuff()
    if(program_fd == 0)   /* read from stdin */
    {
       if (eof_flag) 
-	return ;
+         return ;
       /* reading from stdin    ** not portable to windows OS */
       if(program_fd == 0 && !(f = fopen("/dev/stdin", "r")))
       {
          errmsg( (i=ferror(f)), "unable to open stdin for reading") ;
-	 exit(i) ;
+         exit(i) ;
       }
       buffp = buffer ;
-//fprintf(stderr, "scan_fillbuf: reading from stdin\n") ;
       while((c = fgetc(f)) != EOF) {
          *buffp++ = (char) c ;
          if (!--i) break ;
@@ -268,11 +261,9 @@ scan_fillbuff()
       *buffp = '\0' ;
       buffp = buffer ;
       eof_flag = 1 ;
-//fprintf(stderr, "scan_fillbuf: input buffer is: %s\n",buffer) ;
       return ;
    }
 
-//fprintf(stderr, "scan_fillbuff - reading from file: %s\n", pfile_name) ;
    r = fillbuff(program_fd, (char *) buffer, BUFFSZ) ;
    if (r < BUFFSZ)
    {
@@ -300,26 +291,24 @@ slow_next()
          PFILE *q ;
 
          if (program_fd > 0)  
-	 {
-	    close(program_fd) ;
+         {
+            close(program_fd) ;
             eof_flag = 0 ;
-	 }
+         }
 
          pfile_name = pfile_list->fname ;
          q = pfile_list ;
          pfile_list = pfile_list->link ;
          ZFREE(q) ;
 
-//fprintf(stderr, "slow_next: input file: %s\n", pfile_name) ;
-//fprintf(stderr, "slow_next: next file list entry: %p\n", pfile_list) ;
          if (pfile_name[0] == '-' && pfile_name[1] == 0)
          {
             /* read from stdin (piped input from previous command) */
             program_fd = 0 ;
-	    eof_flag = 0 ;
+            eof_flag = 0 ;
             pfile_name = (char *) 0 ;
-	    buffp = buffer ;
-	    buffer[0] = 0 ;
+            buffp = buffer ;
+            buffer[0] = 0 ;
             /* fill_scanbuff will open and read stdin */
          }
          else if ((program_fd = open(pfile_name, O_RDONLY, 0)) == -1)
@@ -329,14 +318,13 @@ slow_next()
          }
         // scan_open() ;
          token_lineno = lineno = 1 ;
-	 line_pos = 0 ;
+         line_pos = 0 ;
          scan_fillbuff() ;
          buffp = buffer ;
       }
       else  break /* real eof */ ;
    }
 
-//fprintf(stderr, "slow_next: %d\n", *buffp) ;
    return *buffp++ ;                 /* note can un_next() , eof which is zero */
 }
 
@@ -983,29 +971,39 @@ reswitch:
                   /* if (is_ext_builtin(string_buff) && prev_token == FUNCTION)  */
                   if (is_ext_builtin(string_buff))
                   {
-                    stp->type = ST_NONE ;
-                    stp->name = (char *) malloc(strlen(string_buff)+1) ;
-                    strcpy(stp->name, string_buff) ;
-                    yylval.stp = stp ;
-                    if (prev_token == FUNCTION)
-                       current_token = ID ;
-                    else
-                       current_token = FUNCT_ID ;
+                     stp->type = ST_NONE ;
+                     stp->name = (char *) malloc(strlen(string_buff)+1) ;
+                     strcpy(stp->name, string_buff) ;
+                     yylval.stp = stp ;
+                     if (prev_token == FUNCTION)
+                        current_token = ID ;
+                     else
+                        current_token = FUNCT_ID ;
                   }
                   else
                      current_token = BUILTIN ;
                   break ;
 
                case ST_LENGTH:
-
                   yylval.bip = stp->stval.bip ;
 
                   /* check for length alone, this is an ugly
                          hack */
                   while (scan_code[c = next()] == SC_SPACE) ;
+                  if (c == '(') {
+                     c = next() ;
+                     if (c == ')') {
+                        /* length() parsed using LENGTH0 rule */
+                        current_token = LENGTH0 ;
+                        break ;
+                     }
+                     c = '(' ;
+                     un_next() ;
+                  }
                   un_next() ;
 
-                  current_token = c == '(' ? BUILTIN : LENGTH ;
+                  current_token = c == '(' ? LENGTH : LENGTH0 ;
+
                   break ;
 
                case ST_FIELD:
@@ -1014,7 +1012,7 @@ reswitch:
                   break ;
 
                default:
-                  bozo("find returned bad st type") ;
+                  bozo("find returned bad st type.") ;
             }
             return prev_token = current_token ;
          }

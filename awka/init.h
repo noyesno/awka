@@ -39,6 +39,7 @@ the GNU General Public License, version 2, 1991.
 #define  EXIT_ERR_o	6
 #define  EXIT_ERR_MISS  7
 #define  EXIT_ERR_NOx   8
+#define  EXIT_ERR_NOf   9
 
 /* nodes to link file names for multiple
    -f option */
@@ -52,16 +53,18 @@ extern PFILE *pfile_list ;
 
 extern char *sprintf_buff, *sprintf_limit ;
 
+char *awak_input_text;
+
 
 void  PROTO( initialize, (int, char **) ) ;
 void  PROTO( code_init, (void) ) ;
 void  PROTO( code_cleanup, (void) ) ;
 void  PROTO( compile_cleanup, (void) ) ;
-void PROTO(scan_init, ( char *) ) ;
-void PROTO(bi_vars_init, (void) ) ;
-void PROTO(bi_funct_init, (void) ) ;
-void PROTO(print_init, (void) ) ;
-void PROTO(kw_init, (void) ) ;
+void  PROTO( scan_init, ( char *) ) ;
+void  PROTO( bi_vars_init, (void) ) ;
+void  PROTO( bi_funct_init, (void) ) ;
+void  PROTO( print_init, (void) ) ;
+void  PROTO( kw_init, (void) ) ;
 void  PROTO( field_init, (void) ) ;
 void  PROTO( fpe_init, (void) ) ;
 void  PROTO( load_environ, (ARRAY)) ;

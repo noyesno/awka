@@ -52,6 +52,7 @@
 /* global for the disassembler */
 char *bi_names[] =
 {
+   "xxyyzz",
    "length",
    "index",
    "substr",
@@ -105,6 +106,7 @@ char *bi_names[] =
 BI_REC bi_funct[] =
 {                                /* info to load builtins */
 
+   "xxyyzz", bi_length, 1, 1,
    "length", bi_length, 0, 1,        /* special must come first */
    "index", bi_index, 2, 2,
    "substr", bi_substr, 2, 3,
@@ -179,13 +181,17 @@ bi_funct_init()
 
    /* length is special (posix bozo) */
    stp = insert(bi_funct->name) ;
-   stp->type = ST_LENGTH ;
+   stp->type = ST_NONE;
+   //stp->type = ST_LENGTH ;
    stp->stval.bip = bi_funct ;
 
    for (p = bi_funct + 1; p->name; p++)
    {
       stp = insert(p->name) ;
-      stp->type = ST_BUILTIN ;
+      if(strcmp(p->name, "length") == 0)
+         stp->type = ST_LENGTH ;
+      else
+         stp->type = ST_BUILTIN ;
       stp->stval.bip = p ;
    }
 
