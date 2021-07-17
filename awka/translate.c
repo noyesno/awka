@@ -107,14 +107,14 @@ int which_side = _a_RHS;
 int max_base_gc = 1, max_fn_gc = 1, cur_base_gc = 1, cur_fn_gc = 1;
 extern char *awk_input_files;
 
-static int getstringsize(const char *p){
+static int getstringsize(const char *p) {
   int n=0;
   char c;
-  while(c = *p++){
-    if (c=='\\' && *p && (1 || *p=='0' || *p=='n' || *p=='r' || *p=='t' || *p=='\"' || *p=='\\')){
+  while (c = *p++) {
+    if (c=='\\' && *p && (1 || *p=='0' || *p=='n' || *p=='r' || *p=='t' || *p=='\"' || *p=='\\')) {
       p++;
       n++;
-    }else{
+    } else {
       n++;
     }
   }
@@ -283,7 +283,7 @@ buildstr(char *func, char *fmt, char *p, char context, char true_context, int in
   if (true_context == _ROVAR && context != _STR)
     true_context = _VAR;
 
-  switch(context)
+  switch (context)
   {
     case _UNK:
     case _NUL:
@@ -579,7 +579,7 @@ awka_buildexpr(char *oper, char *p, char *q, int pprev, int qprev, char c1, char
                                   + strlen(getstringvalue(q)) + strlen(getstringvalue(p))
                                   + strlen(q) + strlen(p));
 
-  switch(c2)
+  switch (c2)
   {
     case _VAR:
       if (c1 == _VAR)
@@ -1323,13 +1323,13 @@ awka_assign(int inst, int *earliest, char *context)
       }
       else if (findvaltype(p) == _VALTYPE_STR || progcode[inst-1].ftype == 2)
       {
-        if (0 && !strcmp(r2, "a_bivar[a_FS]")){
+        if (0 && !strcmp(r2, "a_bivar[a_FS]")) {
            sprintf(ret, "awka_NFget(); awka_strcpy(%s, %s) /* 1 */", r2, getstringvalue(p));
         } else {
            const char *string_value = getstringvalue(p);
-           if(string_value[0]=='\"'){
+           if (string_value[0]=='\"') {
              sprintf(ret, "awka_strncpy(%s, %s, %d) /* 1 */", r2, string_value, getstringsize(string_value)-2);
-           }else{
+           } else {
              sprintf(ret, "awka_strcpy(%s, %s) /* 1 */", r2, string_value);
            }
         }
@@ -1351,9 +1351,9 @@ awka_assign(int inst, int *earliest, char *context)
       *context = _DBL;
       break;
     case _STR:
-      if (0 && !strcmp(r2, "a_bivar[a_FS]")){
+      if (0 && !strcmp(r2, "a_bivar[a_FS]")) {
         sprintf(ret, "awka_NFget(); awka_strcpy(%s, %s) /* 2 */", r2, p);
-      }else{
+      } else {
         sprintf(ret, "awka_strcpy(%s, %s) /* 2 */", r2, p);
       }
       setvaltype(r2, _VALTYPE_STR);
@@ -1661,7 +1661,7 @@ awka_eq(int inst, int *earliest, char *context)
                              + strlen(getstringvalue(q)) + strlen(getstringvalue(p))
                              + strlen(q) + strlen(p));
 
-  switch(c2)
+  switch (c2)
   {
     case _VAR:
       if (c1 == _VAR)
@@ -1830,7 +1830,7 @@ awka_exit0(int inst, int *earliest, char *context)
   ret = (char *) malloc( 60 );
   if (awka_main) {
     if (progcode[inst].op == _CLEANUP)
-      strcpy(ret, "return((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
+      strcpy(ret, "return ((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
     else
       strcpy(ret, "awka_exit((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
   }
@@ -2323,7 +2323,7 @@ awka_neq(int inst, int *earliest, char *context)
                             + strlen(getstringvalue(q)) + strlen(getstringvalue(p))
                             + strlen(q) + strlen(p));
   
-  switch(c2)
+  switch (c2)
   {
     case _VAR:
       if (c1 == _VAR)
@@ -4088,7 +4088,7 @@ awka_builtin(int inst, int *earliest, char *context)
   r3 = (char *) malloc( strlen(ret) + strlen(code[progcode[inst].op-1].name) + 60 );
   if (j)
   {
-    switch(j)
+    switch (j)
     {
       case 1:
         sprintf(r3, "awka_%s(a_TEMP, awka_arg1(a_TEMP, %s))",code[progcode[inst].op-1].name,ret);
@@ -4210,7 +4210,7 @@ awka_function(int cur, int end)
     p = codeptr(cur, 20);
     sprintf(p, "{\n");
     p = codeptr(cur, 50);
-    sprintf(p, "switch(va->var[_i]->type)\n");
+    sprintf(p, "switch (va->var[_i]->type)\n");
     p = codeptr(cur, 20);
     sprintf(p, "{\n");
     p = codeptr(cur, 50);
@@ -4609,7 +4609,7 @@ translate()
   for (i=0; i<litd_used; i++)
     fprintf(outfp,"  awka_varinit(_litd%d_awka); awka_setd(_litd%d_awka) = %s;\n",i,i,litd_val[i]);
   
-  for (i=0; i<lits_used; i++){
+  for (i=0; i<lits_used; i++) {
     const char *string_value = lits_val[i];
     fprintf(outfp,"  awka_varinit(_lits%d_awka); awka_strncpy(_lits%d_awka, \"%s\", %d);\n",i, i, string_value, getstringsize(string_value));
   }

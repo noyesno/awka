@@ -57,7 +57,7 @@ static int scope ;
 static FBLOCK *active_funct ;
       /* when scope is SCOPE_FUNCT  */
 
-#define  code_address(x)  if( is_local(x) ) \
+#define  code_address(x)  if ( is_local(x) ) \
                              code2op(L_PUSHA, (x)->offset) ;\
                           else  code2(_PUSHA, (x)->stval.cp) 
 
@@ -576,7 +576,7 @@ statement  :    while_front  statement
                     code_jmp(_JNZ, CDP($2)) ;
                     BC_clear(code_ptr, CDP(saved_offset)) ;
                   }
-                  else /* while(1) */
+                  else /* while (1) */
                   {
                     code_jmp(_JMP, p1) ;
                     BC_clear(code_ptr, CDP($2)) ;
@@ -602,7 +602,7 @@ statement   :   for1 for2 for3 statement
                     code_ptr += len ;
                     code_jmp(_JNZ, CDP($4)) ;
                   }
-                  else /*  for(;;) */
+                  else /*  for (;;) */
                   code_jmp(_JMP, p4) ;
 
                   BC_clear(code_ptr, CDP(cont_offset)) ;
@@ -672,7 +672,7 @@ lvalue  :  ID mark LBOX  args  RBOX
              { code2op(A_CAT, $4) ; }
 
              check_array($1) ;
-             if( is_local($1) )
+             if ( is_local($1) )
              { code2op(LAE_PUSHA, $1->offset) ; }
              else code2(AE_PUSHA, $1->stval.array) ;
              $$ = $2 ;
@@ -685,7 +685,7 @@ p_expr  :  ID mark LBOX  args  RBOX   %prec  AND
              { code2op(A_CAT, $4) ; }
 
              check_array($1) ;
-             if( is_local($1) )
+             if ( is_local($1) )
              { code2op(LAE_PUSHI, $1->offset) ; }
              else code2(AE_PUSHI, $1->stval.array) ;
              $$ = $2 ;
@@ -697,7 +697,7 @@ p_expr  :  ID mark LBOX  args  RBOX   %prec  AND
              { code2op(A_CAT,$4) ; }
 
              check_array($1) ;
-             if( is_local($1) )
+             if ( is_local($1) )
              { code2op(LAE_PUSHA, $1->offset) ; }
              else code2(AE_PUSHA, $1->stval.array) ;
              if ( $6 == '+' )  code1(_POST_INC) ;
@@ -776,7 +776,7 @@ field   :  FIELD
              { code2op(A_CAT, $5) ; }
 
              check_array($2) ;
-             if( is_local($2) )
+             if ( is_local($2) )
              { code2op(LAE_PUSHI, $2->offset) ; }
              else code2(AE_PUSHI, $2->stval.array) ;
 
@@ -1290,7 +1290,7 @@ static void
 check_var( p )
   register SYMTAB *p ;
 {
-      switch(p->type)
+      switch (p->type)
       {
         case ST_NONE : /* new id */
             st_none:
@@ -1323,7 +1323,7 @@ static  void
 check_array(p)
   register SYMTAB *p ;
 {
-      switch(p->type)
+      switch (p->type)
       {
         case ST_NONE :  /* a new array */
             st_none:
@@ -1370,7 +1370,7 @@ code_call_id( p, ip )
      /* This always get set now.  So that fcall:relocate_arglist
         works. */
 
-  switch( ip->type )
+  switch ( ip->type )
   {
     case  ST_VAR  :
             p->type = CA_EXPR ;
@@ -1433,7 +1433,7 @@ RE_as_arg()
 static void
 switch_code_to_main()
 {
-   switch(scope)
+   switch (scope)
    {
      case SCOPE_BEGIN :
         *begin_code_p = active_code ;

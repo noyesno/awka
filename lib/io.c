@@ -53,7 +53,12 @@
 #define INVALID_HANDLE (-1)
 #define O_BINARY 0
 
-enum inet_prot { INET_NONE, INET_TCP, INET_UDP, INET_RAW };
+enum inet_prot {
+  INET_NONE = 1,
+  INET_TCP,
+  INET_UDP,
+  INET_RAW
+};
 #endif /* HAVE_SOCKETS=1 */
 
 _a_IOSTREAM *_a_iostream = NULL;
@@ -75,7 +80,8 @@ _awka_str2mode(const char *mode)
   if (*second == 'b')
     second++;
 
-  switch(mode[0]) {
+  switch (mode[0])
+  {
     case 'r':
       ret = O_RDONLY;
       if (*second == '+' || *second == 'w')
@@ -109,6 +115,7 @@ int
 _awka_isdir(int fd)
 {
   struct stat sbuf;
+
   return (fstat(fd, &sbuf) == 0 && S_ISDIR(sbuf.st_mode));
 }
 
@@ -126,10 +133,10 @@ _awka_socketopen(enum inet_prot type, int localport, int remoteport, char *remot
   int any_remote_host = strcmp(remotehostname, "0");
 
   socket_fd = INVALID_HANDLE;
-  switch (type) 
+  switch (type)
   {
     case INET_TCP:
-      if (localport != 0 || remoteport != 0) 
+      if (localport != 0 || remoteport != 0)
       {
         int on = 1;
 #ifdef SO_LINGER
@@ -146,21 +153,24 @@ _awka_socketopen(enum inet_prot type, int localport, int remoteport, char *remot
 #endif
       }
       break;
+
     case INET_UDP:
       if (localport != 0 || remoteport != 0)
         socket_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
       break;
+
     case INET_RAW:
 #ifdef SOCK_RAW
       if (localport == 0 && remoteport == 0)
         socket_fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
 #endif
       break;
+
     case INET_NONE:
       /* fall through */
-      default:
-        awka_error("Something strange has happened.\n");
-        break;
+    default:
+      awka_error("Something strange has happened.\n");
+      break;
   }
 
   if (socket_fd < 0 || socket_fd == INVALID_HANDLE
@@ -172,14 +182,15 @@ _awka_socketopen(enum inet_prot type, int localport, int remoteport, char *remot
   remote_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   local_addr.sin_port  = htons(localport);
   remote_addr.sin_port = htons(remoteport);
-  if (bind(socket_fd, (struct sockaddr *) &local_addr, sizeof(local_addr)) == 0) 
+
+  if (bind(socket_fd, (struct sockaddr *) &local_addr, sizeof(local_addr)) == 0)
   {
-    if (any_remote_host != 0) 
+    if (any_remote_host != 0)
     { /* not ANY => create a client */
-      if (type == INET_TCP || type == INET_UDP) 
+      if (type == INET_TCP || type == INET_UDP)
       {
         memcpy(&remote_addr.sin_addr, hp->h_addr, sizeof(remote_addr.sin_addr));
-        if (connect(socket_fd, (struct sockaddr *) &remote_addr, sizeof(remote_addr)) != 0) 
+        if (connect(socket_fd, (struct sockaddr *) &remote_addr, sizeof(remote_addr)) != 0)
         {
           close(socket_fd);
           if (localport == 0)
@@ -187,36 +198,37 @@ _awka_socketopen(enum inet_prot type, int localport, int remoteport, char *remot
           else
             socket_fd = _awka_socketopen(type, localport, 0, "0");
         }
-      } 
-      else 
+      }
+      else
       {
         /* /inet/raw client not ready yet */
         awka_error("/inet/raw client not ready yet, sorry\n");
+
         if (geteuid() != 0)
           awka_error("only root may use `/inet/raw'.\n");
       }
-    } 
-    else 
+    }
+    else
     { /* remote host is ANY => create a server */
-      if (type == INET_TCP) 
+      if (type == INET_TCP)
       {
         int clientsocket_fd = INVALID_HANDLE;
         int namelen = sizeof(remote_addr);
 
         if (listen(socket_fd, 1) >= 0
-            && (clientsocket_fd = accept(socket_fd, (struct sockaddr *) &remote_addr, &namelen)) >= 0) 
+            && (clientsocket_fd = accept(socket_fd, (struct sockaddr *) &remote_addr, &namelen)) >= 0)
         {
           AWKA_DEBUG("accept connection");
           close(socket_fd);
           socket_fd = clientsocket_fd;
-        } 
-        else 
+        }
+        else
         {
           close(socket_fd);
           socket_fd = INVALID_HANDLE;
         }
-      } 
-      else if (type == INET_UDP) 
+      }
+      else if (type == INET_UDP)
       {
         char buf[10];
         int readle;
@@ -224,30 +236,31 @@ _awka_socketopen(enum inet_prot type, int localport, int remoteport, char *remot
 #ifdef MSG_PEEK
         if (recvfrom(socket_fd, buf, 1, MSG_PEEK, (struct sockaddr *) & remote_addr, & readle) < 1
             || readle != sizeof(remote_addr)
-            || connect(socket_fd, (struct sockaddr *)& remote_addr, readle) != 0) 
+            || connect(socket_fd, (struct sockaddr *)& remote_addr, readle) != 0)
         {
           close(socket_fd);
           socket_fd = INVALID_HANDLE;
         }
 #endif
-      } 
-      else 
+      }
+      else
       {
         /* /inet/raw server not ready yet */
         awka_error("/inet/raw server not ready yet, sorry\n");
+
         if (geteuid() != 0)
           awka_error("only root may use `/inet/raw'.\n");
       }
     }
-  } 
-  else 
+  }
+  else
   {
     close(socket_fd);
     socket_fd = INVALID_HANDLE;
   }
 
 #endif   /* HAVE_SOCKET = 1 */
-        return socket_fd;
+  return socket_fd;
 }
 
 /*
@@ -306,10 +319,12 @@ _awka_io_opensocket(const char *name, const char *mode)
   *cp = '\0';
 
   localport = atoi(localpname);
+
   if (strcmp(localpname, "0") != 0 &&
      (localport <= 0 || localport > 65535))
   {
     service = getservbyname(localpname, proto);
+
     if (service == NULL)
       awka_error("local port invalid in '%s'\n",name);
     else
@@ -321,10 +336,13 @@ _awka_io_opensocket(const char *name, const char *mode)
   /* which hostname? */
   cp++;
   hostname = cp;
+
   while (*cp != '/' && *cp != '\0')
     cp++;
+
   if (*cp != '/' || cp == hostname)
     awka_error("must support remote hostname to '/inet/'\n");
+
   *cp = '\0';
   hostnameslastcharp = cp;
 
@@ -340,7 +358,9 @@ _awka_io_opensocket(const char *name, const char *mode)
    */
   if (*cp == '\0')
     awka_error("must supply a remote port to '/inet/'\n");
+
   remoteport = atoi(cp);
+
   if (strcmp(cp, "0") != 0 &&
      (remoteport <= 0 || remoteport > 65535))
   {
@@ -357,15 +377,17 @@ _awka_io_opensocket(const char *name, const char *mode)
 
   if (openfd == INVALID_HANDLE)
     openfd = open(name, flag, 0666);
+
   if (openfd != INVALID_HANDLE)
   {
     if (_awka_isdir(openfd))
       awka_error("file '%s' is a directory\n",name);
     fcntl(openfd, F_SETFD, 1);
   }
+
   return openfd;
 }
-    
+
 /*
  * awka_io_2open()
  * Implements co-process file pointer creation
@@ -390,16 +412,19 @@ static FILE * _awka_io_2open( char *str, _a_IOSTREAM *s )
 
     #if 0
     newfd = dup(fd);
+
     if (newfd < 0)
     {
       fclose(fp);
       return FALSE;
-    }
+   }
+
     fcntl(newfd, F_SETFD, 1);
     #endif
-    
+
     s->fd = fd;
     s->type = AWKA_STREAM_SOCKET;
+
     return fp;
   }
 #endif
@@ -410,19 +435,24 @@ static FILE * _awka_io_2open( char *str, _a_IOSTREAM *s )
     int fd, newfd;
 
     fd = open(str, O_RDWD);
+
     if (fd == INVALID_HANDLE)
       return NULL;
+
     if (!(fp = fdopen(fd, "w")))
     {
       close(fd);
       return NULL;
     }
+
     newfd = dup(fd);
+
     if (newfd < 0)
     {
       fclose(fp);
       return NULL;
     }
+
     fcntl(newfd, F_SETFD, 1);
 
     return fp;
@@ -443,25 +473,27 @@ static FILE * _awka_io_2open( char *str, _a_IOSTREAM *s )
     if (pipe(ptoc) < 0)
       return NULL;   /* errno set, diagnostic from caller */
 
-    if (pipe(ctop) < 0) 
+    if (pipe(ctop) < 0)
     {
       save_errno = errno;
       close(ptoc[0]);
       close(ptoc[1]);
       errno = save_errno;
+
       return NULL;
     }
 
-    if ((pid = fork()) < 0) 
+    if ((pid = fork()) < 0)
     {
       save_errno = errno;
       close(ptoc[0]); close(ptoc[1]);
       close(ctop[0]); close(ctop[1]);
       errno = save_errno;
+
       return NULL;
     }
 
-    if (pid == 0) 
+    if (pid == 0)
     { /* child */
       if (close(1) == -1)
         awka_error("close of stdout in child process failed.\n");
@@ -475,26 +507,30 @@ static FILE * _awka_io_2open( char *str, _a_IOSTREAM *s )
           close(ptoc[0]) == -1 || close(ptoc[1]) == -1)
         awka_error("close of pipe failed.\n");
       execl(awka_shell, "sh", "-c", str, NULL);
+
       _exit(127);
     }
 
     /* parent */
     fp = fdopen(ptoc[1], "w");
-    if (fp == NULL) 
+
+    if (fp == NULL)
     {
       (void) close(ctop[0]);
       (void) close(ctop[1]);
       (void) close(ptoc[0]);
       (void) close(ptoc[1]);
       /* (void) kill(pid, SIGKILL);      /* overkill? (pardon pun) */
+
       return NULL;
     }
 
     fcntl(ctop[0], F_SETFD, 1);
     fcntl(ptoc[1], F_SETFD, 1);
-    
+
     (void) close(ptoc[0]);
     (void) close(ctop[1]);
+
     return fp;
   }
 #else
@@ -510,7 +546,9 @@ static FILE * _awka_io_2open( char *str, _a_IOSTREAM *s )
  */
 static void _awka_sopen(_a_IOSTREAM *s, char flag)
 {
-  if (s->io != (char) _a_IO_CLOSED) return;
+  if (s->io != (char) _a_IO_CLOSED)
+    return;
+
   s->interactive = FALSE;
   s->type = AWKA_STREAM_UNKNOWN;
 
@@ -523,11 +561,13 @@ static void _awka_sopen(_a_IOSTREAM *s, char flag)
         if (s->fp) fflush(s->fp);
         if (_interactive) s->interactive = TRUE;
         break;
+
       case _a_IO_WRITE:
         if (!(s->fp = popen(s->name, "w")))
           awka_error("sopen: unable to open piped process '%s' for write access.\n",s->name);
         fflush(s->fp);
         break;
+
       case _a_IO_APPEND:
         if (!(s->fp = popen(s->name, "a")))
           awka_error("sopen: unable to open piped process '%s' for append access.\n",s->name);
@@ -538,6 +578,7 @@ static void _awka_sopen(_a_IOSTREAM *s, char flag)
   else if ((s->pipe == 2))  /* TWO-WAY I/O */
   {
     s->fp = _awka_io_2open(s->name, s);
+
     if ( !s->fp )
       awka_error("sopen: unable to open %s process '%s' for %s access.\n",
 #ifdef HAVE_SOCKETS
@@ -545,6 +586,7 @@ static void _awka_sopen(_a_IOSTREAM *s, char flag)
 #endif
           s->name,
           "read/write");
+
     setbuf(s->fp, NULL);
     fflush(s->fp);
     flag = _a_IO_READ | _a_IO_WRITE;
@@ -556,17 +598,22 @@ static void _awka_sopen(_a_IOSTREAM *s, char flag)
       case _a_IO_READ:
         if (!strcmp(s->name, "-") || !strcmp(s->name, "/dev/stdin"))
           s->fp = stdin;
-        else 
+        else
           s->fp = fopen(s->name, "r");
+
         if (_interactive || !strncmp(s->name, "/dev/", 5))
           s->interactive = TRUE;
-        if (s->fp) fflush(s->fp);
+
+        if (s->fp)
+          fflush(s->fp);
         break;
+
       case _a_IO_WRITE:
         if (!(s->fp = fopen(s->name, "w")))
           awka_error("sopen: unable to open file '%s' for write access.\n",s->name);
         fflush(s->fp);
         break;
+
       case _a_IO_APPEND:
         if (!(s->fp = fopen(s->name, "a")))
           awka_error("sopen: unable to open file '%s' for append access.\n",s->name);
@@ -574,8 +621,11 @@ static void _awka_sopen(_a_IOSTREAM *s, char flag)
         break;
     }
   }
+
   if (!s->fp)
+  {
     s->io = _a_IO_CLOSED;
+  }
   else
   {
     s->io = flag;
@@ -587,6 +637,7 @@ static void _awka_sopen(_a_IOSTREAM *s, char flag)
       s->current = s->end = s->buf;
     }
   }
+
   s->lastmode = 0;
 }
 
@@ -599,7 +650,7 @@ _awka_io_addstream( char *name, char flag, int pipe )
 {
   int i, j, k;
 
-  if (!*name) 
+  if (!*name)
     awka_error("io_addstream: empty filename, flag = %d.\n",flag);
 
   if (pipe < 0 || pipe > 2)
@@ -608,20 +659,23 @@ _awka_io_addstream( char *name, char flag, int pipe )
   for (i=0; i<_a_ioused; i++)
     if (_a_iostream[i].pipe == pipe &&
         !strcmp(name, _a_iostream[i].name) &&
-        (_a_iostream[i].io == flag || 
+        (_a_iostream[i].io == flag ||
         _a_iostream[i].io == _a_IO_CLOSED))
       break;
 
   if (i < _a_ioused)
   {
-    if (_a_iostream[i].io == flag) 
+    if (_a_iostream[i].io == flag)
       return i;
+
     _a_iostream[i].pipe = pipe;
     _awka_sopen(&_a_iostream[i], flag);
+
     return i;
   }
 
   j = _a_ioused++;
+
   if (_a_ioused >= _a_ioallc)
   {
     if (!_a_ioallc)
@@ -634,7 +688,8 @@ _awka_io_addstream( char *name, char flag, int pipe )
       k = _a_ioallc;
       _a_ioallc *= 2;
       realloc( &_a_iostream, _a_ioallc * sizeof(_a_IOSTREAM) );
-      for (i=k; i<_a_ioallc; i++) 
+
+      for (i=k; i<_a_ioallc; i++)
       {
         _a_iostream[i].name = _a_iostream[i].buf = _a_iostream[i].end = _a_iostream[i].current = NULL;
         _a_iostream[i].io = _a_IO_CLOSED;
@@ -648,9 +703,10 @@ _awka_io_addstream( char *name, char flag, int pipe )
   strcpy(_a_iostream[j].name, name);
   _a_iostream[j].pipe = (char) pipe;
   _awka_sopen(&_a_iostream[j], flag);
+
   return j;
 }
-      
+
 void
 _awka_io_cleanbinchars(a_VAR *var)
 {
@@ -658,10 +714,11 @@ _awka_io_cleanbinchars(a_VAR *var)
 
   r = var->ptr + var->slen;
   q = var->ptr;
+
   if (var->slen >= 8)
     while (q<=(r-8))
     {
-      // was *q = _a_char[*q++];
+      // was *q = _a_char[*q++];  but shouldn't assume order of inc
       *q = _a_char[*q]; q++;
       *q = _a_char[*q]; q++;
       *q = _a_char[*q]; q++;
@@ -672,7 +729,6 @@ _awka_io_cleanbinchars(a_VAR *var)
       *q = _a_char[*q]; q++;
     }
   while (q<r)
-    // was *q = _a_char[*q++];
     *q = _a_char[*q]; q++;
 }
 
@@ -681,26 +737,30 @@ _awka_io_fillbuff(_a_IOSTREAM *s)
 {
   if (!fread(s->current, 1, s->alloc - (s->current - s->buf), s->fp))
     return 0;
+
   return 1;
 }
 
 #include <sys/select.h>
-static int read_with_select(int fd, char *buf, int size){
+static int read_with_select(int fd, char *buf, int size)
+{
   fd_set read_fds;
+  struct timeval tv;
+
   FD_ZERO(&read_fds);
   FD_SET(fd, &read_fds);
 
-  struct timeval tv;
   tv.tv_sec  = 1; // seconds
   tv.tv_usec = 0; // micro secdonds
 
-  if( select(fd+1, &read_fds, NULL, NULL, &tv) >= 0 ) {
-    if(FD_ISSET(fd, &read_fds)){
+  if ( select(fd+1, &read_fds, NULL, NULL, &tv) >= 0 ) {
+    if (FD_ISSET(fd, &read_fds)) {
       return read(fd, buf, size);
-    }else{
-      // timeout
+    } else {
+      ;// timeout
     }
   }
+
   return -1;
 }
 
@@ -728,15 +788,20 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
     awka_error("io_readline: stream %d passed to io_readline, but highest available is %d.\n",strm,_a_ioused-1);
 
   if (s->io == _a_IO_WRITE || s->io == _a_IO_APPEND)
+  {
     awka_error("io_readline: output stream %d (%s) passed to io_readline!\n",strm,s->name);
+  }
   else if (s->io == _a_IO_CLOSED)
   {
     _awka_sopen(s, _a_IO_READ);
+
     if (s->io == _a_IO_CLOSED)
       return 0;
   }
   else if (s->io == _a_IO_EOF)
+  {
     return 0;
+  }
   else if (s->io == _a_IO_READ + _a_IO_WRITE && s->lastmode != _a_IO_READ && s->fp)
   {
     fflush(s->fp);
@@ -748,17 +813,22 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
     case a_VARDBL:                   // integer
       rs_type = _RS_LENGTH;
       break;
+
     case a_VARNUL:                   // unused variable
       awka_gets(a_bivar[a_RS]);
+      /* fall-trhru */
     case a_VARSTR:                   // string
     case a_VARUNK:
       AWKA_DEBUG("RS length = %d", a_bivar[a_RS]->slen);
       if (a_bivar[a_RS]->slen == 1) {
         recsep = a_bivar[a_RS]->ptr[0];
         rs_type = _RS_CHAR;          //  char
-        if (recsep=='\0')     rs_type = _RS_CHAR;        // RS = '\0'  TODO:
-        else if(recsep=='\n') rs_type = _RS_NEWLINE;     // RS = '\n' 
-      } else if (a_bivar[a_RS]->slen == 0) {             // RS = "" 
+
+        if (recsep=='\0')
+          rs_type = _RS_CHAR;        // RS = '\0'  TODO:
+        else if (recsep=='\n')
+          rs_type = _RS_NEWLINE;     // RS = '\n'
+      } else if (a_bivar[a_RS]->slen == 0) {  // RS = ""
         AWKA_DEBUG("RS use \"\"");
         rs_type = _RS_BLANK_LINES;
         recsep = '\0';
@@ -769,9 +839,11 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
         rs_type = _RS_REGEXP;        //  regular expression
       }
       break;
+
     case a_VARREG:
       rs_type = _RS_REGEXP;          //  regular expression
-  }
+      break;
+  } /* switch */
 
   while (1)
   {
@@ -786,16 +858,22 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
         case _RS_NEWLINE:
             p = memchr(s->current, recsep, s->end - s->current);
             break;
+
         case _RS_BLANK_LINES:
             q = s->current;
-            while (*q == '\n' && q < s->end) q++;    /* skip leading '\n' */
-            if (q == s->end) break;
+            while (*q == '\n' && q < s->end)
+               q++;    /* skip leading '\n' */
+
+            if (q == s->end)
+               break;
+
             p = strstr(q, "\n\n");
             break;
+
         case _RS_REGEXP:
           {
             regmatch_t pmatch;
-            i = !awka_regexec((awka_regexp *) a_bivar[a_RS]->ptr, 
+            i = !awka_regexec((awka_regexp *) a_bivar[a_RS]->ptr,
                                s->current, 1, &pmatch, REG_NEEDSTART);
             if (i)
             {
@@ -804,24 +882,31 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
             }
           }
           break;
+
         case _RS_LENGTH:
           p = s->current + (int) awka_getd(a_bivar[a_RS]);
-          if( p > s->end) p=NULL;
+
+          if (p > s->end)
+            p = NULL;
+
           break;
-      }
+      } /* switch */
 
       if (p)
       {
         /* RS found */
         if (fill_target)
         {
-          switch (rs_type){
+          switch (rs_type)
+	  {
             case _RS_BLANK_LINES:
               awka_strncpy(var, q, p - q);
               break;
+
             case _RS_NEWLINE:
               awka_strncpy(var, s->current, p - s->current - (*(p-1)=='\r'?1:0));
               break;
+
             default:
               awka_strncpy(var, s->current, p - s->current);
           }
@@ -836,28 +921,32 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
             awka_strncpy(a_bivar[a_RT], p, end - p);
             s->current = end;
             break;
+
           case _RS_BLANK_LINES:
             s->current = (p+2 > s->end ? s->end : p+2);
             break;
+
           case _RS_CHAR:
           case _RS_NEWLINE:
             s->current = p+1;
             break;
+
           case _RS_LENGTH:
             s->current = p;
             break;
         }
-  
+
         return 1;
       }
     }
 
-    /* here because there's no data in buffer, or RS is not 
+    /* here because there's no data in buffer, or RS is not
      * in the buffer's data, hence try to read in more data */
 
     if (eof == TRUE)
     {
       char ret = 1;
+
       /* end of file already reached */
       if (fill_target)
       {
@@ -865,12 +954,15 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
         {
           /* scrub trailing newline characters */
           p = s->end - 1;
-          while (*p == '\n') *(p--) = '\0';
+
+          while (*p == '\n')
+            *(p--) = '\0';
+
           s->end = ++p;
         }
         else if (rs_type == _RS_REGEXP)
           awka_strcpy(a_bivar[a_RT], "");
-           
+
         if (s->end > s->current)
         {
           if (rs_type == _RS_BLANK_LINES)
@@ -882,10 +974,16 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
 #endif
         }
       }
-      if (s->end <= s->current) ret = 0;
-      if (s->buf) free(s->buf);
+
+      if (s->end <= s->current)
+        ret = 0;
+
+      if (s->buf)
+        free(s->buf);
+
       s->buf = s->current = s->end = NULL;
       s->io = _a_IO_EOF;
+
       return ret;
     }
 
@@ -917,37 +1015,38 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
       s->end = s->buf + j;
     }
 
-    if( s->type == AWKA_STREAM_SOCKET ) {
+    if ( s->type == AWKA_STREAM_SOCKET ) {
       int size_toread = s->alloc - (s->end - s->buf) - 1;
       int size_read   = read_with_select(fileno(s->fp), s->end, size_toread);
-      if(size_read>0){
+
+      if (size_read>0) {
         s->end += size_read ;
-      }else if(size_read==0){ /* timeout || eof */
-        if(feof(s->fp)){
+      } else if (size_read==0) { /* timeout || eof */
+        if (feof(s->fp)) {
           eof = TRUE;
-        }else{
-          /* timeout */
+        } else {
+          ; /* timeout */
         }
-      }else /* size_read<0 */ {
-        // error
+      } else {   /* size_read<0 */
+        ; /* error */
       }
     } else if ( s->interactive ) {
       /* line buffered */
-      if (!fgets(s->end, s->alloc - (s->end - s->buf) - 1, s->fp)){
+      if (!fgets(s->end, s->alloc - (s->end - s->buf) - 1, s->fp)) {
         eof = TRUE;
-      }else{
+      } else {
         s->end = s->end + strlen(s->end);
       }
     } else {
       /* block buffered */
-      if (!(i = fread(s->end, 1, s->alloc - (s->end - s->buf) - 1, s->fp))){
+      if (!(i = fread(s->end, 1, s->alloc - (s->end - s->buf) - 1, s->fp))) {
         eof = TRUE;
       } else {
         s->end += i;
       }
     }
-
   }
+  /* possible error? - no return int value */
 }
 
 
@@ -963,8 +1062,11 @@ awka_exit( double ret )
     {
       if (_a_iostream[i].io == _a_IO_WRITE || _a_iostream[i].io == _a_IO_APPEND)
         fflush(_a_iostream[i].fp);
+
       if (_a_iostream[i].pipe == 1)
+      {
         pclose(_a_iostream[i].fp);
+      }
       else
       {
         if (strcmp(_a_iostream[i].name, "/dev/stdout") &&
@@ -975,6 +1077,7 @@ awka_exit( double ret )
   }
 
   _awka_kill_ivar();
+
   exit((int) ret);
 }
 
@@ -990,8 +1093,11 @@ awka_cleanup()
     {
       if (_a_iostream[i].io == _a_IO_WRITE || _a_iostream[i].io == _a_IO_APPEND)
         fflush(_a_iostream[i].fp);
+
       if (_a_iostream[i].pipe == 1)
+      {
         pclose(_a_iostream[i].fp);
+      }
       else
       {
         if (strcmp(_a_iostream[i].name, "/dev/stdout") &&
@@ -1000,12 +1106,14 @@ awka_cleanup()
       }
     }
   }
-  
+
   /* free up stream memory */
   for (i=0; i<_a_ioallc; i++)
     if (_a_iostream[i].name)
       free(_a_iostream[i].name);
+
   free(_a_iostream);
+
   _a_iostream = NULL;
   _a_ioused = _a_ioallc = 0;
 
@@ -1053,9 +1161,10 @@ _awka_childlist_del(int pid)
   }
 
   childlist = dummy.link;
+
   return child;
 }
-  
+
 int
 _awka_wait_pid(int pid)
 {
@@ -1083,7 +1192,7 @@ _awka_wait_pid(int pid)
     }
   }
 
-  if (exit_value & 0xff) 
+  if (exit_value & 0xff)
     exit_value = 128 + (exit_value & 0xff);
   else
     exit_value = (exit_value & 0xff00) >> 8;

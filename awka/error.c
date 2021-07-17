@@ -149,7 +149,7 @@ void  yyerror(s)
   if ( s )
   {
     if ( paren_cnt )
-        for( ip = missing_rparen ; *ip ; ip++)
+        for ( ip = missing_rparen ; *ip ; ip++)
           if ( *ip == current_token )
           { missing(')', s, token_lineno) ;
             paren_cnt = 0 ;
@@ -157,7 +157,7 @@ void  yyerror(s)
           }
 
     if ( brace_cnt )
-        for( ip = missing_rbrace ; *ip ; ip++)
+        for ( ip = missing_rbrace ; *ip ; ip++)
           if ( *ip == current_token )
           { missing('}', s, token_lineno) ;
             brace_cnt = 0 ;
@@ -244,7 +244,7 @@ get_source_line()
   if (!(fp = fopen(pfile_name, "r")))
     return (buffer) ;
 
-  while(fgets(buffer, bufferLength, fp)) {
+  while (fgets(buffer, bufferLength, fp)) {
      if ( !linecount-- )
        break ;
   }
@@ -263,11 +263,11 @@ update_source_pos(char *src)
 
   end = (src + len - 1) ;
 
-  if(line_pos >= len)
+  if (line_pos >= len)
     return ;
 
   p = src ;
-  while(p < end) {
+  while (p < end) {
     if (*p == '\t') *p = ' ' ;  // so tab treated as one char
     if (*p++ == c && p > (src + line_pos)) {
       line_pos = (int) (p - src) ;
@@ -374,12 +374,12 @@ unexpected_char( void )
   sprintf(lnstr, "%s: %s%sline %d: ",progname, s0, s1, token_lineno) ;
 
   sc = get_source_line() ;
-  if(sc)
+  if (sc)
     fprintf(stderr, "%s%s", lnstr, sc) ;
 
   /* point to error location then show the error message */
   fill = char_repeat((int) line_pos-1,' ') ;
-  if(sc)
+  if (sc)
     fprintf(stderr, "%s%s^ ", lnstr, fill) ;
   else
     fprintf(stderr, "%s ", lnstr) ;
@@ -398,7 +398,7 @@ static char *type_to_str( type )
   int type ;
 { char *retval ;
 
-  switch( type )
+  switch ( type )
   {
     case  ST_VAR :  retval = "variable" ; break ;
     case  ST_ARRAY :  retval = "array" ; break ;
@@ -460,7 +460,7 @@ int simple_vfprintf( fp, format, argp)
     
     *t = *q++ ; t[1] = 0 ;
 
-    switch( *t )
+    switch ( *t )
     {
       case 'c' :  
       case 'd' :

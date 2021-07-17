@@ -190,7 +190,7 @@ _add_pfile(
    pf->link = (PFILE *) 0 ;
 
    tpf = &dummy ;
-   while(tpf->link) {
+   while (tpf->link) {
      tpf = tpf->link ;
    }
    tpf->link = pf ;
@@ -447,19 +447,19 @@ _process_cmdline(argc, argv)
       if (argv[i][0] != '-')      /* inline script */
       {
 	 /* if ends in ".awk" then is missing the -f */
-	 if(strcmp(argv[i] + strlen(argv[i]) - 4, ".awk") == 0)
+	 if (strcmp(argv[i] + strlen(argv[i]) - 4, ".awk") == 0)
 	 {
            errmsg(0, "expected a quoted inline script, or  -f %s.", argv[i]) ;
 	   exit(EXIT_ERR_NOf) ;
 	 }
 
-	 if(!*awk_input_text)
+	 if (!*awk_input_text)
 	   sprintf(awk_input_text, "%s", argv[i]) ;
 	 else
 	   sprintf(awk_input_text, "%s %s", awk_input_text, argv[i]) ;
 
          nextarg = i + 1 ;
-	 if(i >= argc)
+	 if (i >= argc)
            goto no_more_opts ;
 
 	 continue ;

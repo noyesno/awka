@@ -153,7 +153,7 @@ scan_open()         /* open pfile_name */
    pfile_list = pfile_list->link ;
    ZFREE(q) ;
 
-   if(!pfile_name) 
+   if (!pfile_name) 
    {
       errmsg(errno, "file name is missing from the file list.") ;
       exit(2) ;
@@ -234,25 +234,25 @@ scan_fillbuff()
    int c, i = BUFFSZ-1 ;
    FILE *f = NULL ;
 
-   if(program_fd < 0)    /* inline script */
+   if (program_fd < 0)    /* inline script */
    {
       buffer[0] = '\0' ;
       buffp = buffer ;
       return ;
    }
 
-   if(program_fd == 0)   /* read from stdin */
+   if (program_fd == 0)   /* read from stdin */
    {
       if (eof_flag) 
          return ;
       /* reading from stdin    ** not portable to windows OS */
-      if(program_fd == 0 && !(f = fopen("/dev/stdin", "r")))
+      if (program_fd == 0 && !(f = fopen("/dev/stdin", "r")))
       {
          errmsg( (i=ferror(f)), "unable to open stdin for reading") ;
          exit(i) ;
       }
       buffp = buffer ;
-      while((c = fgetc(f)) != EOF) {
+      while ((c = fgetc(f)) != EOF) {
          *buffp++ = (char) c ;
          if (!--i) break ;
       }
@@ -465,7 +465,7 @@ eat_nl()                        /* eat all space including newlines */
                   /* can't un_next() twice so deal with it */
                   yylval.ival = '\\' ;
                   unexpected_char() ;
-                  if( ++compile_error_count == MAX_COMPILE_ERRORS )
+                  if ( ++compile_error_count == MAX_COMPILE_ERRORS )
                      exit(2) ;
                   return ;
                }

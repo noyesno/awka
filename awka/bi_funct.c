@@ -188,7 +188,7 @@ bi_funct_init()
    for (p = bi_funct + 1; p->name; p++)
    {
       stp = insert(p->name) ;
-      if(strcmp(p->name, "length") == 0)
+      if (strcmp(p->name, "length") == 0)
          stp->type = ST_LENGTH ;
       else
          stp->type = ST_BUILTIN ;

@@ -82,6 +82,7 @@ a_VAR *
 awka_getstringvar(char keep)
 {
   a_VAR *outvar;
+
   _awka_getstringvar;
   return outvar;
 }
@@ -90,6 +91,7 @@ a_VAR *
 awka_getdoublevar(char keep)
 {
   a_VAR *outvar;
+
   _awka_getdoublevar;
   return outvar;
 }
@@ -149,6 +151,7 @@ awka_arg0(char keep)
     malloc( &va, sizeof(a_VARARG));
 
   va->used = 0;
+
   return va;
 }
 
@@ -158,12 +161,15 @@ awka_arg1(char keep, register a_VAR *var)
   a_VARARG *va;
 
   if (keep == a_TEMP)
-    { _awka_tmpvar_a(va); }
+  {
+    _awka_tmpvar_a(va);
+  }
   else
     malloc( &va, sizeof(a_VARARG));
 
   va->used = 1;
   va->var[0] = var;
+
   return va;
 }
 
@@ -173,13 +179,16 @@ awka_arg2(char keep, a_VAR *v1, a_VAR *v2)
   a_VARARG *va;
 
   if (keep == a_TEMP)
-    { _awka_tmpvar_a(va); }
+  {
+    _awka_tmpvar_a(va);
+  }
   else
     malloc( &va, sizeof(a_VARARG));
 
   va->used = 2;
   va->var[0] = v1;
   va->var[1] = v2;
+
   return va;
 }
 
@@ -189,7 +198,9 @@ awka_arg3(char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3)
   a_VARARG *va;
 
   if (keep == a_TEMP)
-  { _awka_tmpvar_a(va); }
+  {
+    _awka_tmpvar_a(va);
+  }
   else
     malloc( &va, sizeof(a_VARARG));
 
@@ -197,6 +208,7 @@ awka_arg3(char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3)
   va->var[0] = v1;
   va->var[1] = v2;
   va->var[2] = v3;
+
   return va;
 }
 
@@ -214,32 +226,38 @@ awka_strconcat( char keep, a_VARARG *va )
   ptr = awka_gets1(va->var[0]);
   /*alloc = va->var[0]->slen + ((va->used-1) * 50) + 1; */
   alloc = va->var[0]->slen * (va->used) + 1;
+
   if (!outvar->ptr)
     alloc = malloc( &outvar->ptr, alloc );
   else if (outvar->allc < alloc)
     alloc = realloc( &outvar->ptr, alloc );
   else
     alloc = outvar->allc;
+
   oldlen = len = va->var[0]->slen;
   memcpy(outvar->ptr, ptr, len+1);
   op = outvar->ptr + va->var[0]->slen;
+
   for (i=1; i<va->used; i++)
   {
     oldlen = len;
     ptr = awka_gets1(va->var[i]);
     len += va->var[i]->slen;
+
     if (len >= alloc)
     {
       alloc = realloc( &outvar->ptr, alloc + len + ((va->used - i - 1) * 20) );
       op = outvar->ptr + oldlen;
     }
+
     memcpy(op, ptr, va->var[i]->slen+1);
     op += va->var[i]->slen;
   }
+
   outvar->slen = len;
   outvar->allc = alloc;
 
-  return(outvar);
+  return (outvar);
 }
 
 static inline void
@@ -254,26 +272,31 @@ _awka_strconcat5(a_VAR *res,
   awka_setstrlen(res, s1len + s2len + s3len + s4len + s5len);
 
   op = res->ptr;
-  if(s1len) {
+  if (s1len) {
     memcpy(op, s1, s1len);
     op += s1len;
   }
-  if(s2len) {
+
+  if (s2len) {
     memcpy(op, s2, s2len);
     op += s2len;
   }
-  if(s3len) {
+
+  if (s3len) {
     memcpy(op, s3, s3len);
     op += s3len;
   }
-  if(s4len) {
+
+  if (s4len) {
     memcpy(op, s4, s4len);
     op += s4len;
   }
-  if(s5len) {
+
+  if (s5len) {
     memcpy(op, s5, s5len);
     op += s5len;
   }
+
   *op = '\0';
 }
 /*
@@ -295,7 +318,7 @@ awka_strconcat2( char keep, a_VAR *v1, a_VAR *v2)
   _awka_getstringvar;
 
   /* how long are the combined strings? */
-  if(v1->type == a_VARARR) {
+  if (v1->type == a_VARARR) {
     p1 = awka_gets1(awka_tmp_dbl2var(awka_alength(v1)));
     p1len = strlen(p1);
   } else {
@@ -303,7 +326,7 @@ awka_strconcat2( char keep, a_VAR *v1, a_VAR *v2)
     p1len = v1->slen;
   }
 
-  if(v2->type == a_VARARR) {
+  if (v2->type == a_VARARR) {
     p2 = awka_gets1(awka_tmp_dbl2var(awka_alength(v2)));
     p2len = strlen(p2);
   } else {
@@ -314,7 +337,8 @@ awka_strconcat2( char keep, a_VAR *v1, a_VAR *v2)
   _awka_strconcat5(outvar,
 		  p1, p1len, p2, p2len,
 		  NULL, 0, NULL, 0, NULL, 0);
-  return(outvar);
+
+  return (outvar);
 }
 
 a_VAR *
@@ -328,7 +352,7 @@ awka_strconcat3( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3)
   _awka_getstringvar;
 
   /* how long are the combined strings? */
-  if(v1->type == a_VARARR) {
+  if (v1->type == a_VARARR) {
     p1 = awka_gets1(awka_tmp_dbl2var(awka_alength(v1)));
     p1len = strlen(p1);
   } else {
@@ -336,7 +360,7 @@ awka_strconcat3( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3)
     p1len = v1->slen;
   }
 
-  if(v2->type == a_VARARR) {
+  if (v2->type == a_VARARR) {
     p2 = awka_gets1(awka_tmp_dbl2var(awka_alength(v2)));
     p2len = strlen(p2);
   } else {
@@ -344,7 +368,7 @@ awka_strconcat3( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3)
     p2len = v2->slen;
   }
 
-  if(v3->type == a_VARARR) {
+  if (v3->type == a_VARARR) {
     p3 = awka_gets1(awka_tmp_dbl2var(awka_alength(v3)));
     p3len = strlen(p3);
   } else {
@@ -355,7 +379,8 @@ awka_strconcat3( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3)
   _awka_strconcat5(outvar,
 		  p1, p1len, p2, p2len, p3, p3len,
 		  NULL, 0, NULL, 0);
-  return(outvar);
+
+  return (outvar);
 }
 
 a_VAR *
@@ -369,7 +394,7 @@ awka_strconcat4( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4 )
   _awka_getstringvar;
 
   /* how long are the combined strings? */
-  if(v1->type == a_VARARR) {
+  if (v1->type == a_VARARR) {
     p1 = awka_gets1(awka_tmp_dbl2var(awka_alength(v1)));
     p1len = strlen(p1);
   } else {
@@ -377,7 +402,7 @@ awka_strconcat4( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4 )
     p1len = v1->slen;
   }
 
-  if(v2->type == a_VARARR) {
+  if (v2->type == a_VARARR) {
     p2 = awka_gets1(awka_tmp_dbl2var(awka_alength(v2)));
     p2len = strlen(p2);
   } else {
@@ -385,7 +410,7 @@ awka_strconcat4( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4 )
     p2len = v2->slen;
   }
 
-  if(v3->type == a_VARARR) {
+  if (v3->type == a_VARARR) {
     p3 = awka_gets1(awka_tmp_dbl2var(awka_alength(v3)));
     p3len = strlen(p3);
   } else {
@@ -393,7 +418,7 @@ awka_strconcat4( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4 )
     p3len = v3->slen;
   }
 
-  if(v4->type == a_VARARR) {
+  if (v4->type == a_VARARR) {
     p4 = awka_gets1(awka_tmp_dbl2var(awka_alength(v4)));
     p4len = strlen(p4);
   } else {
@@ -404,7 +429,8 @@ awka_strconcat4( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4 )
   _awka_strconcat5(outvar,
 		  p1, p1len, p2, p2len, p3, p3len, p4, p4len,
 		  NULL, 0);
-  return(outvar);
+
+  return (outvar);
 }
 
 a_VAR *
@@ -418,7 +444,7 @@ awka_strconcat5( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4, a_VAR *v
   _awka_getstringvar;
 
   /* how long are the combined strings? */
-  if(v1->type == a_VARARR) {
+  if (v1->type == a_VARARR) {
     p1 = awka_gets1(awka_tmp_dbl2var(awka_alength(v1)));
     p1len = strlen(p1);
   } else {
@@ -426,7 +452,7 @@ awka_strconcat5( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4, a_VAR *v
     p1len = v1->slen;
   }
 
-  if(v2->type == a_VARARR) {
+  if (v2->type == a_VARARR) {
     p2 = awka_gets1(awka_tmp_dbl2var(awka_alength(v2)));
     p2len = strlen(p2);
   } else {
@@ -434,7 +460,7 @@ awka_strconcat5( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4, a_VAR *v
     p2len = v2->slen;
   }
 
-  if(v3->type == a_VARARR) {
+  if (v3->type == a_VARARR) {
     p3 = awka_gets1(awka_tmp_dbl2var(awka_alength(v3)));
     p3len = strlen(p3);
   } else {
@@ -442,7 +468,7 @@ awka_strconcat5( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4, a_VAR *v
     p3len = v3->slen;
   }
 
-  if(v4->type == a_VARARR) {
+  if (v4->type == a_VARARR) {
     p4 = awka_gets1(awka_tmp_dbl2var(awka_alength(v4)));
     p4len = strlen(p4);
   } else {
@@ -450,7 +476,7 @@ awka_strconcat5( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4, a_VAR *v
     p4len = v4->slen;
   }
 
-  if(v5->type == a_VARARR) {
+  if (v5->type == a_VARARR) {
     p5 = awka_gets1(awka_tmp_dbl2var(awka_alength(v5)));
     p5len = strlen(p5);
   } else {
@@ -460,7 +486,8 @@ awka_strconcat5( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4, a_VAR *v
 
   _awka_strconcat5(outvar,
 		  p1, p1len, p2, p2len, p3, p3len, p4, p4len, p5, p5len);
-  return(outvar);
+
+  return (outvar);
 }
 
 /*
@@ -483,6 +510,7 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
   /* match the string */
   if (rva->type != a_VARREG)
     _awka_getreval(rva, __FILE__, __LINE__, _RE_MATCH);
+
   r = (awka_regexp *) rva->ptr;
 
   if (r->cant_be_null)
@@ -490,9 +518,10 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
     r = _awka_compile_regexp_MATCH(r->origstr, r->strlen);
     rva->ptr = (char *) r;
   }
-  rva->type = a_VARREG;
 
+  rva->type = a_VARREG;
   ptr = awka_gets1(va);
+
   if (arr)
     awka_arrayclear( arr );
 
@@ -505,17 +534,21 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
       awka_setd(a_bivar[a_RLENGTH]) = -1;
     }
     outvar->dval = 0;
+
     return outvar;
   }
 
   /* found RE */
   start = ptr + pmatch->rm_so;
   end   = ptr + pmatch->rm_eo;
+
   if (arr)
   {
     for (i=0; i<r->max_sub; i++)
     {
-      if (pmatch[i].rm_so == pmatch[i].rm_eo) break;
+      if (pmatch[i].rm_so == pmatch[i].rm_eo)
+        break;
+
       outvar->dval = i;
       pvar = awka_arraysearch1( arr, outvar, a_ARR_CREATE, 0 );
       awka_strncpy( pvar, ptr + pmatch[i].rm_so, pmatch[i].rm_eo - pmatch[i].rm_so );
@@ -523,13 +556,15 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
   }
 
   outvar->dval = 1.0;
+
   if (fcall == TRUE)
   {
     awka_setd(a_bivar[a_RSTART]) = (start - ptr) + 1;
     awka_setd(a_bivar[a_RLENGTH]) = (end - start < 1 ? 1 : end - start);
     outvar->dval = (start - ptr) + 1;
   }
-  return(outvar);
+
+  return (outvar);
 }
 
 /*
@@ -547,6 +582,7 @@ awka_substr(char keep, a_VAR *var, double start, double end)
   /* check argument list */
   if ((a = start) < 1)
     a = 1;
+
   a = (double) ((int) a);
 
   /* create a variable */
@@ -554,6 +590,7 @@ awka_substr(char keep, a_VAR *var, double start, double end)
 
   /* compute length of substring */
   ptr = awka_gets1(var);
+
   if (var->slen < a)
   {
     /* string not long enough for specified substring */
@@ -571,6 +608,7 @@ awka_substr(char keep, a_VAR *var, double start, double end)
     {
       if ((b = end) < 0)
         b = 0;
+
       b = (double) ((int) b);
       len2 = A_MIN(len1, b);
     }
@@ -588,7 +626,7 @@ awka_substr(char keep, a_VAR *var, double start, double end)
   }
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 struct re_res {
@@ -629,36 +667,46 @@ awka_sub(char keep, char gsub, int gensub, a_VAR *rva, a_VAR *sva, a_VAR *tva)
     _awka_set_FW(tva);
 
   orig_type = tva->type;
+
   if (tva == rva)
   {
     awka_varcpy(tva, sva);
+
     if (orig_type == a_VARUNK)
       tva->type = orig_type;
+
     outvar->dval = 1;
+
     return outvar;
   }
 
   if (rva->type != a_VARREG)
   {
     r = _awka_compile_regexp_GSUB(awka_gets(rva), rva->slen);
-    if (rva->ptr) free(rva->ptr);
+
+    if (rva->ptr)
+      free(rva->ptr);
+
     rva->ptr = (char *) r;
   }
   else
   {
     r = (awka_regexp *) rva->ptr;
+
     if (r->gsub != TRUE)
     {
       r = _awka_compile_regexp_GSUB(r->origstr, r->strlen);
       rva->ptr = (char *) r;
     }
   }
+
   rva->type = a_VARREG;
 
   if (!m_alloc)
   {
     m_alloc = 20;
     malloc( &re_result, 20 * sizeof(struct re_res) );
+
     for (i=0; i<m_alloc; i++)
     {
       re_result[i].sub_allc = 10;
@@ -672,6 +720,7 @@ awka_sub(char keep, char gsub, int gensub, a_VAR *rva, a_VAR *sva, a_VAR *tva)
 
   /* find ampersands, used to insert matched text in substitution string */
   awka_gets(sva);
+
   if (strchr(sva->ptr, '&'))
   {
     for (ptr=sva->ptr; *ptr; ptr++)
@@ -682,6 +731,7 @@ awka_sub(char keep, char gsub, int gensub, a_VAR *rva, a_VAR *sva, a_VAR *tva)
         amp++;
       }
   }
+
   if (gensub && strchr(sva->ptr, '\\'))
   {
     for (ptr=sva->ptr; *ptr && *(ptr+1); ptr++)
@@ -693,18 +743,24 @@ awka_sub(char keep, char gsub, int gensub, a_VAR *rva, a_VAR *sva, a_VAR *tva)
         ptr++;
       }
   }
+
   malloc(&pmatch, (amp+1) * sizeof(regmatch_t));
 
   awka_gets(tva);
+
 starthere:
-  if (!tva->ptr) awka_strcpy(tva, "");
+  if (!tva->ptr)
+    awka_strcpy(tva, "");
+
   ptr = tva->ptr;
   outvar->dval = match_no = 0;
 
   /* first pass - find substitution points */
   do
   {
-    if (gensub && !*ptr) break;
+    if (gensub && !*ptr)
+      break;
+
     /* if (!(awka_regexec(r, ptr, &start, &end, FALSE, sub))) */
     if (awka_regexec(r, ptr, amp+1, pmatch, REG_NEEDSTART))
       break;
@@ -713,6 +769,7 @@ starthere:
     {
       m_alloc *= 2;
       realloc( &re_result, m_alloc * sizeof(struct re_res) );
+
       for (i=m_alloc/2; i<m_alloc; i++)
       {
         re_result[i].sub_allc = 10;
@@ -729,13 +786,16 @@ starthere:
         realloc( &re_result[match_no].startp, (r->max_sub + 10) * sizeof(char *) );
         realloc( &re_result[match_no].endp, (r->max_sub + 10) * sizeof(char *) );
       }
+
       for (i=0; i<r->max_sub; i++)
       {
         re_result[match_no].startp[i] = ptr + pmatch[i].rm_so;
         re_result[match_no].endp[i]   = ptr + pmatch[i].rm_eo;
       }
+
       re_result[match_no].max_sub = r->max_sub;
     }
+
     re_result[match_no].match_bgn   = start = ptr + pmatch[0].rm_so;
     re_result[match_no++].match_end = end   = ptr + pmatch[0].rm_eo;
 
@@ -746,7 +806,9 @@ starthere:
 
     match_len = (start - end > match_len ? start - end : match_len);
 
-    if (!*ptr || (gensub && gensub != -1 && !pmatch[0].rm_so && !pmatch[0].rm_eo) || gensub == -2) break;
+    if (!*ptr || (gensub && gensub != -1 && !pmatch[0].rm_so && !pmatch[0].rm_eo) || gensub == -2)
+      break;
+
     ptr = end;
 
     if (start == end && !zmatch)
@@ -757,24 +819,29 @@ starthere:
 
     if (*ptr)
       ptr += zmatch;
+
   } while (gsub && !r->reganch);
 
   if (orig_type == a_VARUNK)
     tva->type = orig_type;
+
   if (!match_no)
   {
     free(pmatch);
+
     return outvar;
   }
 
   /* second pass - substitute away! */
   awka_gets(sva);
+
   if (!t_alloc)
   {
     if (amp)
       t_alloc = tva->slen + (match_no * (sva->slen+(amp*match_len)+1) * 2) + 1;
     else
       t_alloc = tva->slen + (match_no * (sva->slen+1) * 2) + 1;
+
     malloc( &tmp, t_alloc );
   }
   else if (amp && t_alloc < tva->slen + (match_no * (sva->slen+(amp*match_len)+1) * 2) + 1)
@@ -790,15 +857,19 @@ starthere:
 
   tptr = tmp;
   ptr = tva->ptr;
+
   for (i=0; i<match_no; i++)
   {
-    if (gensub > 1 && i != gensub-2) continue;
+    if (gensub > 1 && i != gensub-2)
+      continue;
+
     if (re_result[i].match_bgn > ptr)
     {
       memcpy(tptr, ptr, re_result[i].match_bgn - ptr);
       tptr += re_result[i].match_bgn - ptr;
       *tptr = '\0';
     }
+
     if (sva->slen)
     {
       for (p=sva->ptr; p-sva->ptr < sva->slen; p++)
@@ -812,19 +883,25 @@ starthere:
               *(tptr-1) = *p;
               continue;
             }
+
             if (*p == '&' || (*p == '\\' && *(p+1) == '0'))
             {
               /* copy matched text to target string */
               memcpy(tptr, re_result[i].match_bgn,
                      re_result[i].match_end - re_result[i].match_bgn);
               tptr += re_result[i].match_end - re_result[i].match_bgn;
-              if (*p == '\\') p++;
+
+              if (*p == '\\')
+                p++;
             }
             else if (*p == '\\' && isdigit(*(p+1)))
             {
               /* copy matching sub-expression to target string */
               int sub = atoi(p+1);
-              if (sub > re_result[i].max_sub) continue;
+
+              if (sub > re_result[i].max_sub)
+                continue;
+
               memcpy(tptr, re_result[i].startp[sub],
                      re_result[i].endp[sub] - re_result[i].startp[sub]);
               tptr += re_result[i].endp[sub] - re_result[i].startp[sub];
@@ -844,18 +921,22 @@ starthere:
               *(tptr++) = *(++p);
               continue;
             }
+
             if (*p != '&')
             {
               /* copy this character to target string */
               *(tptr++) = *p;
               continue;
             }
+
             /* copy matched text to target string */
             memcpy(tptr, re_result[i].match_bgn,
                    re_result[i].match_end - re_result[i].match_bgn);
             tptr += re_result[i].match_end - re_result[i].match_bgn;
           }
-          if (*p == '\\') p++;
+
+          if (*p == '\\')
+            p++;
         }
         else
         {
@@ -869,21 +950,23 @@ starthere:
         }
       }
     }
+
     *tptr = '\0';
     ptr = re_result[i].match_end;
-  }
+  } /* for */
 
   if (*ptr)
     strcpy(tptr, ptr);
 
   outvar->dval = match_no;
   awka_strcpy(tva, tmp);
+
   if (orig_type == a_VARUNK)
     tva->type = orig_type;
 
   free(pmatch);
 
-  return(outvar);
+  return (outvar);
 }
 
 a_VAR *
@@ -897,10 +980,12 @@ awka_gensub(char keep, a_VAR *rva, a_VAR *sva, a_VAR *hva, a_VAR *tva)
   awka_varcpy(outvar, tva);
 
   p = awka_gets1(hva);
+
   if (*p == 'G' || *p == 'g')
     awka_sub(keep, TRUE, -1, rva, sva, outvar);
   else {
     i = (unsigned int) atoi(p);
+
     if (!i)
       awka_sub(keep, TRUE, -2, rva, sva, outvar);
     else
@@ -952,6 +1037,7 @@ awka_tocase( char keep, char which, a_VAR *var )
         }
         else
           break;
+
         while (*s)
         {
           if (islower(*s) && isspace(*(s-1)))
@@ -961,18 +1047,19 @@ awka_tocase( char keep, char which, a_VAR *var )
           s++;
         }
         break;
-    }
+    } /* switch */
   }
   else
   {
     if (!outvar->ptr)
       outvar->allc = malloc( &outvar->ptr, 1 );
+
     outvar->slen = 0;
     outvar->ptr[0] = '\0';
   }
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -996,6 +1083,7 @@ awka_system( char keep, a_VAR *va )
       fflush(_a_iostream[i].fp);
 
   ptr = awka_gets1(va);
+
   /* outvar->dval = (double) system(ptr) / 256; */
   switch (pid = fork())
   {
@@ -1008,6 +1096,7 @@ awka_system( char keep, a_VAR *va )
       execl(awka_shell, awka_shell, "-c", ptr, (char *) NULL);
       /* if here, process wouldn't start.  Again, use system() */
       fflush(stderr);
+
       _exit(system(ptr) / 256);
 
     default:
@@ -1015,7 +1104,7 @@ awka_system( char keep, a_VAR *va )
       break;
   }
 
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1034,16 +1123,19 @@ awka_trim(char keep, a_VARARG *va)
   /* compute length of substring */
   awka_strcpy(outvar, awka_gets1(va->var[0]));
   p = outvar->ptr;
+
   if (va->var[0]->slen)
   {
     if (va->used == 2)
     {
       r = awka_gets1(va->var[1]);
+
       while (*p)
       {
         for (q=r; *q; q++)
           if (*p == *q)
             break;
+
         if (*q)
           p++;
         else
@@ -1072,14 +1164,17 @@ awka_trim(char keep, a_VARARG *va)
   if (outvar->slen)
   {
     p = (outvar->ptr + outvar->slen) - 1;
+
     if (va->used == 2)
     {
       r = awka_gets1(va->var[1]);
+
       while (p > outvar->ptr)
       {
         for (q=r; *q; q++)
           if (*p == *q)
             break;
+
         if (*q)
         {
           *p-- = '\0';
@@ -1094,7 +1189,9 @@ awka_trim(char keep, a_VARARG *va)
       /* remove trailing whitespace */
       while (p > outvar->ptr)
       {
-        if (!(isspace(*p))) break;
+        if (!(isspace(*p)))
+          break;
+
         *p-- = '\0';
         outvar->slen--;
       }
@@ -1102,7 +1199,7 @@ awka_trim(char keep, a_VARARG *va)
   }
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1121,16 +1218,19 @@ awka_ltrim(char keep, a_VARARG *va)
   /* compute length of substring */
   awka_strcpy(outvar, awka_gets1(va->var[0]));
   p = outvar->ptr;
+
   if (va->var[0]->slen)
   {
     if (va->used == 2)
     {
       r = awka_gets1(va->var[1]);
+
       while (*p)
       {
         for (q=r; *q; q++)
           if (*p == *q)
             break;
+
         if (*q)
           p++;
         else
@@ -1157,7 +1257,7 @@ awka_ltrim(char keep, a_VARARG *va)
   }
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1182,11 +1282,13 @@ awka_rtrim(char keep, a_VARARG *va)
     if (va->used == 2)
     {
       r = awka_gets1(va->var[1]);
+
       while (p > outvar->ptr)
       {
         for (q=r; *q; q++)
           if (*p == *q)
             break;
+
         if (*q)
         {
           *p-- = '\0';
@@ -1201,7 +1303,9 @@ awka_rtrim(char keep, a_VARARG *va)
       /* remove trailing whitespace */
       while (p > outvar->ptr)
       {
-        if (!(isspace(*p))) break;
+        if (!(isspace(*p)))
+          break;
+
         *p-- = '\0';
         outvar->slen--;
       }
@@ -1209,7 +1313,7 @@ awka_rtrim(char keep, a_VARARG *va)
   }
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1246,7 +1350,10 @@ awka_rand()
   _a_seed ^= _aMK;
   c = _a_seed / _aQ;
   _a_seed = _aA * (_a_seed - c * _aQ) - _aR * c;
-  if (_a_seed < 0) _a_seed += _aIM;
+
+  if (_a_seed < 0)
+    _a_seed += _aIM;
+
   ret = _aAM * _a_seed;
   _a_seed ^= _aMK;
 
@@ -1279,7 +1386,7 @@ awka_srand( char keep, a_VARARG *va )
 
   outvar->dval = (double) _a_seed;
 
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1315,7 +1422,7 @@ awka_left(char keep, a_VAR *va, a_VAR *vb)
   }
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1351,7 +1458,7 @@ awka_right(char keep, a_VAR *va, a_VAR *vb)
   }
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1367,6 +1474,7 @@ awka_ascii(char keep, a_VARARG *va)
 
   /* check argument list */
   _awka_checkbiargs( va, "awka_ascii", _BI_ASCII );
+
   if (va->used == 2)
     if (awka_getd1(va->var[1]) < 0)
       awka_error("runtime error: Second Argument must be >= 0 in call to Ascii, got %d.\n",(int) va->var[1]->dval);
@@ -1375,6 +1483,7 @@ awka_ascii(char keep, a_VARARG *va)
   _awka_getdoublevar;
 
   ptr = awka_gets1(va->var[0]);
+
   if (va->used == 2)
     i = A_MIN(va->var[0]->slen, va->var[1]->dval) - 1;
   else
@@ -1383,7 +1492,7 @@ awka_ascii(char keep, a_VARARG *va)
   outvar->dval = (double) ptr[i];
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1397,6 +1506,7 @@ awka_char(char keep, a_VAR *va)
 
   /* create a variable */
   _awka_getstringvar;
+
   if (!outvar->ptr)
     outvar->allc = malloc( &outvar->ptr, 2 );
   else if (outvar->allc <= 1)
@@ -1407,7 +1517,7 @@ awka_char(char keep, a_VAR *va)
   outvar->slen = 1;
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1424,10 +1534,12 @@ _awka_calctime( a_VARARG *va )
 
   for (i=0; i<va->used; i++)
   {
-    switch (i) {
+    switch (i)
+    {
       case 0:
         /* year */
         tme.tm_year = (int) awka_getd1(va->var[i]);
+
         if (tme.tm_year >= 1900)
           tme.tm_year -= 1900;
         else if (tme.tm_year > 136 || tme.tm_year < 0)
@@ -1437,6 +1549,7 @@ _awka_calctime( a_VARARG *va )
       case 1:
         /* month */
         tme.tm_mon = (int) awka_getd1(va->var[i]);
+
         if (tme.tm_mon > 0) tme.tm_mon--;
         break;
 
@@ -1448,6 +1561,7 @@ _awka_calctime( a_VARARG *va )
       case 3:
         /* hour */
         tme.tm_hour = (int) awka_getd1(va->var[i]);
+
         if (tme.tm_hour > 0) tme.tm_hour--;
         break;
 
@@ -1488,7 +1602,7 @@ awka_time( char keep, a_VARARG *va )
   }
 
   outvar->dval = tt;
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1503,7 +1617,7 @@ awka_systime( char keep )
   _awka_getdoublevar;
 
   outvar->dval = time(NULL);
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1531,12 +1645,13 @@ awka_localtime( char keep, a_VARARG *va )
 
   p = asctime(localtime(&tt));
   i = strlen(p);
+
   if (p[i-1] == '\n')
     p[--i] = '\0';
 
   awka_strcpy(outvar, p);
 
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1564,6 +1679,7 @@ awka_gmtime( char keep, a_VARARG *va )
 
   p = asctime(gmtime(&tt));
   i = strlen(p);
+
   if (p[i-1] == '\n')
     p[--i] = '\0';
 
@@ -1571,10 +1687,11 @@ awka_gmtime( char keep, a_VARARG *va )
     outvar->allc = malloc( &outvar->ptr, i+1 );
   else if (i >= outvar->allc)
     outvar->allc = realloc( &outvar->ptr, i+1 );
+
   memcpy(outvar->ptr, p, i+1);
   outvar->slen = i;
 
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1615,6 +1732,7 @@ awka_mktime( char keep, a_VARARG *va )
   the_time.tm_isdst = dst;
 
   outvar->dval = (double) mktime( &the_time );
+
   return outvar;
 }
 
@@ -1648,10 +1766,12 @@ awka_strftime( char keep, a_VARARG *va )
     /* user-defined format */
     fmt = awka_gets1(va->var[0]);
     fmtlen = va->var[0]->slen;
+
     if (fmtlen == 0)
     {
       awka_strcpy(outvar, "");
-      return(outvar);
+
+      return (outvar);
     }
   }
   else
@@ -1662,12 +1782,17 @@ awka_strftime( char keep, a_VARARG *va )
 
   tme = localtime(&tt);
   p = buf;
-  while (1) {
+
+  while (1)
+  {
     *p = '\0';
     buflen = strftime(p, bufallc, fmt, tme);
+
     if (buflen > 0 || bufallc >= 1024 * fmtlen)
       break;
+
     bufallc *= 2;
+
     if (p == buf)
       malloc( &p, bufallc);
     else
@@ -1675,9 +1800,10 @@ awka_strftime( char keep, a_VARARG *va )
   }
 
   awka_strcpy(outvar, p);
+
   if (p != buf) free(p);
 
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1698,11 +1824,12 @@ awka_min(char keep, a_VARARG *va)
 
   /* find the smallest number */
   outvar->dval = awka_getd1(va->var[0]);
+
   for (i=1; i<va->used; i++)
     outvar->dval = (outvar->dval < awka_getd1(va->var[i])) ? outvar->dval : va->var[i]->dval;
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1723,11 +1850,12 @@ awka_max(char keep, a_VARARG *va)
 
   /* find the smallest number */
   outvar->dval = awka_getd1(va->var[0]);
+
   for (i=1; i<va->used; i++)
     outvar->dval = (outvar->dval > awka_getd1(va->var[i])) ? outvar->dval : va->var[i]->dval;
 
   /* get outa here */
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -1774,10 +1902,12 @@ _awka_formatstr(char which, a_VARARG *va)
     caller = "sprintf";
 
   p1 = awka_gets1(va->var[cur_arg]);
+
   if (!cur_str)
     cur_allc = malloc( &cur_str, va->var[cur_arg]->slen + 100 );
   else if (va->var[cur_arg]->slen + 100 > cur_allc)
     cur_allc = realloc( &cur_str, va->var[cur_arg]->slen + 100 );
+
   strcpy(cur_str, p1);
   p1 = cp = lcp = cur_str;
   bp = buf;
@@ -1795,7 +1925,9 @@ _awka_formatstr(char which, a_VARARG *va)
     cp = strchr(cp, '%');
     */
 
-    if (!*cp) break;
+    if (!*cp)
+      break;
+
     /* if (!cp) break; */
     if (*(++cp) == '%')
     {
@@ -1804,7 +1936,8 @@ _awka_formatstr(char which, a_VARARG *va)
 
       if (which)
         fputs("%", _a_iostream[which-1].fp);
-      else {
+      else
+      {
         _a_fs_checkbuf(2);
         strcpy(bp, "%");
         bp++;
@@ -1814,11 +1947,13 @@ _awka_formatstr(char which, a_VARARG *va)
 
     /* we have a '%' format marker */
     cur_arg++;
+
     if (cur_arg >= va->used)
       awka_error("%s: missing argument %d.\n",caller,cur_arg);
 
     /* swallow format options */
     done = 0;
+
     while (!done)
     {
       switch (*cp)
@@ -1838,22 +1973,27 @@ _awka_formatstr(char which, a_VARARG *va)
         case '*':  /* literal insertion of number parameter */
           sprintf(tmp, "%d%s", (int) awka_getd(va->var[cur_arg++]), cp+1);
           p1 = cp; p2 = tmp;
+
           while (*p2 != '\0')
             *p1++ = *p2++;
+
           *p1 = *p2;
           break;
 
         default:
           done = 1;
       }
-      if (!done) cp++;
+
+      if (!done)
+        cp++;
     }
 
     if (!*cp)
       awka_error("%s: incomplete symbol after %%, specifier %d.\n",caller,cur_arg);
 
     /* swallow minimum width specification */
-    while (isdigit(*cp)) cp++;
+    while (isdigit(*cp))
+      cp++;
 
     if (*cp == '.')  /* precision */
     {
@@ -1872,10 +2012,12 @@ _awka_formatstr(char which, a_VARARG *va)
 
       case 'c':
         arg_type = _a_FSTYPE_CHAR;
+
         if (va->var[cur_arg]->type == a_VARSTR || va->var[cur_arg]->type == a_VARUNK)
         {
           i = atoi(va->var[cur_arg]->ptr);
           sprintf(tmp, "%d", i);
+
           if (i < 128 && i >= 0 && !strcmp(tmp, va->var[cur_arg]->ptr))
             char_arg = (char) i;
           else
@@ -1983,6 +2125,7 @@ _awka_formatstr(char which, a_VARARG *va)
       i = strlen(bp);
       bp += i;
     }
+
     lcp = cp;
   }
 
@@ -2021,10 +2164,11 @@ awka_sprintf( char keep, a_VARARG *va )
     outvar->allc = malloc( &outvar->ptr, i+1 );
   else if (i >= outvar->allc)
     outvar->allc = realloc( &outvar->ptr, i+1 );
+
   memcpy(outvar->ptr, p, i+1);
   outvar->slen = i;
 
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -2085,6 +2229,7 @@ _awka_print_concat( a_VARARG *va )
 
   ptr = awka_gets1P(va->var[0]);
   alloc = (va->var[0]->slen + ofs_len) * (va->used-1) + 1;
+
   if (!outvar->ptr)
     alloc = malloc( &outvar->ptr, alloc );
   else if (outvar->allc < alloc)
@@ -2101,23 +2246,27 @@ _awka_print_concat( a_VARARG *va )
     oldlen = len;
     ptr = awka_gets1P(va->var[i]);
     len += va->var[i]->slen + ofs_len;
+
     if (len >= alloc)
     {
       alloc = realloc( &outvar->ptr, alloc + len + ((va->used - i - 1) * 20) );
       op = outvar->ptr + oldlen;
     }
+
     if (ofs_len == 1)
       *op = *ofs;
     else
       memcpy(op, ofs, ofs_len);
+
     op += ofs_len;
     memcpy(op, ptr, va->var[i]->slen+1);
     op += va->var[i]->slen;
   }
+
   outvar->slen = len;
   outvar->allc = alloc;
 
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -2179,6 +2328,7 @@ awka_print( char *output, int stream, int pipe, a_VARARG *va )
     else
     {
       awka_gets(va->var[0]);
+
       if (va->var[0]->slen == 1)
         putc( va->var[0]->ptr[0], _a_iostream[i].fp );
       else
@@ -2187,6 +2337,7 @@ awka_print( char *output, int stream, int pipe, a_VARARG *va )
   }
 
   awka_gets(a_bivar[a_ORS]);
+
   if (a_bivar[a_ORS]->slen == 1)
     putc( a_bivar[a_ORS]->ptr[0], _a_iostream[i].fp );
   else
@@ -2203,6 +2354,7 @@ awka_setvarbyname( char *name, char *value )
   {
     if (!strcmp(_gvar[i].name, name))
       break;
+
     i++;
   }
 
@@ -2213,6 +2365,7 @@ awka_setvarbyname( char *name, char *value )
 
   awka_strcpy(_gvar[i].var, value);
   _gvar[i].var->type = a_VARUNK;
+
   return 1;
 }
 
@@ -2244,9 +2397,11 @@ awka_getline( char keep, a_VAR *target, char *input, int pipe, char main )
   _awka_arg_change = FALSE;
 
   awka_forcestr(target);
+
   if (target == a_bivar[a_DOL0])
   {
     fill_target = _dol0_used;
+
     if (!main)
     {
       _rebuild0 = FALSE;
@@ -2268,9 +2423,11 @@ start:
         _awka_curfile++;
         awka_setd(a_bivar[a_ARGIND]) = _awka_fileoffset + _awka_curfile;
       }
+
       if (_awka_curfile < awka_filein_no)
       {
         awka_setd(a_bivar[a_FNR]) = 0;
+
         do {
           char *equals;
           if (NULL != (equals = strchr(awka_filein[_awka_curfile], '=')))
@@ -2292,14 +2449,17 @@ start:
             mlen = strlen(awka_filein[_awka_curfile])+1;
             realloc(&file, mlen);
           }
+
           strcpy(file, awka_filein[_awka_curfile]);
           awka_strcpy(a_bivar[a_FILENAME], file);
           new_file = TRUE;
           break;
+
         } while (_awka_curfile < awka_filein_no);
       }
       else
         file[0] = '\0';
+
       from_filelist = TRUE;
     }
   }
@@ -2311,10 +2471,12 @@ start:
       mlen = i + 1;
       realloc(&file, mlen);
     }
+
     strcpy(file, input);
     from_filelist = FALSE;
     new_file = TRUE;
   }
+
   _awka_file_read = FALSE;
 
   /* find the input stream for this filename */
@@ -2327,19 +2489,24 @@ start:
           (int) _a_iostream[i].pipe == pipe)
         break;
     }
+
     if (i == _a_ioused)
     {
       i = _awka_io_addstream(file, _a_IO_READ, pipe);
+
       if (_a_iostream[i].io == _a_IO_CLOSED)
       {
         /* error opening file */
         outvar->dval = -1;
+
         if (main == TRUE)
           awka_error("error reading from file \"%s\".\n",file);
+
         _a_iostream[i].name[0] = '\0';    // ensure reading the same file again results in the same failure to read
         goto getline_end;
       }
     }
+
     stream = i;
     _awka_file_stream = stream;  // track current stream globally. For seek, tell, etc.
   }
@@ -2348,6 +2515,7 @@ start:
   if (stream < _a_ioused && file[0])
   {
     outvar->dval = (double) awka_io_readline(target, stream, fill_target);
+
     if (!outvar->dval)
     {
       /* failed to read - end of file */
@@ -2358,8 +2526,10 @@ start:
 
         goto start;
       }
+
       _a_iostream[stream].io = _a_IO_EOF;
     }
+
     if (main)
     {
       awka_setd(a_bivar[a_FNR])++;
@@ -2369,7 +2539,8 @@ start:
 
   getline_end:
   target->type = a_VARUNK;
-  return(outvar);
+
+  return (outvar);
 }
 
 a_VAR *
@@ -2387,19 +2558,24 @@ awka_fseek(char keep, a_VARARG *va )
   long offset = 0;
   int  origin = 0;
 
-  if(va->used==1){
-    ptr = awka_gets1(a_bivar[a_FILENAME]);
-    offset = (long) awka_getd(va->var[0]);
-    origin =  offset>0?SEEK_SET:SEEK_END;
-  } else if(va->used==2){
-    ptr = awka_gets1(va->var[0]);
-    offset = (long) awka_getd(va->var[1]);
-    origin =  offset>0?SEEK_SET:SEEK_END;
-  } else if(va->used==3){
+  if (va->used==1)
+  {
+    ptr = awka_gets1( a_bivar[a_FILENAME] );
+    offset = (long) awka_getd( va->var[0] );
+    origin = (offset > 0) ? SEEK_SET : SEEK_END;
+  }
+  else if (va->used==2)
+  {
+    ptr = awka_gets1( va->var[0] );
+    offset = (long) awka_getd( va->var[1] );
+    origin = (offset > 0) ? SEEK_SET : SEEK_END;
+  }
+  else if (va->used==3)
+  {
     // TODO: use string to int conversion
-    ptr = awka_gets1(va->var[0]);
-    offset = (long) awka_getd(va->var[1]);
-    origin = (int) awka_getd(va->var[2]);
+    ptr = awka_gets1( va->var[0] );
+    offset = (long) awka_getd( va->var[1] );
+    origin = (int) awka_getd( va->var[2] );
     origin = SEEK_CUR;
   }
 
@@ -2411,10 +2587,10 @@ awka_fseek(char keep, a_VARARG *va )
       outvar->dval = 0;
 
       _a_iostream[i].current = _a_iostream[i].end = _a_iostream[i].buf ;
+
       break;
     }
   }
-
 
   return outvar;
 }
@@ -2430,11 +2606,10 @@ awka_ftell(char keep, a_VARARG *va )
   outvar->dval = -1;
 
   // XXX: use a_bivar[a_FILENAME] ?
-  if(va->used == 0) {
+  if (va->used == 0)
     ptr = awka_gets1(a_bivar[a_FILENAME]);
-  } else {
+  else
     ptr = awka_gets1(va->var[0]);
-  }
 
   // i = _awka_file_stream;
   // if (!strcmp(_a_iostream[i].name, ptr) && _a_iostream[i].io != _a_IO_CLOSED)
@@ -2469,11 +2644,11 @@ awka_fsize(char keep, a_VARARG *va )
   _awka_getdoublevar;
   outvar->dval = -1;
 
-  if(va->used == 0) {
+  if (va->used == 0)
     ptr = awka_gets1(a_bivar[a_FILENAME]);
-  } else {
+  else
     ptr = awka_gets1(va->var[0]);
-  }
+
 
   /* fseek specific stream */
   for (i=0; i<_a_ioused; i++) {
@@ -2487,7 +2662,6 @@ awka_fsize(char keep, a_VARARG *va )
       break;
     }
   }
-
 
   return outvar;
 }
@@ -2511,10 +2685,12 @@ awka_fflush( char keep, a_VARARG *va )
   {
     outvar->dval = -1;
     ptr = awka_gets1(va->var[0]);
+
     if (ptr[0] == '\0')
     {
       /* flush all open streams */
       outvar->dval = 0;
+
       for (i=0; i<_a_ioused; i++)
         if (_a_iostream[i].io != _a_IO_CLOSED)
           fflush(_a_iostream[i].fp);
@@ -2538,7 +2714,7 @@ awka_fflush( char keep, a_VARARG *va )
         fflush(_a_iostream[i].fp);
   }
 
-  return(outvar);
+  return (outvar);
 }
 
 /*
@@ -2592,18 +2768,26 @@ awka_fclose( int i )
       if (_a_iostream[i].fp)
       {
         fflush(_a_iostream[i].fp);
-        if (_a_iostream[i].pipe == 1) {
+
+        if (_a_iostream[i].pipe == 1)
+	{
           ret = pclose(_a_iostream[i].fp);
-        } else if (_a_iostream[i].pipe == 2) {
+        }
+	else if (_a_iostream[i].pipe == 2)
+	{
           /* two-way process */
-          switch(s->type){
+          switch (s->type)
+	  {
             case AWKA_STREAM_SOCKET:
               fclose(_a_iostream[i].fp);
               break;
+
             default:
               awka_error("runtime error: Unsupported close of pipe = 2.\n");
           }
-        } else {
+        }
+	else
+	{
           if (strcmp(_a_iostream[i].name, "/dev/stdout") &&
               strcmp(_a_iostream[i].name, "/dev/stderr"))
             fclose(_a_iostream[i].fp);
@@ -2623,6 +2807,7 @@ awka_fclose( int i )
         {
           awka_filein_no--;
           free(awka_filein[j]);
+
           while (j < awka_filein_no)
           {
             awka_filein[j] = awka_filein[j+1];
@@ -2639,6 +2824,7 @@ awka_fclose( int i )
 
       if (_a_iostream[i].buf)
         free(_a_iostream[i].buf);
+
       _a_iostream[i].buf = _a_iostream[i].current = _a_iostream[i].end = 0;
       _a_iostream[i].alloc = 0;
     }
@@ -2659,9 +2845,12 @@ awka_isarray(char keep, a_VARARG *va)
   /* create a variable */
   _awka_getdoublevar;
 
-  if(va->used != 1) awka_error("runtime error: isarray expects only one parameter.\n");
+  if (va->used != 1)
+    awka_error("runtime error: isarray expects only one parameter.\n");
+
   outvar->dval = (va->var[0]->type == a_VARARR);
-  return(outvar);
+
+  return (outvar);
 }
 
 /*
@@ -2676,9 +2865,10 @@ awka_typeof(char keep, a_VARARG *va)
   /* create a variable */
   _awka_getstringvar;
 
-  if(va->used != 1) awka_error("runtime error: isarray expects only one parameter.\n");
+  if (va->used != 1)
+    awka_error("runtime error: isarray expects only one parameter.\n");
 
-  switch(va->var[0]->type)
+  switch (va->var[0]->type)
   {
     case a_VARNUL:
       awka_strscpy(outvar, "untyped");
@@ -2713,7 +2903,8 @@ awka_typeof(char keep, a_VARARG *va)
       awka_strscpy(outvar, "untyped");
       break;
   }
-  return(outvar);
+
+  return (outvar);
 }
 
 /*
@@ -2725,7 +2916,7 @@ awka_length(a_VAR *v)
 {
   double outvar = 0.0;
 
-  switch(v->type)
+  switch (v->type)
   {
     case a_VARUNK:
     case a_VARDBL:
@@ -2746,7 +2937,7 @@ awka_length(a_VAR *v)
       break;
   }
 
-  return(outvar);
+  return (outvar);
 }
 
 int
@@ -2760,6 +2951,6 @@ awka_globline(const char *pattern)
   _haystack = awka_dol0(0);
   ret = nstring_match(pattern, strlen(pattern), _haystack->ptr, _haystack->slen);
 
-  return ret==0?1:0;
+  return (ret == 0) ? 1 : 0;
 }
 

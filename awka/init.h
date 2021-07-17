@@ -1,4 +1,3 @@
-
 /********************************************
 init.h
 copyright 1991, Michael D. Brennan
@@ -79,12 +78,12 @@ quote_escape(char *s) {
 
   strncpy(tstr, s, i);
   p = tstr;
-  while(*p) {
-    if(*p == '\\') {
+  while (*p) {
+    if (*p == '\\') {
       memmove(p+1, p, strlen(p));
       *(p++) = '\\';
     }
-    if(*p++ == '"') {
+    if (*p++ == '"') {
       memmove(p, p-1, strlen(p-1));
       *((p++)-1) = '\\';
     }

@@ -92,7 +92,7 @@ void  PROTO( unexpected_char, (void) ) ;
 #define  test1_ret(c,x,d)  if ( next() == (c) ) ct_ret(x) ;\
                            else { un_next() ; ct_ret(d) ; }
 
-#define  test2_ret(c1,x1,c2,x2,d)   switch( next() )\
+#define  test2_ret(c1,x1,c2,x2,d)   switch ( next() )\
                                    { case c1: ct_ret(x1) ;\
                                      case c2: ct_ret(x2) ;\
                                      default: un_next() ;\

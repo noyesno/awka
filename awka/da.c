@@ -250,7 +250,7 @@ fixbackslashes(char *str, int which)
       r = q - 1;
       do {
         *(q--) = *(r--);
-      } while(r >= p);
+      } while (r >= p);
       *(p++) = '\\';
     }
     p++;

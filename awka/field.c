@@ -185,7 +185,9 @@ build_field0()
             cp_limit = cp + FBANK_SZ ;
          }
          /* add the separator */
-         q = ofs->str ;         while( *q )  *p++ = *q++ ;
+         q = ofs->str ;
+	 while ( *q )
+            *p++ = *q++ ;
       }
       /* tack tail on the end */
       memcpy(p, tail->str, tail->len) ;
