@@ -1,3 +1,5 @@
+# MAWK does not handle \w word boundaries ??
+#
 BEGIN {
   #print match("she sells seashells", /s \w/) 
   x = match("she sells seashells", /s \w/)

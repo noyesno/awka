@@ -14,7 +14,7 @@ BEGIN {
 	name = $2
 	time = $3
 	split($3, T, " ")
-	tsum[type","name] += T[1]
+	tsum[type","name] += 10*T[1]
 	nr[type","name] += 1
 	typ[type] = type
 }
@@ -22,7 +22,8 @@ END {
 	for(tn in tsum) {
 		split(tn, X, ",")
 		# times array - use asorti to sort indexes by time
-		t[tsum[tn]","X[1]","X[2]] = 1
+		av = tsum[tn] / nr[tn] / 10
+		t[av","X[1]","X[2]] = 1
 	}
 	asort(typ,typsorted)
 	asorti(t, tkeys)
