@@ -64,12 +64,12 @@ clean:
 	cd awka; $(MAKE) clean
 	cd lib; $(MAKE) clean
 	cd test; $(MAKE) clean
+	cd benchmark; $(MAKE) clean
 
 distclean:  clean
 	rm -f config.h Makefile lib/Makefile awka/Makefile test/Makefile benchmark/Makefile \
 	    config.status config.log config.cache
 	rm -f defines.out maxint.out
-	rm -f benchmark/*.c benchmark/core benchmark/*.o benchmark/x* benchmark/*.out
 
 configure:  configure.in awka.ac.m4
 	autoconf
