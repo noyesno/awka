@@ -55,14 +55,20 @@ awka \- AWK language to ANSI C translator and library
 [\-\fBo
 .IR filename ]
 .br
+.PP
 .B awka
 [\-\fBversion\fR]
 [\-\fBhelp\fR]
 .SH DESCRIPTION
+.TP
 .B Awka
-is two products - a translator of AWK language programs to ANSI-C, and
-a library of essential functions against which the translated code must
-be linked.
+is two products
+.DS
+a translator of AWK language programs to ANSI-C, and
+.DE
+.DS
+a library of essential functions against which the translated code must be linked.
+.DE
 .PP
 The
 .I AWK
@@ -460,34 +466,62 @@ Returns the \fx\fR ^ \fy\fR (\fx\fR to the power of \fy\fR).
 isarray(\fIx\fR)
 Returns true (1) if \fx\fR is an array, else false (0).
 .TP
+typeof(\fIx\fR)
+Returns a string description of \fIx\fR's type: 
+
+     untyped 
+     number 
+     string 
+     array
+     regexp
+     strnum
+     unassigned
+
+.TP
 PROCINFO
 The  elements  of  this array provide access to information about the running AWK program. AWKA does not implement subarrays, so the "identifiers" are implemented like "identifiers,isarry"
 .PP
 .PP
+\fBSORTTYPE\fR
+.RS
 The \fBSORTTYPE\fR variable controls if and how arrays are sorted when accessed using 'for (i in j)'.
 The value of this variable is a bitmask, which may be set to a combination of the following values:-
-.DS
-  0  No Sorting, Indices
-2  Reverse Order
-4  Numeric Sorting
-8  Sorting of values rather than indices
-.DE
-A value for \fBSORTTYPE\fR of 5, therefore, indicates that the array is to be sorted Alphabetically,
-in Reverse order.
 .PP
+ 0  No Sorting, Indices
+ 2  Reverse Order
+ 4  Numeric Sorting
+ 8  Sorting of values rather than indices
+.PP
+A value for \fBSORTTYPE\fR of 5, therefore, indicates that the array is to be sorted Alphabetically, in Reverse order.
+.RE
+.PP
+.pp
+\fBFIELDWIDTHS\fR
+.RS
 Awka also supports the \fBFIELDWIDTHS\fR variable, which works exactly as it does in Gawk.
-.PP
 If the \fBFIELDWIDTHS\fR variable is set to a space separated list of positive numbers, each field is expected to have fixed width, and awka will split up the record using the widths specified in \fBFIELDWIDTHS\fR.  The value of \fBFS\fR is ignored.  Assigning a value to \fBFS\fR overrides the use of \fBFIELDWIDTHS\fR, and restores the default behaviour.
+.RE
 .PP
+\fBSAVEWIDTHS\fR
+.RS
 Awka also introduces the \fBSAVEWIDTHS\fR variable.  This applies when \fBFIELDWIDTHS\fR is in use, and \fB$0\fR is being rebuilt following a change to a \fB$1..$n\fR field variable.
 .PP
 If the \fBSAVEWIDTHS\fR variable is set to a space separated list of positive numbers, each output field will be given a fixed width to match these numbers.  \fB$n\fR values shorter than their specified width will be padded with spaces; if they are longer than their specified width they will be truncated.  Additional values to those specified in \fBSAVEWIDTHS\fR will be separated using \fBOFS\fR.
+.RE
+.PP
+\fBPROCINFO["re_syntax"]\fR
+.RS
+The \fBRegular Expression Syntax\fR can be set using \fBPROCINFO["re_syntax"]\fR (Awka 0.7.7 onwards).
+.PP
+The default syntax was "RE_SYNTAX_GNU_AWK" before 0.7.7, and is now "RE_SYNTAX_POSIX_AWK" which aligns closer to Gawk.
+.PP
+The \fBPROCINFO["re_syntax"]\fR applies to all RE matches and splits within the translated code.  The last call to set the syntax will be the RE syntax used.
+.RE
 .PP
 Awka 0.7.5 supports the inet/coprocessing features introduced in Gawk 3.1.0.  See the documentation
 accompanying the Gawk source, or visit \fBhttp://home.vr-web.de/Juergen.Kahrs/gawk/gawkinet.html\fR
 for details on how these work.
-.RE
-.RS
+.PP
 .nf
 .PP
 .SH EXAMPLES
@@ -547,6 +581,7 @@ myprog.o:  myprog.c
 myprog.c:  myprog.awk
        awka -f myprog.awk >myprog.c
 .DE
+.PP
 .SH LINKING AWKA-GENERATED CODE
 .PP
 The C programs produced by \fBawka\fR call many functions in \fBlibawka.a\fR.
@@ -586,8 +621,11 @@ The -c option, as described previously, replaces the main() function with a func
 name of your choosing.  You may then link this code to other C or C++ code, and thus
 add AWK functionality to a larger application.  
 .PP
-The command line "awka -c matrix 'BEGIN { print "what is the matrix?" }'" will produce
-in its output the function "int matrix(int argc, char *argv[])".  Obviously, this replaces
+The command line 
+.DS
+awka -c matrix 'BEGIN { print "what is the matrix?" }' 
+.DE
+will produce in its output the function "\fBint matrix(int argc, char *argv[])\fR".  Obviously, this replaces
 the main() function, and the argc and argv variables are used the same way - they handle
 what awka thinks are command-line arguments.  Hence argv is an array of pointers to char *'s, and argc is the number of elements in this array.  argv[0], from the command-line, holds the name of the running program.  You can populate as many argv[] elements as you like to pass as input to your AWK program.  Just remember this array is managed by your calling function, not by awka.
 .PP
@@ -600,9 +638,29 @@ Oh, one more thing,  \fIexit\fR and \fIabort\fR statements in your AWK program c
 Awka also allows you to create your own C functions and have them accessible in your AWK
 programs as if they were built-in to the AWK language.  See the \fBawka-elm\fR and \fBawka-elmref\fR manpages for details on how this is done.
 .PP
+.SH BENCHMARKING 
+.PP
+Benchmark results are indicative only.
+.PP
+Each benchmark is run multiple (5) times and the results (time taken) are averaged to provide a "relative" comparison.
+.PP
+The benchmarks compare Awka, Gawk, Mawk, Perl, Python and Tcl.  The path to these programs on your machine may need to be configured in the Makefile.
+To run the benchmarks, 
+.DS
+make benchmark
+.DE
+from the top level of the Awka directory.
+.PP
+If you have a very fast machine and the results lack precision, increase the number of iterations in the benchmark directory Makefile.  Increase the number of sequences from 5, on the line like:
+.DS
+SEQCMD = seq 5 | xargs -I{}
+.DE
+.PP
+The benchmark directory contains a README file with further information.
+.PP
 .SH FILES
 .PP
-\fBlibawka.a\fR, \fBlibawka.so\fR, \fBawka\fR, \fBlibawka.h\fR, \fBlibdfa.a\fR, \fBdfa.h\fR
+\fBawka\fR, \fBlibawka.a\fR, \fBlibawka.so\fR, \fBlibawka.h\fR, \fBlibdfa.a\fR, \fBdfa.h\fR
 .PP
 .SH SEE ALSO
 .PP
