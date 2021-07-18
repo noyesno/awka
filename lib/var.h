@@ -114,6 +114,8 @@ extern char fs_or_fw, _awka_setdol0_len;
 extern char _rebuild0, _rebuildn, _rebuild0_now;
 #endif
 
+extern void _awka_set_re_syntax(char *);
+
 static INLINE a_VAR * awka_NFget();
 #define _awka_set_FW(v) \
   if ((v) == a_bivar[a_FS]) { \

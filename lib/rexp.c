@@ -47,6 +47,81 @@ struct regexp_list_struct {
 regexp_list **re_list = NULL;
 #define RE_LIST_SIZE 17
 
+long re_syntax = RE_SYNTAX_POSIX_AWK;
+
+int HS_AWK = 0, HS_GNU_AWK, HS_EMACS, HS_POSIX_AWK, HS_POSIX_EGREP,
+    HS_POSIX_BASIC, HS_POSIX_MIN_BASIC, HS_POSIX_EXTENDED,
+    HS_POSIX_MIN_EXT, HS_GREP, HS_EGREP, HS_ED, HS_SED;
+
+void
+_init_hashes()
+{
+  if (HS_AWK == 0)
+  {
+    HS_AWK              = _awka_hashstr("RE_SYNTAX_AWK", 13);
+    HS_GNU_AWK          = _awka_hashstr("RE_SYNTAX_GNU_AWK", 17);
+    HS_EMACS            = _awka_hashstr("RE_SYNTAX_EMACS", 15);
+    HS_POSIX_AWK        = _awka_hashstr("RE_SYNTAX_POSIX_AWK", 19);
+    HS_POSIX_EGREP      = _awka_hashstr("RE_SYNTAX_POSIX_EGREP", 21);
+    HS_POSIX_BASIC      = _awka_hashstr("RE_SYNTAX_POSIX_BASIC", 21);
+    HS_POSIX_MIN_BASIC  = _awka_hashstr("RE_SYNTAX_POSIX_MINIMAL_BASIC", 29);
+    HS_POSIX_EXTENDED   = _awka_hashstr("RE_SYNTAX_POSIX_EXTENDED", 24);
+    HS_POSIX_MIN_EXT    = _awka_hashstr("RE_SYNTAX_POSIX_MINIMAL_EXTENDED", 32);
+    HS_GREP             = _awka_hashstr("RE_SYNTAX_GREP", 14);
+    HS_EGREP            = _awka_hashstr("RE_SYNTAX_EGREP", 15);
+    HS_ED               = _awka_hashstr("RE_SYNTAX_ED", 12);
+    HS_SED              = _awka_hashstr("RE_SYNTAX_SED", 13);
+  }
+}
+
+/*
+ * Setting the Syntax only works ONCE!!
+ * The syntax is set in main() (and compiled
+ * into the regex) and not set on every
+ * call to match/split/..
+ *
+ * The last call to set the syntax sets the
+ * syntax that will be used.
+ */
+void
+_awka_set_re_syntax(char *syn)
+{
+  unsigned hval;
+  //long sval = RE_SYNTAX_AWK;
+  long sval = RE_SYNTAX_POSIX_AWK;
+  //long sval = RE_SYNTAX_GNU_AWK;
+
+  _init_hashes();
+  hval = _awka_hashstr(syn, strlen(syn));
+
+  if (hval == HS_AWK)
+      sval = RE_SYNTAX_AWK;
+  else if (hval == HS_GNU_AWK)
+      sval = RE_SYNTAX_GNU_AWK;
+  else if (hval == HS_EMACS)
+      sval = RE_SYNTAX_EMACS;
+  else if (hval == HS_GREP)
+      sval = RE_SYNTAX_GREP;
+  else if (hval == HS_EGREP)
+      sval = RE_SYNTAX_EGREP;
+  else if (hval == HS_ED ||
+           hval == HS_SED ||
+	   hval == HS_POSIX_BASIC)
+      sval = RE_SYNTAX_POSIX_BASIC;
+  else if (hval == HS_POSIX_MIN_BASIC)
+      sval = RE_SYNTAX_POSIX_MINIMAL_BASIC;
+  else if (hval == HS_POSIX_AWK)
+      sval = RE_SYNTAX_POSIX_AWK;
+  else if (hval == HS_POSIX_EGREP)
+      sval = RE_SYNTAX_POSIX_EGREP;
+  else if (hval == HS_POSIX_EXTENDED)
+      sval = RE_SYNTAX_POSIX_EXTENDED;
+  else if (hval == HS_POSIX_MIN_EXT)
+      sval = RE_SYNTAX_POSIX_MINIMAL_EXTENDED;
+
+  re_syntax = sval;
+}
+
 static char *
 _awka_fixescapes(char *str, unsigned int len)
 {
@@ -142,7 +217,7 @@ awka_re_isexactstr(char *str, int len, unsigned can_be_null)
     re_list[idx] = list; \
   } \
   if (!(list->re_fs = awka_re_isexactstr(list->str, len, FALSE))) \
-    list->re_fs = awka_regcomp(list->str, FALSE); \
+    list->re_fs = awka_regcomp(list->str, FALSE, re_syntax); \
   if (!list->re_fs) \
     awka_error("fail to compile regular expression '%s'\n",list->str); \
   list->re_fs->dfa = (void *) dfacomp(list->str, strlen(list->str), TRUE); \
@@ -156,7 +231,7 @@ awka_re_isexactstr(char *str, int len, unsigned can_be_null)
     re_list[idx] = list; \
   } \
   if (!(list->re_nofs = awka_re_isexactstr(list->str, len, FALSE))) \
-    list->re_nofs = awka_regcomp(list->str, FALSE); \
+    list->re_nofs = awka_regcomp(list->str, FALSE, re_syntax); \
   if (!list->re_nofs) \
     awka_error("fail to compile regular expression '%s'\n",list->str); \
   list->re_nofs->dfa = (void *) dfacomp(list->str, strlen(list->str), TRUE); \
@@ -169,7 +244,7 @@ awka_re_isexactstr(char *str, int len, unsigned can_be_null)
     re_list[idx] = list; \
   } \
   if (!(list->re_gsub = awka_re_isexactstr(list->str, len, TRUE))) \
-    list->re_gsub = awka_regcomp(list->str, TRUE); \
+    list->re_gsub = awka_regcomp(list->str, TRUE, re_syntax); \
   if (!list->re_gsub) \
     awka_error("fail to compile regular expression '%s'\n",list->str); \
   list->re_gsub->dfa = (void *) dfacomp(list->str, strlen(list->str), TRUE); \

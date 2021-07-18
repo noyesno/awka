@@ -205,6 +205,7 @@ _awka_init_procinfo( a_VAR *procinfo )
 {
   a_VAR *ret, *tmp = NULL;
   char *tmpstr = NULL;
+  int slen = 0;
 
   malloc( &tmpstr, 70 );
   awka_varinit(tmp);
@@ -227,7 +228,9 @@ _awka_init_procinfo( a_VAR *procinfo )
   /* ppid */
   /* uid */
 
-  /* identifiers - a subarray of identifiers*/
+  /* identifiers - NOT a subarray of identifiers like Gawk, but
+   * the key is "identifiers,<name>"
+   */
   /* builtins */
   for (int i=0; i<A_BI_VARARG_SIZE; i++ ) {
     sprintf(tmpstr, "identifiers,%s", _a_bi_vararg[i].name);
@@ -269,24 +272,39 @@ _awka_init_procinfo( a_VAR *procinfo )
   ret->allc = malloc( &ret->ptr, 25 );
   ret->slen = 24;
   strcpy(ret->ptr, "%a %b %d %H:%M:%S %Z %Y");
+  ret->ptr[24] = '\0';
 
   /* version */
   awka_strcpy(tmp, "version");
   ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
   awka_strcpy(ret, "version");
   ret->type = a_VARSTR;
-  ret->allc = malloc( &ret->ptr, (int) strlen(patch_str) + 1 );
-  ret->slen = (int)  strlen(patch_str);
+  slen = strlen(patch_str);
+  ret->allc = malloc( &ret->ptr, slen + 1 );
+  ret->slen = slen;
   strcpy(ret->ptr, patch_str);
+  ret->ptr[slen] = '\0';
 
   /* awkfile  (unique to awka) */
   awka_strcpy(tmp, "awkfile");
   ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
   awka_strcpy(ret, "awkfile");
   ret->type = a_VARSTR;
-  ret->allc = malloc( &ret->ptr, (int) strlen(awk_str) + 1 );
-  ret->slen = (int)  strlen(awk_str);
+  slen = strlen(awk_str);
+  ret->allc = malloc( &ret->ptr, slen + 1 );
+  ret->slen = slen;
   strcpy(ret->ptr, awk_str);
+  ret->ptr[slen] = '\0';
+
+  /* resyntax (unique to awka) */
+  awka_strcpy(tmp, "re_syntax");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_strcpy(ret, "re_syntax");
+  ret->type = a_VARSTR;
+  ret->allc = malloc( &ret->ptr, 25 + 1 );
+  ret->slen = 17;
+  strcpy(ret->ptr, "RE_SYNTAX_GNU_AWK");
+  ret->ptr[17] = '\0';
 
   free(tmpstr);
 }

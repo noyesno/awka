@@ -1101,12 +1101,15 @@ awka_strncpy(a_VAR *v, char *s, int _slen)
     tmpv->slen = 2;
     strncpy( tmpv->ptr, "FS", 3 );
   }
-
-  if ( v == a_bivar[a_FIELDWIDTHS] || v == a_bivar[a_SAVEWIDTHS] )
+  else if ( v == a_bivar[a_FIELDWIDTHS] || v == a_bivar[a_SAVEWIDTHS] )
   {
     tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
     tmpv->slen = 11;   /* sized to 12 bytes originally in  init.c */
     strncpy( tmpv->ptr, "FIELDWIDTHS", 12 );
+  }
+  else if ( v->type == a_VARSTR && strncmp(v->ptr, "RE_SYNTAX_", 10) == 0)
+  {
+    _awka_set_re_syntax(s);
   }
 
   return v->ptr;
