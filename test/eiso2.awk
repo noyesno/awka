@@ -7,6 +7,7 @@
 # nesting allowed
 
 BEGIN {
+	PROCINFO["re_syntax"] = "RE_SYNTAX_GNU_AWK"
         if (!stderr) stderr="/dev/stderr"
 }
 
