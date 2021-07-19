@@ -150,11 +150,15 @@ call_arg_check(callee, entry_list, start, line_no)
       }
       else  /* type known */
       {
-         if (callee->typev[q->arg_num] == ST_LOCAL_NONE)
-            callee->typev[q->arg_num] = q->type ;
-         else if (q->type != callee->typev[q->arg_num])
-            compile_error("type error in arg(%d) in call to %s",
+	 if (q->arg_num > 0)
+	 {
+            if (callee->typev[q->arg_num] == ST_LOCAL_NONE)
+               callee->typev[q->arg_num] = q->type ;
+            else if (q->type != callee->typev[q->arg_num])
+               compile_error("type error in arg(%d) in call to %s.",
                      q->arg_num + 1, callee->name) ;
+	 }
+	 /* else  length  (with no parametersi) */
 
          ZFREE(q) ;
          check_progress = 1 ;

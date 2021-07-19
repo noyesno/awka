@@ -9,6 +9,8 @@
 #ifndef _ARRAY_H
 #define _ARRAY_H
 
+#define GROWSZ  16
+
 #define a_ARR_TYPE_NULL  0
 #define a_ARR_TYPE_SPLIT 1
 #define a_ARR_TYPE_HSH   2

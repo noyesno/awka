@@ -38,7 +38,7 @@ char **_argv = NULL, **_int_argv = NULL;
 int _argc, _int_argc = 0, _orig_argc = 0;
 extern char _a_space[256];
 char _env_used = 0;
-char *patch_str, *date_str;
+char *patch_str, *date_str, *awk_str;
 
 struct ivar_idx
 {
@@ -68,8 +68,8 @@ struct ivar_idx
   "SAVEWIDTHS",  a_SAVEWIDTHS,
   "SORTTYPE",    a_SORTTYPE,
   "SUBSEP",      a_SUBSEP
-}; 
-   
+};
+
 #define IVAR_MAX 22
 
 int
@@ -79,7 +79,7 @@ findivar(char *c)
   int x;
 
   while (1)
-  {    
+  {
     if (!(x = strcmp(ivar[i].name, c)))
       return i;
     else if (x > 0)
@@ -116,15 +116,18 @@ struct gvar_struct *_gvar;
 void
 awka_register_gvar(int idx, char *name, a_VAR *var)
 {
-  if(name==NULL && var==NULL){
+  if (name==NULL && var==NULL) {
     int n = idx;
+
     malloc( &_gvar, (n+1)*sizeof(struct gvar_struct) );
     _gvar[n].name = NULL;
     _gvar[n].var  = NULL;
+
    return;
   }
 
   int i = strlen(name);
+
   malloc( &_gvar[idx].name, i+1);
   strncpy(_gvar[idx].name, name, i-4);
   _gvar[idx].name[i-4] = 0;
@@ -136,6 +139,7 @@ void
 _awka_initstreams()
 {
   int i;
+
   _a_ioallc = 5;
   malloc( &_a_iostream, 5 * sizeof(_a_IOSTREAM) );
 
@@ -178,12 +182,15 @@ _awka_initchar()
   register int i;
 
   memset(_a_char, ' ', 256);
+
   _a_char['\n'] = '\n';
   _a_char['\t'] = '\t';
+
   for (i=32; i<127; i++)
     _a_char[i] = (char) i;
 
   memset(_a_space, 0, 256);
+
   _a_space['\n'] = 1;
   _a_space['\t'] = 1;
   _a_space['\f'] = 1;
@@ -198,6 +205,8 @@ _awka_init_procinfo( a_VAR *procinfo )
 {
   a_VAR *ret, *tmp = NULL;
   char *tmpstr = NULL;
+  int slen = 0;
+
   malloc( &tmpstr, 70 );
   awka_varinit(tmp);
 
@@ -219,7 +228,9 @@ _awka_init_procinfo( a_VAR *procinfo )
   /* ppid */
   /* uid */
 
-  /* identifiers - a subarray of identifiers*/
+  /* identifiers - NOT a subarray of identifiers like Gawk, but
+   * the key is "identifiers,<name>"
+   */
   /* builtins */
   for (int i=0; i<A_BI_VARARG_SIZE; i++ ) {
     sprintf(tmpstr, "identifiers,%s", _a_bi_vararg[i].name);
@@ -261,15 +272,39 @@ _awka_init_procinfo( a_VAR *procinfo )
   ret->allc = malloc( &ret->ptr, 25 );
   ret->slen = 24;
   strcpy(ret->ptr, "%a %b %d %H:%M:%S %Z %Y");
+  ret->ptr[24] = '\0';
 
   /* version */
   awka_strcpy(tmp, "version");
   ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
   awka_strcpy(ret, "version");
   ret->type = a_VARSTR;
-  ret->allc = malloc( &ret->ptr, (int) strlen(patch_str) + 1 );
-  ret->slen = (int)  strlen(patch_str);
+  slen = strlen(patch_str);
+  ret->allc = malloc( &ret->ptr, slen + 1 );
+  ret->slen = slen;
   strcpy(ret->ptr, patch_str);
+  ret->ptr[slen] = '\0';
+
+  /* awkfile  (unique to awka) */
+  awka_strcpy(tmp, "awkfile");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_strcpy(ret, "awkfile");
+  ret->type = a_VARSTR;
+  slen = strlen(awk_str);
+  ret->allc = malloc( &ret->ptr, slen + 1 );
+  ret->slen = slen;
+  strcpy(ret->ptr, awk_str);
+  ret->ptr[slen] = '\0';
+
+  /* resyntax (unique to awka) */
+  awka_strcpy(tmp, "re_syntax");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_strcpy(ret, "re_syntax");
+  ret->type = a_VARSTR;
+  ret->allc = malloc( &ret->ptr, 25 + 1 );
+  ret->slen = 17;
+  strcpy(ret->ptr, "RE_SYNTAX_GNU_AWK");
+  ret->ptr[17] = '\0';
 
   free(tmpstr);
 }
@@ -311,7 +346,8 @@ _awka_init_functab( a_VAR *functab )
 void
 _awka_init_ivar(int i)
 {
-  if (a_bivar[i]) return;
+  if (a_bivar[i])
+    return;
 
   malloc( &a_bivar[i], sizeof(a_VAR) );
   a_bivar[i]->slen = 0;
@@ -321,8 +357,9 @@ _awka_init_ivar(int i)
   a_bivar[i]->type2 = 0;
   a_bivar[i]->temp = 0;
   a_bivar[i]->type = a_VARNUL;
-    
-  switch (i) {
+
+  switch (i)
+  {
     case a_ARGV:
       a_bivar[i]->type = a_VARARR;
       awka_arraycreate(a_bivar[i], a_ARR_TYPE_SPLIT);
@@ -421,30 +458,35 @@ _awka_kill_ivar()
 
   for (i=0; i<a_BIVARS; i++)
   {
-    if (!(a_bivar[i])) continue;
+    if (!(a_bivar[i]))
+      continue;
 
     awka_killvar(a_bivar[i]);
     free(a_bivar[i]);
     a_bivar[i] = NULL;
   }
-  
+
   if (awka_filein)
   {
     for (i=0; i<awka_filein_no; i++)
       if (awka_filein[i])
         free(awka_filein[i]);
+
     free(awka_filein);
   }
+
   awka_filein = NULL;
   awka_filein_no = 0;
-  
+
   if (_orig_argc)
   {
     for (i=0; i<_orig_argc; i++)
       if (_argv[i])
         free(_argv[i]);
+
     free(_argv);
   }
+
   _argv = NULL;
   _argc = 0;
 }
@@ -462,6 +504,7 @@ _awka_kill_gvar()
       awka_killvar(gvar->var);
       gvar++;
     }
+
     free(_gvar);
     _gvar = NULL;
   }
@@ -472,17 +515,23 @@ _awka_kill_fn()
 {
   if (_awkafn)
     free(_awkafn);
+
   _awkafn = NULL;
 }
 
-void awka_register_fn(int idx, const char *name, awka_fn_t fn){
-  if(name==NULL && fn==NULL){
+void
+awka_register_fn(int idx, const char *name, awka_fn_t fn)
+{
+  if (name==NULL && fn==NULL)
+  {
     int n = idx;
+
     // TODO: use awka_malloc
     // _awkafn = (struct awka_fn_struct *) malloc( (n+1) * sizeof(struct awka_fn_struct));
     malloc(&_awkafn, (n+1) * sizeof(struct awka_fn_struct));
     _awkafn[n].name = NULL;
     _awkafn[n].fn   = NULL;
+
     return;
   }
 
@@ -491,13 +540,14 @@ void awka_register_fn(int idx, const char *name, awka_fn_t fn){
 }
 
 void
-awka_init(int argc, char *argv[], char *patch_string, char *date_string)
+awka_init(int argc, char *argv[], char *patch_string, char *date_string, char* awk_filename)
 {
   int i=0, j;
   extern void _awka_gc_init();
 
   patch_str = patch_string;
   date_str = date_string;
+  awk_str = awk_filename;
 
   _argc = argc + _int_argc;
   _orig_argc = argc;
@@ -524,7 +574,9 @@ awka_init(int argc, char *argv[], char *patch_string, char *date_string)
 
   _awka_gc_init();
 
-  for (i=0; i<a_BIVARS; i++) a_bivar[i] = NULL;
+  for (i=0; i<a_BIVARS; i++)
+    a_bivar[i] = NULL;
+
   _awka_init_ivar(a_ARGC);
   _awka_init_ivar(a_ARGV);
 
@@ -556,8 +608,10 @@ _awka_printhelp()
   fprintf(stderr,"                variable else an error message will be printed.\n");
   fprintf(stderr,"  -Fvalue       Sets FS to value.\n");
   fprintf(stderr,"  -showarg      shows compiled-in arguments.\n");
+  fprintf(stderr,"  -V            prints version of awka that generated this executable\n");
   fprintf(stderr,"  -awkaversion  prints version of awka that generated this executable\n");
   fprintf(stderr,"  -help         prints this message.\n\n");
+
   exit(1);
 }
 
@@ -596,6 +650,7 @@ awka_parsecmdline(int first)
     for (i=0; i<_argc; i++)
     {
       var = awka_arraysearch1(a_bivar[a_ARGV], awka_tmp_dbl2var(i), a_ARR_QUERY, 0);
+
       if (var->slen != -1)
       {
         var = awka_arraysearch1(a_bivar[a_ARGV], awka_tmp_dbl2var(i), a_ARR_CREATE, 0);
@@ -613,7 +668,9 @@ awka_parsecmdline(int first)
     {
       for (i=0; i<awka_filein_no; i++)
         free(awka_filein[i]);
+
       free(awka_filein);
+
       awka_filein_no = 0;
     }
 
@@ -628,9 +685,14 @@ awka_parsecmdline(int first)
   i = 1;
   while (i < _argc)
   {
-    if (!_argv[i]) { i++; continue; }
+    if (!_argv[i])
+    {
+      i++;
+      continue;
+    }
 
-    if (options_done && strcmp(_argv[i],"--awka")==0) {
+    if (options_done && (strcmp(_argv[i],"--awka") == 0))
+    {
       options_done = FALSE;
       i++;
       continue;
@@ -644,64 +706,87 @@ awka_parsecmdline(int first)
       {
         case 'F':
           _setp;
-          if (!first) break;
+          if (!first)
+            break;
+
           if (!a_bivar[a_FS])
             _awka_init_ivar(a_FS);
+
           awka_strcpy(a_bivar[a_FS], p);
           break;
 
         case '-':
           switch (_argv[i][2])
           {
+            case 'a':
+              break;
+
             case 'h':
             case 'u':
               _awka_printhelp();
+	      /* exit */
             default:
               awka_error("command line parse: unknown option %s\n",_argv[i]);
-
-            case 'a':
-              break;
           }
-        case 'a':
+	  /* fall-thru */
+        case 'a': /* awkaversion */
+        case 'V':
           fprintf(stderr,"\n\"%s\" was generated by Awka (http://awka.sourceforge.net)\n",_argv[0]);
+          fprintf(stderr,"from '%s'\n", awk_str);
           fprintf(stderr,"   - translator version %s, %s\n",patch_str,date_str);
           fprintf(stderr,"   - library version %s, %s\n\n",AWKAVERSION,DATE_STRING);
           exit(0);
 
-        case 'v': {
-          _setp;
-          if (!first) break;
-          strcpy(tmp, p);
-          p1 = p2 = tmp;
-          while (*p2 && *p2 != '=') p2++;
-          if (*p2 == '=')
-            *p2++ = '\0';
-          else
-            awka_error("command line parse: expected 'var=value' after -v.\n");
-          if (p1 == p2-1)
-            awka_error("command line parse: null value for 'var' in 'var=value' after -v.\n");
-          
-          const char *var_name  = tmp;
-          const char *var_value = p2;
-          int gvar_ok = awka_setvarbyname(tmp, p2);
+        case 'v':
+	  {
+            _setp;
 
-          if (gvar_ok==0) {
-            if ((j = findivar(tmp)) == -1)
-              awka_error("command line parse: variable '%s' not defined.\n",tmp);
-            if (!a_bivar[ivar[j].var])
-              _awka_init_ivar(ivar[j].var);
-            if (a_bivar[ivar[j].var]->type == a_VARARR)
+            if (!first)
+              break;
+
+            strcpy(tmp, p);
+            p1 = p2 = tmp;
+
+            while (*p2 && *p2 != '=')
+              p2++;
+
+            if (*p2 == '=')
+              *p2++ = '\0';
+            else
+              awka_error("command line parse: expected 'var=value' after -v.\n");
+
+            if (p1 == p2-1)
+              awka_error("command line parse: null value for 'var' in 'var=value' after -v.\n");
+
+            const char *var_name  = tmp;
+            const char *var_value = p2;
+            int gvar_ok = awka_setvarbyname(tmp, p2);
+
+            if (gvar_ok==0) {
+              if ((j = findivar(tmp)) == -1)
+                awka_error("command line parse: variable '%s' not defined.\n",tmp);
+
+              if (!a_bivar[ivar[j].var])
+                _awka_init_ivar(ivar[j].var);
+
+              if (a_bivar[ivar[j].var]->type == a_VARARR)
+                awka_error("command line parse: array variable '%s' used as scalar.\n",tmp);
+
+              awka_strcpy(a_bivar[ivar[j].var], p2);
+              a_bivar[ivar[j].var]->type = a_VARUNK;
+
+              break;
+            }
+	    else if (gvar_ok < 0)
+	    {
               awka_error("command line parse: array variable '%s' used as scalar.\n",tmp);
-            awka_strcpy(a_bivar[ivar[j].var], p2);
-            a_bivar[ivar[j].var]->type = a_VARUNK;
-            break;
-          } else if (gvar_ok < 0){
-            awka_error("command line parse: array variable '%s' used as scalar.\n",tmp);
+            }
           }
-        } break;
+          break;
 
         case 'W':
           _setp;
+
           switch (*p)
           {
             case 'e':
@@ -711,7 +796,7 @@ awka_parsecmdline(int first)
             case 'i':
               _interactive = TRUE;
               break;
-          
+
             default:
               awka_error("command line parse: unknown option -W%s\n",p);
           }
@@ -723,14 +808,17 @@ awka_parsecmdline(int first)
           else
           {
             fprintf(stderr,"The following arguments were compiled into this executable:-\n  ");
+
             for (j=0; j<_int_argc; j++)
               fprintf(stderr," %s", _int_argv[j]);
+
             fprintf(stderr,"\n");
           }
           exit(1);
 
         case 'h':
           _awka_printhelp();
+          /* exit */
 
         default:
           awka_error("command-line parse error: unknown argument '%s' - type \"-help\" for more info.\n",_argv[i]);
@@ -742,12 +830,15 @@ awka_parsecmdline(int first)
       var = awka_arraysearch1(a_bivar[a_ARGV], a_bivar[a_ARGC], a_ARR_CREATE, 0);
       awka_strcpy(var, _argv[i]);
       var->type = a_VARUNK;
+
       if (!awka_filein_no)
         malloc( &awka_filein, (_argc + i) * sizeof(char *) );
 
       malloc( &awka_filein[awka_filein_no], strlen(_argv[i])+1 );
       strcpy(awka_filein[awka_filein_no++], _argv[i]);
-      if (!_awka_fileoffset) _awka_fileoffset = i;
+
+      if (!_awka_fileoffset)
+        _awka_fileoffset = i;
     }
 
     i++;
@@ -763,4 +854,4 @@ awka_parsecmdline(int first)
     _awka_fileoffset = -1;
   }
 }
-  
+

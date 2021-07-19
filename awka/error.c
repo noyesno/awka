@@ -40,6 +40,7 @@ static void  PROTO( rt_where, (void) ) ;
 static void  PROTO( missing, (int, char *, int) ) ;
 static char *PROTO( type_to_str, (int) ) ;
 
+extern char *awk_input_files ;
 
 #ifdef  NO_VFPRINTF
 #define  vfprintf  simple_vfprintf
@@ -100,6 +101,7 @@ PIPE, "|" ,
 DOLLAR, "$" ,
 FIELD, "$" ,
 COPROCESS, "|&" ,
+LENGTH, string_buff,
 0, (char *) 0 } ;
 
 /* if paren_cnt >0 and we see one of these, we are missing a ')' */
@@ -147,7 +149,7 @@ void  yyerror(s)
   if ( s )
   {
     if ( paren_cnt )
-        for( ip = missing_rparen ; *ip ; ip++)
+        for ( ip = missing_rparen ; *ip ; ip++)
           if ( *ip == current_token )
           { missing(')', s, token_lineno) ;
             paren_cnt = 0 ;
@@ -155,14 +157,14 @@ void  yyerror(s)
           }
 
     if ( brace_cnt )
-        for( ip = missing_rbrace ; *ip ; ip++)
+        for ( ip = missing_rbrace ; *ip ; ip++)
           if ( *ip == current_token )
           { missing('}', s, token_lineno) ;
             brace_cnt = 0 ;
             goto done ;
           }
 
-    yylval.ival = s[0];
+    yylval.ival = s[0] ;
     compile_error("syntax error at or near %s", s) ;
 
   }
@@ -232,7 +234,9 @@ get_source_line()
   char *buffer = malloc( bufferLength + 1) ;
   register int linecount = token_lineno - 1 ;
 
-  buffer[0] = '\0' ;
+  /* defaul, includes inline scriptt, that gets overwritten */
+  strcpy(buffer, awk_input_files) ;
+  strcpy(buffer + strlen(awk_input_files), "\n") ;
 
   if ( !pfile_name )
     return (buffer) ;
@@ -240,7 +244,7 @@ get_source_line()
   if (!(fp = fopen(pfile_name, "r")))
     return (buffer) ;
 
-  while(fgets(buffer, bufferLength, fp)) {
+  while (fgets(buffer, bufferLength, fp)) {
      if ( !linecount-- )
        break ;
   }
@@ -259,11 +263,11 @@ update_source_pos(char *src)
 
   end = (src + len - 1) ;
 
-  if(line_pos >= len)
+  if (line_pos >= len)
     return ;
 
   p = src ;
-  while(p < end) {
+  while (p < end) {
     if (*p == '\t') *p = ' ' ;  // so tab treated as one char
     if (*p++ == c && p > (src + line_pos)) {
       line_pos = (int) (p - src) ;
@@ -367,16 +371,20 @@ unexpected_char( void )
   { s0 = pfile_name ; s1 = ": " ; }
   else s0 = s1 = "" ;
 
-  sprintf(lnstr, "line %d: ",token_lineno) ;
+  sprintf(lnstr, "%s: %s%sline %d: ",progname, s0, s1, token_lineno) ;
 
   sc = get_source_line() ;
-  fprintf(stderr, "%s: %s%s%s%s", progname, s0, s1, lnstr, sc) ;
-  free(sc) ;
+  if (sc)
+    fprintf(stderr, "%s%s", lnstr, sc) ;
 
   /* point to error location then show the error message */
   fill = char_repeat((int) line_pos-1,' ') ;
-  fprintf(stderr, "%s: %s%s%s%s^ ", progname, s0, s1, lnstr, fill) ;
+  if (sc)
+    fprintf(stderr, "%s%s^ ", lnstr, fill) ;
+  else
+    fprintf(stderr, "%s ", lnstr) ;
 
+  free(sc) ;
   free(fill) ;
   free(lnstr) ;
 
@@ -390,7 +398,7 @@ static char *type_to_str( type )
   int type ;
 { char *retval ;
 
-  switch( type )
+  switch ( type )
   {
     case  ST_VAR :  retval = "variable" ; break ;
     case  ST_ARRAY :  retval = "array" ; break ;
@@ -398,6 +406,7 @@ static char *type_to_str( type )
     case  ST_LOCAL_VAR : retval = "local variable" ; break ;
     case  ST_LOCAL_ARRAY : retval = "local array" ; break ;
     case  ST_BUILTIN : retval = "builtin function (used as a variable)" ; break ;
+    case  ST_LENGTH : retval = "length function" ; break ;
     default : bozo("type_to_str") ;
           
   }
@@ -451,7 +460,7 @@ int simple_vfprintf( fp, format, argp)
     
     *t = *q++ ; t[1] = 0 ;
 
-    switch( *t )
+    switch ( *t )
     {
       case 'c' :  
       case 'd' :

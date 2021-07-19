@@ -604,10 +604,10 @@ extract_number_and_incr (destination, source)
 static int debug;
 
 # define DEBUG_STATEMENT(e) e
-# define DEBUG_PRINT1(x) if (debug) printf (x)
-# define DEBUG_PRINT2(x1, x2) if (debug) printf (x1, x2)
-# define DEBUG_PRINT3(x1, x2, x3) if (debug) printf (x1, x2, x3)
-# define DEBUG_PRINT4(x1, x2, x3, x4) if (debug) printf (x1, x2, x3, x4)
+# define DEBUG_PRINT1(x) if (debug) printf ((x))
+# define DEBUG_PRINT2(x1, x2) if (debug) printf ((x1), (x2))
+# define DEBUG_PRINT3(x1, x2, x3) if (debug) printf ((x1), (x2), (x3))
+# define DEBUG_PRINT4(x1, x2, x3, x4) if (debug) printf ((x1), (x2), (x3), (x4))
 # define DEBUG_PRINT_COMPILED_PATTERN(p, s, e)                                 \
   if (debug) print_partial_compiled_pattern (s, e)
 # define DEBUG_PRINT_DOUBLE_STRING(w, s1, sz1, s2, sz2)                        \
@@ -667,7 +667,7 @@ print_partial_compiled_pattern (start, end)
   /* Loop over pattern commands.  */
   while (p < pend)
     {
-      printf ("%d:\t", p - start);
+      printf ("%d:\t", (int) (p - start));
 
       switch ((re_opcode_t) *p++)
         {
@@ -688,16 +688,16 @@ print_partial_compiled_pattern (start, end)
 
         case start_memory:
           mcnt = *p++;
-          printf ("/start_memory/%d/%d", mcnt, *p++);
+          printf ("/start_memory/%d/%d", mcnt, (int) (*p++));
           break;
 
         case stop_memory:
           mcnt = *p++;
-          printf ("/stop_memory/%d/%d", mcnt, *p++);
+          printf ("/stop_memory/%d/%d", mcnt, (int) (*p++));
           break;
 
         case duplicate:
-          printf ("/duplicate/%d", *p++);
+          printf ("/duplicate/%d", (int) (*p++));
           break;
 
         case anychar:
@@ -757,17 +757,17 @@ print_partial_compiled_pattern (start, end)
 
         case on_failure_jump:
           extract_number_and_incr (&mcnt, &p);
-            printf ("/on_failure_jump to %d", p + mcnt - start);
+            printf ("/on_failure_jump to %d", (int) (p + mcnt - start));
           break;
 
         case on_failure_keep_string_jump:
           extract_number_and_incr (&mcnt, &p);
-            printf ("/on_failure_keep_string_jump to %d", p + mcnt - start);
+            printf ("/on_failure_keep_string_jump to %d", (int) (p + mcnt - start));
           break;
 
         case dummy_failure_jump:
           extract_number_and_incr (&mcnt, &p);
-            printf ("/dummy_failure_jump to %d", p + mcnt - start);
+            printf ("/dummy_failure_jump to %d", (int) (p + mcnt - start));
           break;
 
         case push_dummy_failure:
@@ -776,43 +776,43 @@ print_partial_compiled_pattern (start, end)
 
         case maybe_pop_jump:
           extract_number_and_incr (&mcnt, &p);
-            printf ("/maybe_pop_jump to %d", p + mcnt - start);
+            printf ("/maybe_pop_jump to %d", (int) (p + mcnt - start));
           break;
 
         case pop_failure_jump:
           extract_number_and_incr (&mcnt, &p);
-            printf ("/pop_failure_jump to %d", p + mcnt - start);
+            printf ("/pop_failure_jump to %d", (int) (p + mcnt - start));
           break;
 
         case jump_past_alt:
           extract_number_and_incr (&mcnt, &p);
-            printf ("/jump_past_alt to %d", p + mcnt - start);
+            printf ("/jump_past_alt to %d", (int) (p + mcnt - start));
           break;
 
         case jump:
           extract_number_and_incr (&mcnt, &p);
-            printf ("/jump to %d", p + mcnt - start);
+            printf ("/jump to %d", (int) (p + mcnt - start));
           break;
 
         case succeed_n:
           extract_number_and_incr (&mcnt, &p);
           p1 = p + mcnt;
           extract_number_and_incr (&mcnt2, &p);
-          printf ("/succeed_n to %d, %d times", p1 - start, mcnt2);
+          printf ("/succeed_n to %d, %d times", (int) (p1 - start), mcnt2);
           break;
 
         case jump_n:
           extract_number_and_incr (&mcnt, &p);
           p1 = p + mcnt;
           extract_number_and_incr (&mcnt2, &p);
-          printf ("/jump_n to %d, %d times", p1 - start, mcnt2);
+          printf ("/jump_n to %d, %d times", (int) (p1 - start), mcnt2);
           break;
 
         case set_number_at:
           extract_number_and_incr (&mcnt, &p);
           p1 = p + mcnt;
           extract_number_and_incr (&mcnt2, &p);
-          printf ("/set_number_at location %d to %d", p1 - start, mcnt2);
+          printf ("/set_number_at location %d to %d", (int) (p1 - start), mcnt2);
           break;
 
         case wordbound:
@@ -873,13 +873,13 @@ print_partial_compiled_pattern (start, end)
           break;
 
         default:
-          printf ("?%d", *(p-1));
+          printf ("?%d", (int) (*(p-1)));
         }
 
       putchar ('\n');
     }
 
-  printf ("%d:\tend of pattern.\n", p - start);
+  printf ("%d:\tend of pattern.\n", (int) (p - start));
 }
 
 
@@ -899,14 +899,14 @@ print_compiled_pattern (bufp)
       print_fastmap (bufp->fastmap);
     }
 
-  printf ("re_nsub: %d\t", bufp->re_nsub);
-  printf ("regs_alloc: %d\t", bufp->regs_allocated);
-  printf ("can_be_null: %d\t", bufp->can_be_null);
-  printf ("newline_anchor: %d\n", bufp->newline_anchor);
-  printf ("no_sub: %d\t", bufp->no_sub);
-  printf ("not_bol: %d\t", bufp->not_bol);
-  printf ("not_eol: %d\t", bufp->not_eol);
-  printf ("syntax: %lx\n", bufp->syntax);
+  printf ("re_nsub: %d\t", (int) (bufp->re_nsub));
+  printf ("regs_alloc: %d\t", (int) (bufp->regs_allocated));
+  printf ("can_be_null: %d\t", (int) (bufp->can_be_null));
+  printf ("newline_anchor: %d\n", (int) (bufp->newline_anchor));
+  printf ("no_sub: %d\t", (int) (bufp->no_sub));
+  printf ("not_bol: %d\t", (int) (bufp->not_bol));
+  printf ("not_eol: %d\t", (int) (bufp->not_eol));
+  printf ("syntax: %lx\n", (int) (bufp->syntax));
   /* Perhaps we should print the translate table?  */
 }
 
@@ -959,7 +959,7 @@ printchar (c)
 # define DEBUG_PRINT_DOUBLE_STRING(w, s1, sz1, s2, sz2)
 
 #endif /* not DEBUG */
-
+
 /* Set by `re_set_syntax' to the current regexp syntax to recognize.  Can
    also be assigned to arbitrarily: each pattern buffer stores its own
    syntax, so it can be changed between regex compilations.  */
@@ -2998,7 +2998,7 @@ regex_compile (pattern, size, syntax, bufp)
 
   return REG_NOERROR;
 } /* regex_compile */
-
+
 /* Subroutines for `regex_compile'.  */
 
 /* Store OP at LOC followed by two-byte integer parameter ARG.  */
@@ -5780,16 +5780,17 @@ _re_gsub_fixslashes(char *pattern)
    the return codes and their meanings.)  */
 
 awka_regexp *
-awka_regcomp (patt, gsub)
+awka_regcomp (patt, gsub, syn)
     char *patt;
     int gsub;
+    long syn;
 {
   awka_regexp *preg;
   reg_errcode_t ret;
   int cflags = REG_EXTENDED;
   static char *pattern = NULL;
   static int palloc = 0;
-  reg_syntax_t syntax = RE_SYNTAX_GNU_AWK;
+  reg_syntax_t syntax = syn;
 
   preg = (awka_regexp *) malloc(sizeof(awka_regexp));
   memset(preg, 0, sizeof(awka_regexp));

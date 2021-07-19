@@ -149,7 +149,7 @@ isarray(char *var)
 -----------------------------------------------------------------------------
 */
 
-static char* tmpfile_prefix(const char *pattern){
+static char* tmpfile_prefix(const char *pattern) {
     char tmp_file[512];
     strcpy(tmp_file, pattern);
     int fd = mkstemp(tmp_file);
@@ -158,7 +158,7 @@ static char* tmpfile_prefix(const char *pattern){
     return file_path;
 }
 
-static int awka_output_file(int awka_tmp, char *uoutfile, char **c_file, char **outfile){
+static int awka_output_file(int awka_tmp, char *uoutfile, char **c_file, char **outfile) {
   char *outfile_prefix = NULL;
   char *outfile_suffix;
 
@@ -194,7 +194,7 @@ static int awka_output_file(int awka_tmp, char *uoutfile, char **c_file, char **
   return 1;
 }
 
-static char* awka_build_compile_command(char *c_file, char *outfile){
+static char* awka_build_compile_command(char *c_file, char *outfile) {
     char *cmd;
     int incd_len=0, libd_len=0, libf_len=0;
 
@@ -235,7 +235,7 @@ static char* awka_build_compile_command(char *c_file, char *outfile){
     return cmd;
 }
 
-static int awka_do_compile(char *c_file, char *outfile){
+static int awka_do_compile(char *c_file, char *outfile) {
     char *cmd;
     cmd = awka_build_compile_command(c_file, outfile);
 
@@ -258,7 +258,7 @@ static int awka_do_compile(char *c_file, char *outfile){
     return 1;
 }
 
-static int awka_do_exec(char *outfile){
+static int awka_do_exec(char *outfile) {
   int len = strlen(outfile);
   for (int i=0; i<exe_argc; i++)
     len += strlen(exe_argv[i]) + 2;
@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
 
   parse();
 
-  if (!prog_no){
+  if (!prog_no) {
     awka_error("Sorry, program was not parsed successfully.\n");
     return -1;
   }
@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
     if (do_compile) {
       awka_output_file(awka_tmp, uoutfile, &c_file, &outfile);
       outfp = fopen(c_file, "w");
-      if (!outfp){
+      if (!outfp) {
         awka_error("Failed to open %s to write.\n", c_file);
         return -1;
       }
@@ -319,18 +319,18 @@ int main(int argc, char *argv[])
 
   if (do_compile) {
     int compile_succ = awka_do_compile(c_file, outfile);
-    if(!compile_succ){
+    if (!compile_succ) {
       awka_error("Awka error: compile failed.\n");
       return -1;
     }
   }
 
-  if (do_exec){
+  if (do_exec) {
     awka_do_exec(outfile);
   }
 
   if ( do_compile || do_exec ) {
-    if(awka_tmp){
+    if (awka_tmp) {
       remove(outfile);
     }
     remove(c_file);

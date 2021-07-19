@@ -57,7 +57,7 @@ static int scope ;
 static FBLOCK *active_funct ;
       /* when scope is SCOPE_FUNCT  */
 
-#define  code_address(x)  if( is_local(x) ) \
+#define  code_address(x)  if ( is_local(x) ) \
                              code2op(L_PUSHA, (x)->offset) ;\
                           else  code2(_PUSHA, (x)->stval.cp) 
 
@@ -118,7 +118,7 @@ PTR   ptr ;
 %token  <ptr> DOUBLE STRING_ RE  
 %token  <stp> ID   D_ID
 %token  <fbp> FUNCT_ID
-%token  <bip> BUILTIN  LENGTH
+%token  <bip> BUILTIN LENGTH LENGTH0
 %token   <cp>  FIELD 
 
 %token  PRINT PRINTF SPLIT MATCH_FUNC SUB GSUB GENSUB ALENGTH_FUNC ASORT_FUNC
@@ -139,7 +139,7 @@ PTR   ptr ;
 %type <start>  array_loop_front
 %type <start>  return_statement
 %type <start>  split_front  re_arg sub_back gensub_back
-%type <ival>   arglist args 
+%type <ival>   arglist args len_arg
 %type <fp>     print   sub_or_gsub gensub
 %type <fbp>    funct_start funct_head
 %type <ca_p>   call_args ca_front ca_back
@@ -184,7 +184,7 @@ PA_block  :  block
           |  expr COMMA 
              { 
                INST *p1 = CDP($1) ;
-             int len ;
+               int len ;
 
                code_push(p1, code_ptr - p1, scope, active_funct) ;
                code_ptr = p1 ;
@@ -192,9 +192,9 @@ PA_block  :  block
                code2op(_RANGE, 1) ;
                code_ptr += 3 ;
                len = code_pop(code_ptr) ;
-             code_ptr += len ;
+               code_ptr += len ;
                code1(_STOP) ;
-             p1 = CDP($1) ;
+               p1 = CDP($1) ;
                p1[2].op = code_ptr - (p1+1) ;
              }
              expr
@@ -250,17 +250,17 @@ statement :  block
                code2(_GOTO, 0) ; }
           |  return_statement
              { if ( scope != SCOPE_FUNCT )
-                     compile_error("return outside function body") ;
+                     compile_error("return outside function body.") ;
              }
           |  NEXT  separator
               { if ( scope != SCOPE_MAIN && scope != SCOPE_FUNCT )
-                   compile_error( "improper use of next" ) ;
+                   compile_error( "improper use of next." ) ;
                 $$ = code_offset ; 
                 code1(_NEXT) ;
               }
           |  NEXTFILE  separator
               { if ( scope != SCOPE_MAIN && scope != SCOPE_FUNCT )
-                   compile_error( "improper use of nextfile" ) ;
+                   compile_error( "improper use of nextfile." ) ;
                 $$ = code_offset ; 
                 code1(_NEXTFILE) ;
               }
@@ -407,10 +407,10 @@ lvalue :  ID
           BI_REC *p = $1 ;
           $$ = $2;
           if (strcmp(p->name, "argval"))
-            compile_error("builtin function '%s' used as an lvalue", p->name);
+            compile_error("builtin function '%s' used as an lvalue.", p->name);
           if ( (int)p->min_args > $4 || (int)p->max_args < $4 )
             compile_error(
-            "wrong number of arguments in call to %s" ,
+            "wrong number of arguments in call to %s." ,
             p->name ) ;
           if ( p->min_args != p->max_args ) /* variable args */
               { code1(_PUSHINT) ;  code1($4) ; }
@@ -431,25 +431,35 @@ args    :  expr        %prec  LPAREN
             { $$ = $1 + 1 ; }
         ;
 
+len_arg :  expr        %prec  LPAREN
+            { $$ = 1 ; }
+        ;
+
 builtin :
         BUILTIN mark  LPAREN  arglist RPAREN
         { 
-	  BI_REC *p = $1 ;
+          BI_REC *p = $1 ;
           $$ = $2 ;
           if ( (int)p->min_args > $4 || (int)p->max_args < $4 )
             compile_error(
-            "wrong number of arguments in call to %s" ,
+            "wrong number of arguments in call to %s." ,
             p->name ) ;
           if ( p->min_args != p->max_args ) /* variable args */
               { code1(_PUSHINT) ;  code1($4) ; }
           code2(_BUILTIN , p->fp) ;
         }
-        | LENGTH   /* this is an irritation */
-          {
-            $$ = code_offset ;
-            code1(_PUSHINT) ; code1(0) ;
-            code2(_BUILTIN, $1->fp) ;
-          }
+        | LENGTH mark LPAREN len_arg RPAREN
+        { 
+          $$ = $2 ;
+          code1(_PUSHINT) ;  code1(1) ; 
+          code2(_BUILTIN, bi_length) ;
+        }
+        | LENGTH0  /* this is an irritation (diverted here from scan.c) */
+        {
+          $$ = code_offset ;
+          code1(_PUSHINT) ; code1(0) ;
+          code2(_BUILTIN, bi_length) ;
+        }
         ;
 
 /* an empty production to store the code_ptr */
@@ -460,7 +470,7 @@ mark : /* empty */
 statement :  print mark pr_args pr_direction separator
             { code2(_PRINT, $1) ; 
               if ( $1 == bi_printf && $3 == 0 )
-                    compile_error("no arguments in call to printf") ;
+                    compile_error("no arguments in call to printf.") ;
               print_flag = 0 ;
               $$ = $2 ;
             }
@@ -566,7 +576,7 @@ statement  :    while_front  statement
                     code_jmp(_JNZ, CDP($2)) ;
                     BC_clear(code_ptr, CDP(saved_offset)) ;
                   }
-                  else /* while(1) */
+                  else /* while (1) */
                   {
                     code_jmp(_JMP, p1) ;
                     BC_clear(code_ptr, CDP($2)) ;
@@ -592,7 +602,7 @@ statement   :   for1 for2 for3 statement
                     code_ptr += len ;
                     code_jmp(_JNZ, CDP($4)) ;
                   }
-                  else /*  for(;;) */
+                  else /*  for (;;) */
                   code_jmp(_JMP, p4) ;
 
                   BC_clear(code_ptr, CDP(cont_offset)) ;
@@ -662,7 +672,7 @@ lvalue  :  ID mark LBOX  args  RBOX
              { code2op(A_CAT, $4) ; }
 
              check_array($1) ;
-             if( is_local($1) )
+             if ( is_local($1) )
              { code2op(LAE_PUSHA, $1->offset) ; }
              else code2(AE_PUSHA, $1->stval.array) ;
              $$ = $2 ;
@@ -675,7 +685,7 @@ p_expr  :  ID mark LBOX  args  RBOX   %prec  AND
              { code2op(A_CAT, $4) ; }
 
              check_array($1) ;
-             if( is_local($1) )
+             if ( is_local($1) )
              { code2op(LAE_PUSHI, $1->offset) ; }
              else code2(AE_PUSHI, $1->stval.array) ;
              $$ = $2 ;
@@ -687,7 +697,7 @@ p_expr  :  ID mark LBOX  args  RBOX   %prec  AND
              { code2op(A_CAT,$4) ; }
 
              check_array($1) ;
-             if( is_local($1) )
+             if ( is_local($1) )
              { code2op(LAE_PUSHA, $1->offset) ; }
              else code2(AE_PUSHA, $1->stval.array) ;
              if ( $6 == '+' )  code1(_POST_INC) ;
@@ -766,7 +776,7 @@ field   :  FIELD
              { code2op(A_CAT, $5) ; }
 
              check_array($2) ;
-             if( is_local($2) )
+             if ( is_local($2) )
              { code2op(LAE_PUSHI, $2->offset) ; }
              else code2(AE_PUSHI, $2->stval.array) ;
 
@@ -1111,7 +1121,7 @@ funct_head    :  FUNCTION  ID
                  { 
 		   $$ = $2 ; 
                    if ( $2->code ) 
-                       compile_error("redefinition of %s" , $2->name) ;
+                       compile_error("redefinition of %s." , $2->name) ;
                  }
               ;
                          
@@ -1129,7 +1139,7 @@ f_args     :  ID
            |  f_args  COMMA  ID
               { 
 		if ( is_local($3) ) 
-                  compile_error("%s is duplicated in argument list",
+                  compile_error("%s is duplicated in argument list.",
                     $3->name) ;
                 else
                 { $3 = save_id($3->name) ;
@@ -1219,7 +1229,8 @@ ca_back    :  expr   RPAREN
 
 /* resize the code for a user function */
 
-static void  resize_fblock( fbp )
+static void
+resize_fblock( fbp )
   FBLOCK *fbp ;
 { 
   CODEBLOCK *p = ZMALLOC(CODEBLOCK) ;
@@ -1240,7 +1251,8 @@ static void  resize_fblock( fbp )
    or F_PUSH to F_PUSHI
 */
 
-static void  field_A2I()
+static void
+field_A2I()
 { CELL *cp ;
 
   if ( code_ptr[-1].op == FE_PUSHA &&
@@ -1274,10 +1286,11 @@ static void  field_A2I()
 /* we've seen an ID in a context where it should be a VAR,
    check that's consistent with previous usage */
 
-static void check_var( p )
+static void
+check_var( p )
   register SYMTAB *p ;
 {
-      switch(p->type)
+      switch (p->type)
       {
         case ST_NONE : /* new id */
             st_none:
@@ -1299,17 +1312,18 @@ static void check_var( p )
               goto st_none;
 
         default :
-            type_error(p) ;
+            //type_error(p) ;
             break ;
       }
 }
 
 /* we've seen an ID in a context where it should be an ARRAY,
    check that's consistent with previous usage */
-static  void  check_array(p)
+static  void
+check_array(p)
   register SYMTAB *p ;
 {
-      switch(p->type)
+      switch (p->type)
       {
         case ST_NONE :  /* a new array */
             st_none:
@@ -1330,11 +1344,13 @@ static  void  check_array(p)
             if (is_ext_builtin(p->name))
               goto st_none;
 
-        default : type_error(p) ; break ;
+        default : 
+            type_error(p) ; break ;
       }
 }
 
-static void code_array(p)
+static void
+code_array(p)
   register SYMTAB *p ;
 { 
   if ( is_local(p) ) code2op(LA_PUSHA, p->offset) ; 
@@ -1344,7 +1360,8 @@ static void code_array(p)
 
 /* we've seen an ID as an argument to a user defined function */
 
-static void  code_call_id( p, ip )
+static void
+code_call_id( p, ip )
   register CA_REC *p ;
   register SYMTAB *ip ;
 { static CELL dummy ;
@@ -1353,7 +1370,7 @@ static void  code_call_id( p, ip )
      /* This always get set now.  So that fcall:relocate_arglist
         works. */
 
-  switch( ip->type )
+  switch ( ip->type )
   {
     case  ST_VAR  :
             p->type = CA_EXPR ;
@@ -1402,7 +1419,8 @@ static void  code_call_id( p, ip )
 /* an RE by itself was coded as _MATCH0 , change to
    push as an expression */
 
-static void RE_as_arg()
+static void
+RE_as_arg()
 { CELL *cp = ZMALLOC(CELL) ;
 
   code_ptr -= 2 ;
@@ -1415,7 +1433,7 @@ static void RE_as_arg()
 static void
 switch_code_to_main()
 {
-   switch(scope)
+   switch (scope)
    {
      case SCOPE_BEGIN :
         *begin_code_p = active_code ;

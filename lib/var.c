@@ -60,7 +60,7 @@ awka_argval(int fn_idx, a_VAR *var, int arg_no, int arg_count, a_VARARG *va)
   arg_no--;
   if (fn_idx == -1 || arg_no >= arg_count || arg_no < 0)
   {
-    _awka_tmpvar(ret); 
+    _awka_tmpvar(ret);
     awka_killvar(ret);
     return ret;
   }
@@ -73,7 +73,7 @@ awka_argval(int fn_idx, a_VAR *var, int arg_no, int arg_count, a_VARARG *va)
                               va->var[0],
                               a_ARR_CREATE,
                               TRUE );
-  
+
   return awka_arraysearch( var,
                            va,
                            a_ARR_CREATE );
@@ -121,7 +121,7 @@ _awka_registerfn(char *fn, int nvar)
   return i;
 }
 
-/* 
+/*
  * addfnvar - this nonsense registers local variables
  *            within user functions.
  */
@@ -168,7 +168,7 @@ _awka_addfncall(int i)
   a_VAR *ret;
 
   _awka_tmpvar(ret);  /* bugfix for eiso */
-  _awka_gc_deeper(); 
+  _awka_gc_deeper();
 
   if (_awka_fn[i].push == _awka_fn[i].allc)
   {
@@ -185,6 +185,7 @@ _awka_addfncall(int i)
 
   j = _awka_fn[i].push;
   _awka_fn[i].push++;
+
   if (_awka_fn[i].fnvar[j].allc == 0 && _awka_fn[i].nvar)
   {
     _awka_fn[i].fnvar[j].allc = _awka_fn[i].nvar;
@@ -193,10 +194,13 @@ _awka_addfncall(int i)
     for (k=0; k<_awka_fn[i].nvar; k++)
       _awka_fn[i].fnvar[j].var[k] = NULL;
   }
+
   if (ret->ptr)
   {
     if (ret->type == a_VARREG)
+    {
       _awka_re2null(ret);
+    }
     else
     {
       ret->ptr[0] = '\0';
@@ -205,6 +209,7 @@ _awka_addfncall(int i)
   }
   else
     ret->type = a_VARNUL;
+
   return ret;
 }
 
@@ -220,6 +225,7 @@ _awka_retfn(int i)
 
   if (_awka_fn[i].push == 0)
     return;
+
   _awka_fn[i].push--;
   j = _awka_fn[i].push;
 
@@ -250,6 +256,7 @@ _awka_retfn(int i)
         var->ptr[0] = '\0';
       }
     }
+
     if (var->type == a_VARDBL)
     {
       /* if (var->ptr) awka_killvar(var); */
@@ -258,8 +265,9 @@ _awka_retfn(int i)
     var->slen = 0;
     var->dval = 0.0;
     var->type2 = 0;
-  }
-  _a_gc_depth--; 
+  } /* for */
+
+  _a_gc_depth--;
   _awka_fn[i].fnvar[j].used = 0;
 }
 
@@ -304,7 +312,9 @@ _awka_re2s( a_VAR *v )
 void
 _awka_re2null( a_VAR *v )
 {
-  if (v->type != a_VARREG) return;
+  if (v->type != a_VARREG)
+    return;
+
   v->type = a_VARNUL;
   v->allc = v->slen = 0;
   v->type2 = 0;
@@ -350,9 +360,10 @@ _awka_getdval( a_VAR *v, char *file, int line )
     case a_VARARR:
       awka_error("runtime error: awka_getd in file %s, line %d - %s\n", file,line,"array used as scalar");
   }
-  
+
   if (v->type == a_VARDBL && v->type2 != (char) -1)
     v->type2 = a_DBLSET;
+
   return v;
 }
 
@@ -367,7 +378,7 @@ _awka_setdval( a_VAR *v, char *file, int line )
   v->type2 = 0;
   if (v->type == a_VARSTR || v->type == a_VARUNK)
   {
-    if (v->ptr) 
+    if (v->ptr)
     {
       v->dval = strtod(v->ptr, NULL);
       free(v->ptr);
@@ -390,16 +401,18 @@ _awka_setdval( a_VAR *v, char *file, int line )
     /* array */
     awka_error("runtime error: awka_setd in file %s, line %d - %s\n", file,line,"array used as scalar");
   }
-  
+
   /* dead code - have to check this... */
   if (_awka_setdoln == TRUE)
     _awka_setdol0_len = TRUE;
+
   if (v == a_bivar[a_DOL0])
   {
     _rebuild0_now = FALSE;
     _rebuildn = TRUE;
   }
-  return v; 
+
+  return v;
 }
 
 char *
@@ -429,7 +442,7 @@ _awka_getsval( a_VAR *v, char ofmt, char *file, int line )
         v->allc = malloc( &v->ptr, v->slen + 1 );
       else if (v->allc <= v->slen)
         v->allc = realloc( &v->ptr, v->slen + 1 );
-      
+
       memcpy(v->ptr, varbuf, v->slen+1);
       v->type2 = (ofmt ? 0 : a_STRSET);
       return v->ptr;
@@ -464,7 +477,7 @@ _awka_getsval( a_VAR *v, char ofmt, char *file, int line )
     default:
       awka_error("runtime error: awka_gets in file %s, line %d - unexpected type value (%d).\n",file,line,v->type);
   }
-  
+
   return ptr;  /* can't get here anyway */
 }
 
@@ -494,7 +507,7 @@ _awka_getreval( a_VAR *v, char *file, int line, char type )
     v->slen = 0;
     v->ptr[0] = '\0';
   }
-  
+
   switch (type)
   {
     case _RE_SPLIT:
@@ -504,12 +517,15 @@ _awka_getreval( a_VAR *v, char *file, int line, char type )
     case _RE_GSUB:
       r = _awka_compile_regexp_GSUB(v->ptr, v->slen); break;
   }
+
   if (!r)
     awka_error("runtime error: Regular Expression failed to compile, file %s line %d\n",file,line);
-  free(v->ptr);
-  v->ptr = (char *) r;
 
+  free(v->ptr);
+
+  v->ptr = (char *) r;
   v->type = a_VARREG;
+
   return r;
 }
 
@@ -530,6 +546,7 @@ awka_setsval( a_VAR *v, char *file, int line )
   v->allc = 0;
   v->type2 = 0;
   v->type = a_VARSTR;
+
   return &(v->ptr);
 }
 
@@ -559,6 +576,7 @@ awka_strdcpy( a_VAR *v, double d )
   v->slen = i;
   memcpy(v->ptr, tmp, i+1);
   v->type = a_VARSTR;
+
   return v;
 }
 
@@ -566,6 +584,7 @@ a_VAR *
 awka_strscpy( a_VAR *v, char *s )
 {
   register int i = strlen(s);
+
   if (v->type == a_VARSTR || v->type == a_VARUNK)
   {
     if (!v->ptr)
@@ -579,6 +598,7 @@ awka_strscpy( a_VAR *v, char *s )
   v->slen = i;
   memcpy(v->ptr, s, i+1);
   v->type = a_VARSTR;
+
   return v;
 }
 
@@ -586,8 +606,10 @@ a_VAR *
 awka_vardup( a_VAR *v )
 {
   a_VAR *ret;
+
   _awka_tmpvar(ret);
   awka_varcpy(ret, v);
+
   return ret;
 }
 
@@ -596,8 +618,9 @@ awka_vardblset( a_VAR *v, double d )
 {
   if (v->type == a_VARARR)
     awka_error("runtime error: awka_vardblset - %s\n", "array used as scalar");
-  
+
   _awka_set_FW(v);
+
   if (v->type == a_VARREG)
     _awka_re2null(v);
 
@@ -606,24 +629,26 @@ awka_vardblset( a_VAR *v, double d )
   v->type2 = 0;
   if (v->type == a_VARSTR || v->type == a_VARUNK)
   {
-    if (v->ptr) 
+    if (v->ptr)
       free(v->ptr);
     v->ptr = NULL;
     v->slen = 0;
     v->allc = 0;
   }
-  
+
   v->type = a_VARDBL;
   v->dval = d;
 
   if (_awka_setdoln == TRUE)
     _awka_setdol0_len = TRUE;
+
   if (v == a_bivar[a_DOL0])
   {
     _rebuild0_now = FALSE;
     _rebuildn = TRUE;
   }
-  return v->dval; 
+
+  return v->dval;
 }
 
 a_VAR *
@@ -637,6 +662,7 @@ awka_varcpy( a_VAR *va, a_VAR *vb )
     awka_error("runtime error: awka_varcpy - %s\n", "array used as scalar");
 
   _awka_set_FW(va);
+
   if (va == vb) return va;
 
   va->dval = vb->dval;
@@ -652,13 +678,17 @@ awka_varcpy( a_VAR *va, a_VAR *vb )
         /* swap pointers - this is very efficient */
         if (va->type == a_VARREG)
           _awka_re2null(va);
+
         ptr = va->ptr;
         allc = va->allc;
         va->ptr = vb->ptr;
         va->allc = vb->allc;
         va->slen = vb->slen;
         vb->ptr = ptr;
-        if (ptr) ptr[0] = '\0';
+
+        if (ptr)
+          ptr[0] = '\0';
+
         vb->type2 = 0;
         vb->slen = 0;
         vb->allc = allc;
@@ -668,19 +698,24 @@ awka_varcpy( a_VAR *va, a_VAR *vb )
       {
         /* we need both va & vb, memcpy is necessary */
         awka_forcestr(va);
+
         if (va->ptr && va->allc <= vb->slen)
           va->allc = realloc( &va->ptr, vb->slen+1 );
         else if (!va->ptr)
           va->allc = malloc( &va->ptr, vb->slen+1 );
+
         memcpy(va->ptr, vb->ptr, vb->slen+1);
         va->slen = vb->slen;
       }
+
       va->type = vb->type;
       va->type2 = vb->type2;
       break;
 
     case a_VARREG:
-      if (va->ptr) awka_killvar(va);
+      if (va->ptr)
+        awka_killvar(va);
+
       va->ptr = vb->ptr;
       break;
 
@@ -691,10 +726,13 @@ awka_varcpy( a_VAR *va, a_VAR *vb )
           va->allc = malloc( &va->ptr, vb->slen+1 );
         else if (va->ptr && va->allc <= vb->slen)
           va->allc = realloc( &va->ptr, vb->slen+1 );
+
         memcpy(va->ptr, vb->ptr, vb->slen+1);
         va->slen = vb->slen;
       }
-  }
+      break;
+  } /* switch */
+
   va->type = vb->type;
 
   if (_awka_setdoln == TRUE)
@@ -708,11 +746,13 @@ awka_varcpy( a_VAR *va, a_VAR *vb )
     else
       _awka_setdol0_len = TRUE;
   }
+
   if (va == a_bivar[a_DOL0])
   {
     _rebuild0_now = FALSE;
     _rebuildn = TRUE;
   }
+
   return va;
 }
 
@@ -724,8 +764,9 @@ _awka_checkunk(a_VAR *va)
     if (!isalpha(va->ptr[0]) &&
         _awka_isnumber(va->ptr) == TRUE)
     {
-      if(va->type != a_VARDBL)
+      if (va->type != a_VARDBL)
         va->type2 = a_DBLSET;
+
       va->dval = strtod(va->ptr, NULL);
     }
     else {
@@ -747,12 +788,16 @@ awka_varcmp( a_VAR *va, a_VAR *vb )
   if (vb->type == a_VARARR || va->type == a_VARARR)
     awka_error("runtime error: awka_varcmp", "array used as scalar");
 
-  if (va == vb) return 0;
+  if (va == vb)
+    return 0;
+
   if (va->type == a_VARUNK && va->type2 == 0 && va->ptr)
     _awka_checkunk(va);
+
   if (vb->type == a_VARUNK && vb->type2 == 0 && vb->ptr)
     _awka_checkunk(vb);
-  if ((va->type <= a_VARDBL || 
+
+  if ((va->type <= a_VARDBL ||
       (va->type == a_VARUNK && va->type2 == a_DBLSET)) &&
       (vb->type <= a_VARDBL ||
       (vb->type == a_VARUNK && vb->type2 == a_DBLSET)))
@@ -765,6 +810,7 @@ awka_varcmp( a_VAR *va, a_VAR *vb )
   }
 
   i = strcmp(awka_gets1(va), awka_gets1(vb));
+
   return ((i == 0) ? 0 : ((i < 0) ? -1 : 1));
 }
 
@@ -778,8 +824,10 @@ awka_vartrue( a_VAR *v )
     else
       return 0;
   }
+
   if (v->type == a_VARDBL && v->dval != 0.0)
     return 1;
+
   if (v->type == a_VARUNK)
   {
     if (v->ptr && v->ptr[0] != '\0' && strcmp(v->ptr, "0"))
@@ -787,8 +835,10 @@ awka_vartrue( a_VAR *v )
     if (v->type2 == a_DBLSET && v->dval != 0.0)
       return 1;
   }
+
   if (v->type == a_VARREG)
     return 1;
+
   return 0;
 }
 
@@ -808,7 +858,8 @@ awka_var2dblcmp( a_VAR *va, double d )
 
   if (!(i = strcmp(awka_gets1(va), awka_tmp_dbl2str(d))))
     return 0;
-  return (i < 0 ? -1 : 1);
+
+  return ((i < 0) ? -1 : 1);
 }
 
 double
@@ -827,36 +878,49 @@ awka_dbl2varcmp( double d, a_VAR *va )
     i = (d == va->dval ? 0 : (d < va->dval ? -1 : 1));
     return (double) i;
   }
+
   if (!(i = strcmp(awka_tmp_dbl2str(d), awka_gets1(va))))
     return 0;
-  return (i < 0 ? -1 : 1);
+
+  return ((i < 0) ? -1 : 1);
 }
 
-int 
+int
 awka_nullval( char *s )
 {
   double d;
   char *p;
 
   d = strtod(s, NULL);
+
   if (!d)
   {
     p = s + (strlen(s)-1);
-    while ((*p == ' ' || *p == '\t') && p > s) p--;
+
+    while ((*p == ' ' || *p == '\t') && p > s)
+      p--;
+
     p++;
     *p = '\0';
     p = s;
-    while (*p == ' ' || *p == '\t') p++;
+
+    while (*p == ' ' || *p == '\t')
+      p++;
+
     while (*p)
     {
-      if (isalpha(*p) || 
+      if (isalpha(*p) ||
          (ispunct(*p) && *p != '.') ||
-         (isdigit(*p) && *p != '0')) break;
+         (isdigit(*p) && *p != '0'))
+        break;
+
       p++;
     }
+
     if (*p == '\0')
       return 1;
   }
+
   return 0;
 }
 
@@ -867,6 +931,7 @@ awka_tmp_dbl2var(double d)
   a_VAR *v;
 
   _awka_tmpvar(v);
+
   if (v->ptr && v->type == a_VARREG)
     _awka_re2null(v);
 
@@ -876,6 +941,7 @@ awka_tmp_dbl2var(double d)
   /* v->allc = 0; */
   v->dval = d;
   v->type2 = 0;
+
   return v;
 }
 
@@ -893,6 +959,7 @@ awka_ro_str2var(char *c)
   v->allc = 0;
   v->dval = 0;
   v->type2 = 0;
+
   return v;
 }
 
@@ -906,7 +973,9 @@ awka_tmp_str2var(char *c)
 
   if (v->type == a_VARSTR || v->type == a_VARUNK || v->type == a_VARREG)
   {
-    if (v->type == a_VARREG) _awka_re2null(v);
+    if (v->type == a_VARREG)
+      _awka_re2null(v);
+
     if (v->allc <= i)
       v->allc = realloc( &v->ptr, i+1 );
     else if (!v->ptr)
@@ -950,8 +1019,9 @@ awka_tmp_re2var(awka_regexp *r)
 char *
 awka_tmp_dbl2str(double d)
 {
-  char *s, tmp[25];   // max chars for %d on 64 bit machine should be 23 
-  int i = (int) d, len;
+  char *s, tmp[25];   /* max chars for %d on 64 bit machine should be 23 */
+  int i = (int) d;
+  int len;
 
   if ((double) i == d)
     sprintf(tmp, "%d", i);
@@ -963,6 +1033,7 @@ awka_tmp_dbl2str(double d)
 
   _awka_tmpvar_c(s, len);
   memcpy(s, tmp, i);
+
   return s;
 }
 
@@ -971,25 +1042,76 @@ char *
 awka_strcpy(a_VAR *v, char *s)
 {
   register int _slen = strlen(s)+1, allc_len;
+
   _awka_set_FW(v);
+
   if (v->type == a_VARREG)
     _awka_re2s(v);
+
   if (v->type != a_VARSTR && v->type != a_VARUNK)
     awka_setsval(v, __FILE__, __LINE__);
+
   if (v->ptr && v->allc <= _slen)
     v->allc = realloc( (void **) &v->ptr, _slen );
   else if (!v->ptr)
     v->allc = malloc( (void **) &v->ptr, _slen );
+
   v->slen = _slen-1;
   memcpy(v->ptr, s, _slen);
   v->type = a_VARSTR;
   v->type2 = 0;
+
   if (v == a_bivar[a_DOL0])
   {
     _rebuild0_now = FALSE;
     _rebuildn = TRUE;
   }
+
   return v->ptr;
 }
 #endif
+
+char *
+awka_strncpy(a_VAR *v, char *s, int _slen)
+{
+  a_VAR *tmpv = NULL;
+
+  _awka_set_FW(v);
+
+  if (v->type == a_VARREG)
+    _awka_re2s(v);
+
+  if (v->type != a_VARSTR && v->type != a_VARUNK)
+    awka_setsval(v, __FILE__, __LINE__);
+
+  if (v->ptr && v->allc <= _slen+1)
+    v->allc = realloc( (void **) &v->ptr, _slen+1 );
+  else if (!v->ptr)
+    v->allc = malloc( (void **) &v->ptr, _slen+1 );
+
+  v->slen = _slen;
+  memcpy(v->ptr, s, _slen);
+  v->ptr[_slen] = '\0';
+  v->type = a_VARSTR;
+  v->type2 = 0;
+
+  if ( v == a_bivar[a_FS] )
+  {
+    tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
+    tmpv->slen = 2;
+    strncpy( tmpv->ptr, "FS", 3 );
+  }
+  else if ( v == a_bivar[a_FIELDWIDTHS] || v == a_bivar[a_SAVEWIDTHS] )
+  {
+    tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
+    tmpv->slen = 11;   /* sized to 12 bytes originally in  init.c */
+    strncpy( tmpv->ptr, "FIELDWIDTHS", 12 );
+  }
+  else if ( v->type == a_VARSTR && strncmp(v->ptr, "RE_SYNTAX_", 10) == 0)
+  {
+    _awka_set_re_syntax(s);
+  }
+
+  return v->ptr;
+}
 

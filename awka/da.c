@@ -53,7 +53,7 @@ int cfunc_allc = 0;
 
 static struct sc
 {
-   char op ; 
+   char op ;
    char *name ;
 } simple_code[] =
 
@@ -250,7 +250,7 @@ fixbackslashes(char *str, int which)
       r = q - 1;
       do {
         *(q--) = *(r--);
-      } while(r >= p);
+      } while (r >= p);
       *(p++) = '\\';
     }
     p++;
@@ -421,7 +421,7 @@ awka_insertop(int op, char *cval, char *carg, int minst, char *file, int line)
   progcode[prog_no].line = line;
   progcode[prog_no].file = file;
   progcode[prog_no].val = val;
-  progcode[prog_no].arg = arg; 
+  progcode[prog_no].arg = arg;
   progcode[prog_no].endloop = 0;
   progcode[prog_no].foreverloop = 0;
   progcode[prog_no].doloop = FALSE;
@@ -464,11 +464,11 @@ awka_insertop(int op, char *cval, char *carg, int minst, char *file, int line)
   {
     if (!strncmp(val, "repl", 4))
     {
-      progcode[prog_no].arg = fixbackslashes(progcode[prog_no].arg, _PUSHS); 
+      progcode[prog_no].arg = fixbackslashes(progcode[prog_no].arg, _PUSHS);
       /* double_backslashes(progcode[prog_no].arg); */
     }
     else
-      progcode[prog_no].arg = fixbackslashes(progcode[prog_no].arg, op); 
+      progcode[prog_no].arg = fixbackslashes(progcode[prog_no].arg, op);
   }
   prog_no++;
 }
@@ -512,29 +512,29 @@ da(start, fp)
                     sprintf(tmp1, "0x%lx", (long) cp->ptr);
                     /* sprintf(tmp2, "/%s/", re_uncompile(cp->ptr)); */
                     sprintf(tmp2, "%s", re_uncompile(cp->ptr));
-                    if (dump) fprintf(stderr,"%d:\tpushc\t\t%s\t%d\n",minst,tmp2,line);
+                    if (dump) fprintf(stderr,"%d:\tpushc     \t\t%s\t%d\n",minst,tmp2,line);
                     awka_insertop(_PUSHC, tmp1, tmp2, minst, file, line);
                     break ;
 
                 case C_SPACE:
-                    if (dump) fprintf(stderr,"%d:\tpushc\t\tspace split\t%d\n",minst,line);
+                    if (dump) fprintf(stderr,"%d:\tpushc     \t\tspace split\t%d\n",minst,line);
                     awka_insertop(_PUSHC, "space", "split", minst, file, line);
                     break ;
 
                 case C_SNULL:
-                    if (dump) fprintf(stderr,"%d:\tpushc\t\tnull split\t%d\n",minst,line);
+                    if (dump) fprintf(stderr,"%d:\tpushc     \t\tnull split\t%d\n",minst,line);
                     awka_insertop(_PUSHC, "null", "split", minst, file, line);
                     break ;
 
                 case C_REPL:
                     sprintf(tmp2, "%s", repl_uncompile(cp));
-                    if (dump) fprintf(stderr,"%d:\tpushc\t\trepl %s\t%d\n",minst,tmp2,line);
+                    if (dump) fprintf(stderr,"%d:\tpushc     \t\trepl %s\t%d\n",minst,tmp2,line);
                     awka_insertop(_PUSHC, "repl", tmp2, minst, file, line);
                     break ;
 
                 case C_REPLV:
                     sprintf(tmp2, "%s", repl_uncompile(cp));
-                    if (dump) fprintf(stderr,"%d:\tpushc\t\treplv %s\t%d\n",minst,tmp2,line);
+                    if (dump) fprintf(stderr,"%d:\tpushc     \t\treplv %s\t%d\n",minst,tmp2,line);
                     awka_insertop(_PUSHC, "replv", tmp2, minst, file, line);
                     break ;
 
@@ -549,14 +549,14 @@ da(start, fp)
                 to be converted to a string to be printed to the C output.
                 Does anyone know a means of safely ensuring the correct
                 precision is carried through? */
-             sprintf(tmp1, "%.25g", *(double *) p++->ptr); 
-             if (dump) fprintf(stderr,"%d:\tpushd\t\t%s\t%d\n",minst,tmp1,line);
+             sprintf(tmp1, "%.25g", *(double *) p++->ptr);
+             if (dump) fprintf(stderr,"%d:\tpushd     \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(_PUSHD, tmp1, NULL, minst, file, line);
              break ;
           case _PUSHS:
              {
                 STRING *sval = (STRING *) p++->ptr ;
-                if (dump) fprintf(stderr,"%d:\tpushs\t\t%s\t%d\n",minst,sval->str,line);
+                if (dump) fprintf(stderr,"%d:\tpushs     \t\t%s\t%d\n",minst,sval->str,line);
                 awka_insertop(_PUSHS, sval->str, NULL, minst, file, line);
                 break ;
              }
@@ -564,7 +564,7 @@ da(start, fp)
           case _MATCH0:
              sprintf(tmp1, "0x%lx", (long) p->ptr);
              sprintf(tmp2, "/%s/", re_uncompile(p->ptr));
-             if (dump) fprintf(stderr,"%d:\tmatch0\t\t%s\t%d\n",minst,tmp2,line);
+             if (dump) fprintf(stderr,"%d:\tmatch0    \t\t%s\t%d\n",minst,tmp2,line);
              awka_insertop(op, tmp1, tmp2, minst, file, line);
              p++ ;
              break;
@@ -572,26 +572,32 @@ da(start, fp)
           case _MATCH1:
              sprintf(tmp1, "0x%lx", (long) p->ptr);
              sprintf(tmp2, "/%s/", re_uncompile(p->ptr));
-             if (dump) fprintf(stderr,"%d:\tmatch1\t\t%s\t%d\n",minst,tmp2,line);
+             if (dump) fprintf(stderr,"%d:\tmatch1    \t\t%s\t%d\n",minst,tmp2,line);
              awka_insertop(op, tmp1, tmp2, minst, file, line);
              p++ ;
              break ;
 
           case _PUSHA:
-             if (dump) fprintf(stderr,"%d:\tpusha\t\t%s\t%d\n",minst,reverse_find(ST_VAR, &p++->ptr),line);
-             awka_insertop(op,  reverse_find(ST_VAR, &p++->ptr), NULL, minst, file, line);
+             tmp  = reverse_find(ST_VAR, &p->ptr);
+	     /* hack: allow array as a var w*/
+	     if (strcmp(tmp, "unknown") == 0) {
+                tmp = reverse_find(ST_ARRAY, &p->ptr);
+	     }
+	     p++;
+             if (dump) fprintf(stderr,"%d:\tpusha     \t\t%s\t%d\n",minst,tmp,line);
+             awka_insertop(op,  tmp, NULL, minst, file, line);
              break ;
 
           case _PUSHI:
              cp = (CELL *) p++->ptr ;
              if (cp == field)
              {
-                if (dump) fprintf(stderr,"%d:\tpushi\t\t$0\t%d\n",minst,line);
+                if (dump) fprintf(stderr,"%d:\tpushi     \t\t$0\t%d\n",minst,line);
                 awka_insertop(op,  "$0", NULL, minst, file, line);
              }
              else if (cp == &fs_shadow)
              {
-                if (dump) fprintf(stderr,"%d:\tpushi\t\t@fs_shadow\t%d\n",minst,line);
+                if (dump) fprintf(stderr,"%d:\tpushi     \t\t@fs_shadow\t%d\n",minst,line);
                 awka_insertop(op,  "@fs_shadow", NULL, minst, file, line);
              }
              else
@@ -601,38 +607,42 @@ da(start, fp)
                     name = reverse_find(ST_FIELD, &cp) ;
                 else name = reverse_find(ST_VAR, &cp) ;
 
-                if (dump) fprintf(stderr,"%d:\tpushi\t\t%s\t%d\n",minst,name,line);
+		if (strcmp(name, "unknown") == 0) {
+                   name = reverse_find(ST_ARRAY, &cp) ;
+		}
+
+                if (dump) fprintf(stderr,"%d:\tpushi     \t\t%s\t%d\n",minst,name,line);
                 awka_insertop(op, name, NULL, minst, file, line);
              }
              break ;
 
           case L_PUSHA:
              sprintf(tmp1, "%d", p++->op);
-             if (dump) fprintf(stderr,"%d:\tl_pusha\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tl_pusha   \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              break ;
 
           case L_PUSHI:
              sprintf(tmp1, "%d", p++->op);
-             if (dump) fprintf(stderr,"%d:\tl_pushi\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tl_pushi   \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              break ;
 
           case LAE_PUSHI:
              sprintf(tmp1, "%d", p++->op);
-             if (dump) fprintf(stderr,"%d:\tlae_pushi\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tlae_pushi \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              break ;
 
           case LAE_PUSHA:
              sprintf(tmp1, "%d", p++->op);
-             if (dump) fprintf(stderr,"%d:\tlae_pusha\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tlae_pusha \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              break ;
 
           case LA_PUSHA:
              sprintf(tmp1, "%d", p++->op);
-             if (dump) fprintf(stderr,"%d:\tla_pusha\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tla_pusha  \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              break ;
 
@@ -641,13 +651,13 @@ da(start, fp)
              if (cp >= NF && cp <= LAST_PFIELD)
              {
                 tmp = reverse_find(ST_FIELD, &cp);
-                if (dump) fprintf(stderr,"%d:\tf_pusha\t\t%s\t%d\n",minst,tmp,line);
+                if (dump) fprintf(stderr,"%d:\tf_pusha   \t\t%s\t%d\n",minst,tmp,line);
                 awka_insertop(op, tmp, NULL, minst, file, line);
              }
              else
              {
                 sprintf(tmp1, "$%d", field_addr_to_index(cp)) ;
-                if (dump) fprintf(stderr,"%d:\tf_pusha\t\t%s\t%d\n",minst,tmp1,line);
+                if (dump) fprintf(stderr,"%d:\tf_pusha   \t\t%s\t%d\n",minst,tmp1,line);
                 awka_insertop(op, tmp1, NULL, minst, file, line);
              }
              break ;
@@ -655,137 +665,137 @@ da(start, fp)
           case F_PUSHI:
              p++ ;
              sprintf(tmp1, "$%d", p++->op);
-             if (dump) fprintf(stderr,"%d:\tf_pushi\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tf_pushi   \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              break ;
 
           case AE_PUSHA:
              tmp = reverse_find(ST_ARRAY, &p++->ptr);
-             if (dump) fprintf(stderr,"%d:\tae_pusha\t\t%s\t%d\n",minst,tmp,line);
+             if (dump) fprintf(stderr,"%d:\tae_pusha  \t\t%s\t%d\n",minst,tmp,line);
              awka_insertop(op, tmp, NULL, minst, file, line);
              break ;
 
           case AE_PUSHI:
              tmp = reverse_find(ST_ARRAY, &p++->ptr);
-             if (dump) fprintf(stderr,"%d:\tae_pushi\t\t%s\t%d\n",minst,tmp,line);
+             if (dump) fprintf(stderr,"%d:\tae_pushi  \t\t%s\t%d\n",minst,tmp,line);
              awka_insertop(op, tmp, NULL, minst, file, line);
              break ;
 
           case A_PUSHA:
              tmp = reverse_find(ST_ARRAY, &p++->ptr);
-             if (dump) fprintf(stderr,"%d:\ta_pusha\t\t%s\t%d\n",minst,tmp,line);
+             if (dump) fprintf(stderr,"%d:\ta_pusha   \t\t%s\t%d\n",minst,tmp,line);
              awka_insertop(op, tmp, NULL, minst, file, line);
              break ;
 
           case _PUSHINT:
              sprintf(tmp1, "%d", p++->op);
-             if (dump) fprintf(stderr,"%d:\tpushint\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tpushint   \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              break ;
 
           case _BUILTIN:
-             if (dump) fprintf(stderr,"%d:\tbuiltin\t\t%s\t%d\n",minst,find_bi_name((PF_CP) p++->ptr),line);
+             if (dump) fprintf(stderr,"%d:\tbuiltin   \t\t%s\t%d\n",minst,find_bi_name((PF_CP) p++->ptr),line);
              awka_insertop(op, find_bi_name((PF_CP) p++->ptr), NULL, minst, file, line);
              break ;
 
           case _PRINT:
-             if (dump) fprintf(stderr,"%d:\t%s\t\t\t%d\n",minst,((PF_CP) p++->ptr == bi_printf ? "printf" : "print"),line);
+             if (dump) fprintf(stderr,"%d:\t%-10s\t\t\t%d\n",minst,((PF_CP) p++->ptr == bi_printf ? "printf" : "print"),line);
              awka_insertop((PF_CP) p++->ptr == bi_printf ? _PRINTF : _PRINT, NULL, NULL, minst, file, line);
              break ;
 
           case _JMP:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tjmp\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tjmp       \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case _GOTO:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tgoto\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tgoto      \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case _BREAK:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tbreak\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tbreak     \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case _ELSE:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\telse\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\telse      \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case _COLON:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tcolon\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tcolon     \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case _QMARK:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tqmark\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tqmark     \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case _JNZ:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tjnz\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tjnz       \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case _JZ:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tjz\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tjz      \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case _LJZ:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tljz\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tljz       \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case _LJNZ:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tljnz\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tljnz       \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case SET_ALOOP:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\tset_aloop\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\tset_aloop \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case ALOOP:
              sprintf(tmp1, "%d", (int) ((p - start) + p->op));
-             if (dump) fprintf(stderr,"%d:\taloop\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\taloop     \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p++ ;
              break ;
 
           case  A_CAT :
              sprintf(tmp1, "%d", p++->op);
-             if (dump) fprintf(stderr,"%d:\ta_cat\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\ta_cat     \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              break ;
 
           case _CALL:
              sprintf(tmp1, "%d", p[1].op);
-             if (dump) fprintf(stderr,"%d:\tcall\t\t%s\t%d\n",minst,((FBLOCK *) p->ptr)->name,line);
+             if (dump) fprintf(stderr,"%d:\tcall      \t\t%s\t%d\n",minst,((FBLOCK *) p->ptr)->name,line);
              awka_insertop(op, ((FBLOCK *) p->ptr)->name, tmp1, minst, file, line);
              for (i=0; i<cfunc_no; i++)
                if (!strcmp(cfunc[i], ((FBLOCK *) p->ptr)->name))
@@ -810,7 +820,7 @@ da(start, fp)
                   (int) (p - start + p[1].op),
                   (int) (p - start + p[2].op),
                   (int) (p - start + p[3].op));
-             if (dump) fprintf(stderr,"%d:\trange\t\t%s\t%d\n",minst,tmp1,line);
+             if (dump) fprintf(stderr,"%d:\trange     \t\t%s\t%d\n",minst,tmp1,line);
              awka_insertop(op, tmp1, NULL, minst, file, line);
              p += 4;
              break ;
@@ -820,16 +830,17 @@ da(start, fp)
                 struct sc *q = simple_code ;
                 int k = (p - 1)->op ;
 
-                while (q->op != _HALT && q->op != k)  q++ ;
+                while (q->op != _HALT && q->op != k)
+                  q++ ;
 
                 if (q->op == FE_PUSHA)
                 {
-                  if (dump) fprintf(stderr,"%d:\tfe_pusha\t\t\t%d\n",minst,line);
+                  if (dump) fprintf(stderr,"%d:\tfe_pusha  \t\t\t%d\n",minst,line);
                   awka_insertop(_FE_PUSHA, NULL, NULL, minst, file, line);
                 }
                 else
                 {
-                  if (dump) fprintf(stderr,"%d:\t%s\t\t\t%d\n",minst,q->name,line);
+                  if (dump) fprintf(stderr,"%d:\t%-10s\t\t\t%d\n",minst,q->name,line);
                   awka_insertop(q->op, NULL, NULL, minst, file, line);
                 }
              }
@@ -862,10 +873,11 @@ find_bi_name(p)
 {
    BI_REC *q ;
    int i ;
-   static char *tmp = "alength", *tmp2 = "asort";
+   static char *tmp = "alength", *tmp2 = "asort", *tmp3 = "length";
 
    if (p == bi_alength) return tmp;
    if (p == bi_asort) return tmp2;
+   if (p == bi_length) return tmp3;
 
    for (q = bi_funct; q->name; q++)
    {

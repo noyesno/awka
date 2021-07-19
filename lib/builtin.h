@@ -17,12 +17,6 @@
 #define a_BI_TOTITLE 3
 
 #ifndef _IN_LIBRARY
-static double
-awka_length(a_VAR *v)
-{
-  awka_gets1(v);
-  return (double) v->slen;
-}
 
 static double
 awka_index(a_VAR *va, a_VAR *vb)
@@ -124,6 +118,8 @@ a_VAR *    awka_fseek(char keep, a_VARARG *va );
 a_VAR *    awka_ftell(char keep, a_VARARG *va );
 a_VAR *    awka_fsize(char keep, a_VARARG *va );
 a_VAR *    awka_isarray(char keep, a_VARARG *va );
+a_VAR *    awka_typeof(char keep, a_VARARG *va );
+double     awka_length(a_VAR *v );
 int        awka_globline(const char *pattern);
 
 #define awka_length0   awka_length(awka_doln(0,0))

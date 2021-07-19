@@ -1,3 +1,9 @@
+#
+# this test of FIELDWIDTHS and SAVEWIDTHS
+#
+# SAVEWIDTH is Awka specific, so the output
+# will be different for Gawk/Mawk/...
+#
 BEGIN {
   FIELDWIDTHS = "13 2 9 9 9 4 3 6 20"
   OFS = "~"

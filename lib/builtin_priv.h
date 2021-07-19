@@ -90,10 +90,11 @@ BI_VARARG _a_bi_vararg[] = {
 "erfc", 1, 1,
 "lgamma", 1, 1,
 "tgamma", 1, 1,
-"isarray",1,1
+"isarray",1,1,
+"typeof",1,1
 };
 
-#define A_BI_VARARG_SIZE  71
+#define A_BI_VARARG_SIZE  73
 
 #ifdef _BUILTIN_H
 #define _a_TYPE_VARARG 1
@@ -105,7 +106,7 @@ void _awka_sopen(_a_IOSTREAM *s, char flag);
 
 #else
 extern BI_VARARG _a_bi_vararg[];
-#define A_BI_VARARG_SIZE  71
+#define A_BI_VARARG_SIZE  73
 
 #endif /* BUILTIN_HOME */
 
@@ -187,5 +188,6 @@ extern BI_VARARG _a_bi_vararg[];
 #define _BI_ARGVAL    73
 #define _BI_ASORT     74
 #define _BI_ISARRAY   75
+#define _BI_TYPEOF    76
 
 #endif

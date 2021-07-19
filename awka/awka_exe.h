@@ -94,7 +94,7 @@ char *    awka_nullfunc(int, int *, char *);
 char *        awka_math(int, int *, char *);
 char *       awka_index(int, int *, char *);
 char *       awka_colon(int, int *, char *);
-char *      awka_length(int, int *, char *);
+char *   awka_bi_length(int, int *, char *);
 char *      awka_substr(int, int *, char *);
 char *       awka_asort(int, int *, char *);
 char *     awka_alength(int, int *, char *);
@@ -282,7 +282,7 @@ struct a_sc code[] = {
 { "int",         awka_math,         a_INT,        _BI_INT,        FALSE, 0, },
 { "isarray",     awka_builtin,      _ISARRAY,     _BI_ISARRAY,    FALSE, 0, },
 { "left",        awka_builtin,      _LEFT,        _BI_LEFT,       FALSE, 2, },
-{ "length",      awka_length,       _LENGTH,      _BI_LENGTH,     FALSE, 1, },
+{ "length",      awka_bi_length,    _LENGTH,      _BI_LENGTH,     FALSE, 1, },
 { "lgamma",      awka_math,         _LGAMMA,      _BI_LGAMMA,     FALSE, 0, },
 { "localtime",   awka_builtin,      a_LOCALTIME,  _BI_LOCALTIME,  FALSE, 2, },
 { "log",         awka_math,         _LOG,         _BI_LOG,        FALSE, 0, },
@@ -321,6 +321,7 @@ struct a_sc code[] = {
 { "toupper",     awka_tocase,       _TOUPPER,     _BI_TOCASE,     FALSE, 2, },
 { "trim",        awka_builtin,      _TRIM,        _BI_TRIM,       FALSE, 2, },
 { "trunc",       awka_math,         _TRUNC,       _BI_TRUNC,      FALSE, 0, },
+{ "typeof",      awka_builtin,      _TYPEOF,      _BI_TYPEOF,     FALSE, 0, },
 { "xor",         awka_builtin,      _XOR,         _BI_XOR,        FALSE, 1  },
 { "fsize",       awka_builtin,      _FSIZE,       -1,             FALSE, 1, },
 { "fseek",       awka_builtin,      _FSEEK,       -1,             FALSE, 1, },
@@ -355,6 +356,7 @@ struct a_sc ext_funcs[] = {
 { "time",        awka_builtin,      a_TIME,       _BI_TIME,       FALSE, 1, },
 { "totitle",     awka_tocase,       _TOTITLE,     _BI_TOCASE,     FALSE, 2, },
 { "trim",        awka_builtin,      _TRIM,        _BI_TRIM,       FALSE, 2, },
+{ "typeof",      awka_builtin,      _TYPEOF,      _BI_TYPEOF,     FALSE, 0, },
 { "xor",         awka_builtin,      _XOR,         _BI_XOR,        FALSE, 1, },
 { "fsize",       awka_builtin,      _FSIZE,       -1,             FALSE, 1, },
 { "fseek",       awka_builtin,      _FSEEK,       -1,             FALSE, 1, },

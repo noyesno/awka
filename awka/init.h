@@ -1,4 +1,3 @@
-
 /********************************************
 init.h
 copyright 1991, Michael D. Brennan
@@ -30,6 +29,17 @@ the GNU General Public License, version 2, 1991.
 
 #include "symtype.h"
 
+
+#define  EXIT_ERR_NO	1
+#define  EXIT_ERR_c	2
+#define  EXIT_ERR_w	3
+#define  EXIT_ERR_BAD   4
+#define  EXIT_ERR_a	5
+#define  EXIT_ERR_o	6
+#define  EXIT_ERR_MISS  7
+#define  EXIT_ERR_NOx   8
+#define  EXIT_ERR_NOf   9
+
 /* nodes to link file names for multiple
    -f option */
 
@@ -42,19 +52,43 @@ extern PFILE *pfile_list ;
 
 extern char *sprintf_buff, *sprintf_limit ;
 
+char *awak_input_text;
+
 
 void  PROTO( initialize, (int, char **) ) ;
 void  PROTO( code_init, (void) ) ;
 void  PROTO( code_cleanup, (void) ) ;
 void  PROTO( compile_cleanup, (void) ) ;
-void PROTO(scan_init, ( char *) ) ;
-void PROTO(bi_vars_init, (void) ) ;
-void PROTO(bi_funct_init, (void) ) ;
-void PROTO(print_init, (void) ) ;
-void PROTO(kw_init, (void) ) ;
+void  PROTO( scan_init, ( char *) ) ;
+void  PROTO( bi_vars_init, (void) ) ;
+void  PROTO( bi_funct_init, (void) ) ;
+void  PROTO( print_init, (void) ) ;
+void  PROTO( kw_init, (void) ) ;
 void  PROTO( field_init, (void) ) ;
 void  PROTO( fpe_init, (void) ) ;
 void  PROTO( load_environ, (ARRAY)) ;
 void  PROTO( set_stderr, (void)) ;
+
+static inline char *
+quote_escape(char *s) {
+  /* hard limited to 5 pairs of quotes */
+  register char *p = s;
+  int i = strlen(s);
+  char *tstr = (char *) malloc(i+10); 
+
+  strncpy(tstr, s, i);
+  p = tstr;
+  while (*p) {
+    if (*p == '\\') {
+      memmove(p+1, p, strlen(p));
+      *(p++) = '\\';
+    }
+    if (*p++ == '"') {
+      memmove(p, p-1, strlen(p-1));
+      *((p++)-1) = '\\';
+    }
+  }
+  return tstr;
+}
 
 #endif   /* INIT_H  */

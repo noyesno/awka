@@ -1,0 +1,61 @@
+FIELDWIDTHS
+FIELDWIDTHS
+FS
+FS
+    2369 ~ACKNOWLEDGEMENTS
+-rw-r--r--   1 andrew   netmap       2369 Aug  9 15:36 ACKNOWLEDGEMENTS.
+     947 ~BUGS.txt
+-rw-r--r--   1 andrew   netmap        947 Aug  6 18:48 BUGS.txt.
+   17949 ~CHANGELOG.txt
+-rw-r--r--   1 andrew   netmap      17949 Sep  9 09:14 CHANGELOG.txt.
+   17982 ~GPL.txt
+-r--r--r--   1 andrew   netmap      17982 Aug  6 18:48 GPL.txt.
+    1947 ~INSTALL.txt
+-rw-r--r--   1 andrew   netmap       1947 Aug  6 18:48 INSTALL.txt.
+    4246 ~LIBLICENSE.txt
+-rw-r--r--   1 andrew   netmap       4246 Aug  6 18:48 LIBLICENSE.txt.
+    1490 ~Makefile
+-rw-r--r--   1 andrew   netmap       1490 Sep  8 18:43 Makefile.
+    1428 ~Makefile.in
+-rwxr-xr-x   1 andrew   netmap       1428 Sep  2 17:45 Makefile.in.
+   13836 ~README.txt
+-rw-r--r--   1 andrew   netmap      13836 Sep  9 09:22 README.txt.
+    2338 ~TODO.txt
+-rw-r--r--   1 andrew   netmap       2338 Sep  9 11:05 TODO.txt.
+    4362 ~USAGE
+-rw-r--r--   1 andrew   netmap       4362 Aug  6 18:48 USAGE.
+    2048 ~awka
+drwxr-xr-x   2 andrew   netmap       2048 Sep  9 09:22 awka.
+   10780 ~awka.ac.m4
+-rwxr-xr-x   1 andrew   netmap      10780 Aug  6 18:48 awka.ac.m4.
+    1024 ~benchmark
+drwxr-xr-x   2 andrew   netmap       1024 Sep  2 17:44 benchmark.
+    2154 ~config.cache
+-rw-r--r--   1 andrew   netmap       2154 Sep  8 18:43 config.cache.
+     465 ~config.h
+-rw-r--r--   1 andrew   netmap        465 Sep  8 18:43 config.h.
+    4080 ~config.log
+-rw-r--r--   1 andrew   netmap       4080 Sep  8 18:43 config.log.
+    5037 ~config.status
+-rwxr-xr-x   1 andrew   netmap       5037 Sep  8 18:43 config.status.
+   96050 ~configure
+-rwxr-xr-x   1 andrew   netmap      96050 Aug  6 18:48 configure.
+     823 ~configure.in
+-rwxr-xr-x   1 andrew   netmap        823 Aug  6 18:48 configure.in.
+    1024 ~examples
+drwxr-xr-x   2 andrew   netmap       1024 Aug  6 18:48 examples.
+    4727 ~fpe_check.c
+-rwxr-xr-x   1 andrew   netmap       4727 Aug  6 18:48 fpe_check.c.
+    1024 ~lib
+drwxr-xr-x   2 andrew   netmap       1024 Sep  9 09:15 lib.
+    1024 ~man
+drwxr-xr-x   2 andrew   netmap       1024 Sep  1 14:55 man.
+    1024 ~regexp
+drwxr-xr-x   2 andrew   netmap       1024 Sep  8 18:46 regexp.
+    6144 ~test
+drwxr-xr-x   4 andrew   netmap       6144 Sep  9 11:08 test.
+
+we will fight them on the beaches~4 ~andrew   ~netmap   ~    6144 ~Sep ~ 9 ~11:08 ~test.
+we will fight them on the beaches~4 ~andrew   ~netmap   ~    6144 ~Sep ~ 9 ~11:08 ~test.
+we will fight them on the beaches~4 ~andrew   ~netmap   ~    6144 ~Sep ~ 9 ~11:08 ~test.
+we will fight them on the beaches~4 ~andrew   ~netmap   ~    6144 ~Sep ~ 9 ~11:08 ~test.
