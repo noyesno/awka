@@ -44,8 +44,9 @@
 #define a_SAVEWIDTHS  21
 #define a_SORTTYPE    22
 #define a_PROCINFO    23
+#define a_FUNCTAB     24
 
-#define a_BIVARS      24
+#define a_BIVARS      25
 
 #define _RE_SPLIT   0
 #define _RE_MATCH   1

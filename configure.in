@@ -40,6 +40,6 @@ CHECK_FUNCTIONS(time,mktime,asctime,localtime,gmtime)
 EXE_EXTENSION
 
 DO_CONFIG_H
-AC_OUTPUT(Makefile lib/Makefile awka/Makefile test/Makefile)
+AC_OUTPUT(Makefile lib/Makefile awka/Makefile test/Makefile benchmark/Makefile)
 
 

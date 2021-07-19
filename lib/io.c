@@ -659,19 +659,21 @@ _awka_io_cleanbinchars(a_VAR *var)
   r = var->ptr + var->slen;
   q = var->ptr;
   if (var->slen >= 8)
-  while (q<=(r-8)) 
-  {
-    *q = _a_char[*q++];
-    *q = _a_char[*q++];
-    *q = _a_char[*q++];
-    *q = _a_char[*q++];
-    *q = _a_char[*q++];
-    *q = _a_char[*q++];
-    *q = _a_char[*q++];
-    *q = _a_char[*q++];
-  }
+    while (q<=(r-8))
+    {
+      // was *q = _a_char[*q++];
+      *q = _a_char[*q]; q++;
+      *q = _a_char[*q]; q++;
+      *q = _a_char[*q]; q++;
+      *q = _a_char[*q]; q++;
+      *q = _a_char[*q]; q++;
+      *q = _a_char[*q]; q++;
+      *q = _a_char[*q]; q++;
+      *q = _a_char[*q]; q++;
+    }
   while (q<r)
-    *q = _a_char[*q++];
+    // was *q = _a_char[*q++];
+    *q = _a_char[*q]; q++;
 }
 
 int

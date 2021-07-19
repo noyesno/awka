@@ -1,4 +1,4 @@
-set base 1500000
+set base 15000
 
 set a 133
 set x($a,458) 3

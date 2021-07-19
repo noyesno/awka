@@ -2333,17 +2333,8 @@ awka_doln(int idx, int set)
   a_HSHNode *node;
 
   if (!idx)
-    return awka_dol0(set);
-
-  if (!nullvar)
   {
-    malloc( &nullvar, sizeof(a_VAR) );
-    nullvar->allc = malloc( &nullvar->ptr, 1 );
-    nullvar->ptr[0] = '\0';
-    nullvar->slen = 0;
-    nullvar->type = a_VARUNK;
-    nullvar->temp = nullvar->type2 = 0;
-    nullvar->dval = 0.0;
+    return awka_dol0(set);
   }
 
   if (_rebuildn == TRUE)
@@ -2363,7 +2354,19 @@ awka_doln(int idx, int set)
     case 0:
       /* if (idx >= array->nodeno) */ 
       if (idx >= nf || idx >= array->nodeno)
+      {
+  	    if (!nullvar)
+  	    {
+	      malloc( &nullvar, sizeof(a_VAR) );
+	      nullvar->allc = malloc( &nullvar->ptr, 1 );
+	      nullvar->ptr[0] = '\0';
+  	      nullvar->slen = 0;
+	      nullvar->type = a_VARUNK;
+	      nullvar->temp = nullvar->type2 = 0;
+	      nullvar->dval = 0.0;
+	    }
         return nullvar;
+      }
       break;
 
     default:
@@ -2414,6 +2417,7 @@ awka_doln(int idx, int set)
   }
   else
     array->slot[idx]->var->ptr = NULL;
+
   array->slot[idx]->key = _a_SPLT_LOCALSTR;
   return array->slot[idx]->var;
 }
@@ -2421,12 +2425,24 @@ awka_doln(int idx, int set)
 /*
  * awka_alistcmp
  * compares two nodes to see which is higher in sort order
+ * 
+ * sorttype:
+ *  2 -> numeric
+ *  4 -> inverse (descending)  so 6 is inverse numeric
+ *  8 -> values not index      so 10 is numeric values, 12 is inverse str values
  */
 static INLINE int
 _awka_alistcmp(a_HSHNode *node1, a_HSHNode *node2, int sorttype)
 {
-  char tmp[96], tmp2[96];
+  char tmp[26], tmp2[26];
 
+  if (sorttype & 8)
+  { /* sort values - auto handles Numeric vs Alpha */
+    if (sorttype & 4)
+      return awka_varcmp(node2->var, node1->var);
+    return awka_varcmp(node1->var, node2->var);
+  } /* 8 */
+  else
   if (sorttype & 2)
   {
     /* Numeric Sort */
@@ -2483,8 +2499,8 @@ _awka_alistcmp(a_HSHNode *node1, a_HSHNode *node2, int sorttype)
       sprintf(tmp, "%d", node1->hval);
       sprintf(tmp2, "%d", node2->hval);
       if (sorttype & 4)
-        return strcmp(node2->key, node1->key);
-      return strcmp(node1->key, node2->key);
+        return strcmp(tmp2, tmp);
+      return strcmp(tmp, tmp2);
     }
   
     if (sorttype & 4)

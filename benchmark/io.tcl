@@ -1,6 +1,6 @@
 #!/usr/local/bin/tcl
 
-set base 1500000
+set base 15000
 
 set v3 "qwerty qwerty qwerty qwerty qwerty qwerty"
 set v4 "quincy quincy quincy quincy quincy quincy"
@@ -23,10 +23,12 @@ while {[gets $io_txt line]>-1} {
   set arr [split $line " "]
   set x [lindex $arr 2]
   if {$nr < 2} {
-      puts $x
+      #puts $x
   }
   incr nr
 }
+close $io_txt
 
-system "rm -f io.txt"
+#system "rm -f io.txt"
+file delete "io.txt"
 

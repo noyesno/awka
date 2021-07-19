@@ -31,7 +31,7 @@
 #include "../patchlev.h"
 
 #define         VERSION_STRING         \
-  "\nawka %s%s, %s, Copyright (C) Andrew Sumner\n      some sections Copyright Michael T. Brennan\n"
+  "\nawka %s%s, %s\nCopyright (C) Andrew Sumner\nsome sections Copyright Michael T. Brennan\n"
 
 #ifndef DOS_STRING
 #define DOS_STRING        ""

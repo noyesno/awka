@@ -71,6 +71,8 @@ BEGIN {
                   }
                 }
   }
+  
+  exit
 
   print ""
   print "and the best World Cup 99 cricket team is..."

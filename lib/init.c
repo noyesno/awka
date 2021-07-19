@@ -23,6 +23,7 @@
 
 #define _IN_LIBRARY
 #include "libawka.h"
+#include "builtin_priv.h"
 
 extern void _awka_arrayinitargv( char **, int, char *argv[] );
 extern void _awka_arrayinitenviron( char **, int );
@@ -53,6 +54,7 @@ struct ivar_idx
   "FILENAME",    a_FILENAME,
   "FNR",         a_FNR,
   "FS",          a_FS,
+  "FUNCTAB",     a_FUNCTAB,
   "NF",          a_NF,
   "NR",          a_NR,
   "OFMT",        a_OFMT,
@@ -68,7 +70,7 @@ struct ivar_idx
   "SUBSEP",      a_SUBSEP
 }; 
    
-#define IVAR_MAX 20
+#define IVAR_MAX 22
 
 int
 findivar(char *c)
@@ -190,11 +192,13 @@ _awka_initchar()
   _a_space[' '] = 1;
 }
 
-#ifdef PROCINFO_READY_TO_USE
+//#ifdef PROCINFO_READY_TO_USE
 void
 _awka_init_procinfo( a_VAR *procinfo )
 {
   a_VAR *ret, *tmp = NULL;
+  char *tmpstr = NULL;
+  malloc( &tmpstr, 70 );
   awka_varinit(tmp);
 
   /* egid */
@@ -204,15 +208,105 @@ _awka_init_procinfo( a_VAR *procinfo )
   awka_strcpy(tmp, "FS");
   ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
   awka_strcpy(ret, "FS");
-  ret->type = a_VARUNK;
+  ret->type = a_VARSTR;
+  ret->allc = malloc( &ret->ptr, 12 );  // allow for FIELDWIDTHS
+  ret->slen = 2;
+  strcpy(ret->ptr, "FS");
 
   /* gid */
   /* pgrpid */
   /* pid */
   /* ppid */
   /* uid */
+
+  /* identifiers - a subarray of identifiers*/
+  /* builtins */
+  for (int i=0; i<A_BI_VARARG_SIZE; i++ ) {
+    sprintf(tmpstr, "identifiers,%s", _a_bi_vararg[i].name);
+    awka_strcpy(tmp, tmpstr);
+    ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+    awka_strcpy(ret, tmpstr);
+    ret->type = a_VARSTR;
+    ret->allc = malloc( &ret->ptr, 8 );
+    ret->slen = 7;
+    strcpy(ret->ptr, "builtin");
+  }
+  /* scalars */
+  for (int i=0; i<IVAR_MAX; i++ ) {
+    sprintf(tmpstr, "identifiers,%s", ivar[i].name);
+    awka_strcpy(tmp, tmpstr);
+    ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+    awka_strcpy(ret, tmpstr);
+    ret->type = a_VARSTR;
+    ret->allc = malloc( &ret->ptr, 7 );
+    if (!strcmp(ivar[i].name,"ENVIRON") ||
+        !strcmp(ivar[i].name,"ARGV") ||
+        !strcmp(ivar[i].name,"FUNCTAB") ||
+        !strcmp(ivar[i].name,"PROCINFO"))
+    {
+      strcpy(ret->ptr, "array");
+      ret->slen = 4;
+    }
+    else {
+      strcpy(ret->ptr, "scalar");
+      ret->slen = 4;
+    }
+  }
+
+  /* strftime */
+  awka_strcpy(tmp, "strftime");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_strcpy(ret, "strftime");
+  ret->type = a_VARSTR;
+  ret->allc = malloc( &ret->ptr, 25 );
+  ret->slen = 24;
+  strcpy(ret->ptr, "%a %b %d %H:%M:%S %Z %Y");
+
+  /* version */
+  awka_strcpy(tmp, "version");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_strcpy(ret, "version");
+  ret->type = a_VARSTR;
+  ret->allc = malloc( &ret->ptr, (int) strlen(patch_str) + 1 );
+  ret->slen = (int)  strlen(patch_str);
+  strcpy(ret->ptr, patch_str);
+
+  free(tmpstr);
 }
-#endif
+//#endif
+
+void
+_awka_init_functab( a_VAR *functab )
+{
+  a_VAR *tmparr;
+  a_VAR *ret, *tmp = NULL;
+  char *tmpstr = NULL;
+  int slen;
+
+  malloc( &tmpstr, 25 );
+  awka_varinit( tmp );
+  awka_varinit( tmparr );
+
+  tmparr->type = a_VARARR;
+  awka_arraycreate( tmparr, a_ARR_TYPE_SPLIT );
+
+  /* key and value the same in FUNCTAB */
+  for (int i=0; i<A_BI_VARARG_SIZE; i++ ) {
+    strcpy( tmpstr, _a_bi_vararg[i].name );
+    awka_strcpy(tmp, tmpstr);
+
+    ret = awka_arraysearch1( functab, tmp, a_ARR_CREATE, 0 );
+
+    awka_strcpy(ret, tmpstr);
+    ret->type = a_VARSTR;
+    slen = strlen( tmpstr );
+    ret->allc = malloc( &ret->ptr, slen + 1 );
+    ret->slen = slen;
+    strcpy(ret->ptr, tmpstr);
+  }
+
+  free( tmpstr );
+}
 
 void
 _awka_init_ivar(int i)
@@ -301,13 +395,22 @@ _awka_init_ivar(int i)
 
     case a_DOLN:
       a_bivar[i]->type = a_VARARR;
-      awka_arraycreate(a_bivar[i], a_ARR_TYPE_SPLIT);
+      awka_arraycreate( a_bivar[i], a_ARR_TYPE_SPLIT );
       break;
 
     case a_PROCINFO:
       a_bivar[i]->type = a_VARARR;
-      awka_arraycreate(a_bivar[i], a_ARR_TYPE_HSH);
-      /* _awka_init_procinfo( a_bivar[i] ); */
+      awka_arraycreate( a_bivar[i], a_ARR_TYPE_HSH );
+//#ifdef PROCINFO_READY_TO_USE
+      _awka_init_procinfo( a_bivar[i] );
+//#endif
+      break;
+
+    case a_FUNCTAB:
+      a_bivar[i]->type = a_VARARR;
+      awka_arraycreate( a_bivar[i], a_ARR_TYPE_SPLIT );
+      _awka_init_functab( a_bivar[i] );
+      break;
   }
 }
 
