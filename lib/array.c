@@ -1286,6 +1286,11 @@ awka_arraysearch1( a_VAR *v, a_VAR *element, char create, int set )
           if (i > _a_HSH_MAXDEPTH)
             _awka_hshdouble(array);
         }
+
+	/* set unknown for typeof() */
+	if (node->var->type == a_VARNUL)
+          node->var->type = a_VARUNK;
+
         return node->var;
 
       case a_ARR_QUERY:

@@ -4687,6 +4687,7 @@ translate()
     fprintf(outfp,"  END();\n");
 
   fprintf(outfp, "\n");
+  fprintf(outfp,"\n  if (_lvar) free(_lvar);\n");
   for (i=0; i<litd_used; i++)
     fprintf(outfp,"  free(_litd%d_awka);\n",i);
   

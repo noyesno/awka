@@ -663,7 +663,13 @@ awka_varcpy( a_VAR *va, a_VAR *vb )
 
   _awka_set_FW(va);
 
-  if (va == vb) return va;
+  if (va == vb)
+  {
+    if (vb->type == a_VARNUL)
+      va->type = a_VARUNK;
+
+    return va;
+  }
 
   va->dval = vb->dval;
   va->type2 = vb->type2;
@@ -704,7 +710,14 @@ awka_varcpy( a_VAR *va, a_VAR *vb )
         else if (!va->ptr)
           va->allc = malloc( &va->ptr, vb->slen+1 );
 
-        memcpy(va->ptr, vb->ptr, vb->slen+1);
+        if (!vb->ptr)
+        {
+          va->ptr[0] = '\0';  /* null valued string type */
+          vb->slen = 0;
+        }
+        else
+          memcpy(va->ptr, vb->ptr, vb->slen+1);
+
         va->slen = vb->slen;
       }
 

@@ -2900,7 +2900,7 @@ awka_typeof(char keep, a_VARARG *va)
       break;
 
     default:
-      awka_strscpy(outvar, "untyped");
+      awka_strscpy(outvar, "unassigned");
       break;
   }
 

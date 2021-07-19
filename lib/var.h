@@ -200,7 +200,8 @@ awka_forcestr( a_VAR *v )
   v->type2 = 0;
   if (v->type != a_VARSTR && v->type != a_VARUNK)
     awka_setsval(v, __FILE__, __LINE__);
-  v->type = a_VARSTR;
+  else
+    v->type = a_VARSTR;
 }
 
 static a_VAR *
