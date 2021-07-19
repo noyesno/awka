@@ -585,7 +585,7 @@ extract_number_and_incr (destination, source)
 # endif /* not EXTRACT_MACROS */
 
 #endif /* DEBUG */
-
+
 /* If DEBUG is defined, Regex prints many voluminous messages about what
    it is doing (if the variable `debug' is nonzero).  If linked with the
    main program in `iregex.c', you can enter patterns and strings
@@ -906,7 +906,7 @@ print_compiled_pattern (bufp)
   printf ("no_sub: %d\t", (int) (bufp->no_sub));
   printf ("not_bol: %d\t", (int) (bufp->not_bol));
   printf ("not_eol: %d\t", (int) (bufp->not_eol));
-  printf ("syntax: %lx\n", (int) (bufp->syntax));
+  printf ("syntax: %lx\n", (long int) (bufp->syntax));
   /* Perhaps we should print the translate table?  */
 }
 
@@ -993,7 +993,7 @@ re_set_syntax (syntax)
 #ifdef _LIBC
 weak_alias (__re_set_syntax, re_set_syntax)
 #endif
-
+
 /* This table gives an error message for each of the error codes listed
    in regex.h.  Obviously the order here has to be same as there.
    POSIX doesn't require that we do anything for REG_NOERROR,
@@ -1073,7 +1073,7 @@ static const size_t re_error_msgid_idx[] =
     REG_ESIZE_IDX,
     REG_ERPAREN_IDX
   };
-
+
 /* Avoiding alloca during matching, to placate r_alloc.  */
 
 /* Define MATCH_MAY_ALLOCATE unless we need to make sure that the
@@ -1111,7 +1111,7 @@ static const size_t re_error_msgid_idx[] =
 # undef MATCH_MAY_ALLOCATE
 #endif
 
-
+
 /* Failure stack declarations and macros; both re_compile_fastmap and
    re_match_2 use a failure stack.  These have to be macros because of
    REGEX_ALLOCATE_STACK.  */
@@ -1477,7 +1477,7 @@ typedef struct
 } /* POP_FAILURE_POINT */
 
 
-
+
 /* Structure for per-register (a.k.a. per-group) information.
    Other register information, such as the
    starting and ending positions (which are addresses), and the list of
@@ -1537,7 +1537,7 @@ typedef union
 static char reg_unset_dummy;
 #define REG_UNSET_VALUE (&reg_unset_dummy)
 #define REG_UNSET(e) ((e) == REG_UNSET_VALUE)
-
+
 /* Subroutine declarations and macros for regex_compile.  */
 
 static reg_errcode_t regex_compile _RE_ARGS ((const char *pattern, size_t size,
@@ -1791,7 +1791,7 @@ typedef struct
     || STREQ (string, "punct") || STREQ (string, "graph")                \
     || STREQ (string, "cntrl") || STREQ (string, "blank"))
 #endif
-
+
 
 int reganch = 0;
 
@@ -1843,7 +1843,7 @@ regex_grow_registers (num_regs)
 }
 
 #endif /* not MATCH_MAY_ALLOCATE */
-
+
 static boolean group_in_compile_stack _RE_ARGS ((compile_stack_type
                                                  compile_stack,
                                                  regnum_t regnum));
@@ -3188,7 +3188,7 @@ compile_range (p_ptr, pend, translate, syntax, b)
 
   return ret;
 }
-
+
 /* re_compile_fastmap computes a ``fastmap'' for the compiled pattern in
    BUFP.  A fastmap records which of the (1 << BYTEWIDTH) possible
    characters can start a string that matches the pattern.  This fastmap
@@ -3494,7 +3494,7 @@ re_compile_fastmap (bufp)
 #ifdef _LIBC
 weak_alias (__re_compile_fastmap, re_compile_fastmap)
 #endif
-
+
 /* Set REGS to hold NUM_REGS registers, storing them in STARTS and
    ENDS.  Subsequent matches using PATTERN_BUFFER and REGS will use
    this memory for recording register information.  STARTS and ENDS
@@ -3532,7 +3532,7 @@ re_set_registers (bufp, regs, num_regs, starts, ends)
 #ifdef _LIBC
 weak_alias (__re_set_registers, re_set_registers)
 #endif
-
+
 /* Searching routines.  */
 
 /* Like re_search_2, below, but only one string is specified, and
@@ -3719,7 +3719,7 @@ re_search_2 (bufp, string1, size1, string2, size2, startpos, range, regs, stop)
 #ifdef _LIBC
 weak_alias (__re_search_2, re_search_2)
 #endif
-
+
 /* This converts PTR, a pointer into one of the search strings `string1'
    and `string2' into an offset from the beginning of that string.  */
 #define POINTER_TO_OFFSET(ptr)                        \
@@ -3798,7 +3798,7 @@ weak_alias (__re_search_2, re_search_2)
    to actually save any registers when none are active.  */
 #define NO_HIGHEST_ACTIVE_REG (1 << BYTEWIDTH)
 #define NO_LOWEST_ACTIVE_REG (NO_HIGHEST_ACTIVE_REG + 1)
-
+
 /* Matching routines.  */
 
 #ifndef emacs   /* Emacs never uses this.  */
@@ -4115,7 +4115,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
      fails at this starting point in the input data.  */
   for (;;)
     {
-#ifdef _LIBC
+#if defined _LIBC || __GNUC__
       DEBUG_PRINT2 ("\n%p: ", p);
 #else
       DEBUG_PRINT2 ("\n0x%x: ", p);
@@ -4698,7 +4698,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
           DEBUG_PRINT1 ("EXECUTING on_failure_keep_string_jump");
 
           EXTRACT_NUMBER_AND_INCR (mcnt, p);
-#ifdef _LIBC
+#if defined _LIBC || __GNUC__
           DEBUG_PRINT3 (" %d (to %p):\n", mcnt, p + mcnt);
 #else
           DEBUG_PRINT3 (" %d (to 0x%x):\n", mcnt, p + mcnt);
@@ -4725,7 +4725,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
           DEBUG_PRINT1 ("EXECUTING on_failure_jump");
 
           EXTRACT_NUMBER_AND_INCR (mcnt, p);
-#ifdef _LIBC
+#if defined _LIBC || __GNUC__
           DEBUG_PRINT3 (" %d (to %p)", mcnt, p + mcnt);
 #else
           DEBUG_PRINT3 (" %d (to 0x%x)", mcnt, p + mcnt);
@@ -4934,7 +4934,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
           /* Note fall through.  */
 
         unconditional_jump:
-#ifdef _LIBC
+#if defined _LIBC || __GNUC__
           DEBUG_PRINT2 ("\n%p: ", p);
 #else
           DEBUG_PRINT2 ("\n0x%x: ", p);
@@ -4946,7 +4946,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
           EXTRACT_NUMBER_AND_INCR (mcnt, p);        /* Get the amount to jump.  */
           DEBUG_PRINT2 ("EXECUTING jump %d ", mcnt);
           p += mcnt;                                /* Do the jump.  */
-#ifdef _LIBC
+#if defined _LIBC || __GNUC__
           DEBUG_PRINT2 ("(to %p).\n", p);
 #else
           DEBUG_PRINT2 ("(to 0x%x).\n", p);
@@ -4999,7 +4999,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
                mcnt--;
                p += 2;
                STORE_NUMBER_AND_INCR (p, mcnt);
-#ifdef _LIBC
+#if defined _LIBC || __GNUC__
                DEBUG_PRINT3 ("  Setting %p to %d.\n", p - 2, mcnt);
 #else
                DEBUG_PRINT3 ("  Setting 0x%x to %d.\n", p - 2, mcnt);
@@ -5007,7 +5007,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
             }
           else if (mcnt == 0)
             {
-#ifdef _LIBC
+#if defined _LIBC || __GNUC__
               DEBUG_PRINT2 ("  Setting two bytes from %p to no_op.\n", p+2);
 #else
               DEBUG_PRINT2 ("  Setting two bytes from 0x%x to no_op.\n", p+2);
@@ -5027,7 +5027,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
             {
                mcnt--;
                STORE_NUMBER (p + 2, mcnt);
-#ifdef _LIBC
+#if defined _LIBC || __GNUC__
                DEBUG_PRINT3 ("  Setting %p to %d.\n", p + 2, mcnt);
 #else
                DEBUG_PRINT3 ("  Setting 0x%x to %d.\n", p + 2, mcnt);
@@ -5046,7 +5046,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
             EXTRACT_NUMBER_AND_INCR (mcnt, p);
             p1 = p + mcnt;
             EXTRACT_NUMBER_AND_INCR (mcnt, p);
-#ifdef _LIBC
+#if defined _LIBC || __GNUC__
             DEBUG_PRINT3 ("  Setting %p to %d.\n", p1, mcnt);
 #else
             DEBUG_PRINT3 ("  Setting 0x%x to %d.\n", p1, mcnt);
@@ -5252,7 +5252,7 @@ re_match_2_internal (bufp, string1, size1, string2, size2, pos, regs, stop)
 
   return -1;                                 /* Failure to match.  */
 } /* re_match_2 */
-
+
 /* Subroutine definitions for re_match_2.  */
 
 
@@ -5515,7 +5515,7 @@ bcmp_translate (s1, s2, len, translate)
     }
   return 0;
 }
-
+
 /* Entry points for GNU code.  */
 
 /* re_compile_pattern is the GNU regular expression compiler: it
@@ -5572,7 +5572,7 @@ re_compile_pattern (pattern, length, buffer)
 #ifdef _LIBC
 weak_alias (__re_compile_pattern, re_compile_pattern)
 #endif
-
+
 /* Entry points compatible with 4.2 BSD regex library.  We don't define
    them unless specifically requested.  */
 
@@ -5643,7 +5643,7 @@ re_exec (s)
 }
 
 #endif /* _REGEX_RE_COMP */
-
+
 /* POSIX.2 functions.  Don't define these for Emacs.  */
 
 #ifndef emacs
