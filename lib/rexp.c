@@ -273,7 +273,7 @@ _awka_compile_regexp_SPLIT(char *str, unsigned int len)
   {
     if (list->hval == hval)
     {
-      if (!strncmp(str, list->str, len))
+      if (strncmp(str, list->str, len) == 0)
       {
         /* we have a match */
         if (list->re_fs)
@@ -330,7 +330,7 @@ _awka_compile_regexp_MATCH(char *str, unsigned int len)
   {
     if (list->hval == hval)
     {
-      if (!strncmp(str, list->str, len))
+      if (strncmp(str, list->str, len) == 0)
       {
         /* we have a match */
         if (list->re_nofs)
@@ -387,7 +387,7 @@ _awka_compile_regexp_GSUB(char *str, unsigned int len)
   {
     if (list->hval == hval)
     {
-      if (!strncmp(str, list->str, len))
+      if (strncmp(str, list->str, len) == 0)
       {
         /* we have a match */
         if (list->re_gsub)
