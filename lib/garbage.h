@@ -71,14 +71,18 @@ void _awka_gc_deeper();
 #define _awka_tmpvar(p) \
   (p) = _a_v_gc[_a_gc_depth].bin->var; \
   if ((p)->type == a_VARREG) { \
-    (p)->type = a_VARNUL; (p)->ptr = NULL; \
+    (p)->type = a_VARNUL; \
+    if ((p)->ptr) free((p)); \
+    (p)->ptr = NULL; (p)->allc = 0; \
   } \
   _a_v_gc[_a_gc_depth].bin = _a_v_gc[_a_gc_depth].bin->next
 
 #define _awka_tmpvar_ro(p) \
   (p) = _a_vro_gc[_a_gc_depth].bin->var; \
   if ((p)->type == a_VARREG) { \
-    (p)->type = a_VARNUL; (p)->ptr = NULL; \
+    (p)->type = a_VARNUL; \
+    if ((p)->ptr) free((p)); \
+    (p)->ptr = NULL; (p)->allc = 0; \
   } \
   _a_vro_gc[_a_gc_depth].bin = _a_vro_gc[_a_gc_depth].bin->next
 
