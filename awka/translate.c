@@ -918,7 +918,6 @@ awka_push(int inst, int *earliest, char *context)
           sprintf(ret, "awka_arraysearch1(%s, %s, a_ARR_CREATE, 1)",progcode[inst].val,r2);
         else
           sprintf(ret, "awka_getarrayval(%s, %s)",progcode[inst].val,r2);
-          //sprintf(ret, "awka_arraysearch1(%s, %s, a_ARR_CREATE, 0)",progcode[inst].val,r2);
       }
       if ((i = findvarname(varname, progcode[inst].val, var_used)) > -1)
       {
@@ -1081,7 +1080,6 @@ awka_push(int inst, int *earliest, char *context)
           sprintf(ret, "awka_arraysearch1(_lvar[%d], %s, a_ARR_CREATE, 1)",atoi(progcode[inst].val),r2);
         else
           sprintf(ret, "awka_getarrayval(_lvar[%d], %s)",atoi(progcode[inst].val),r2);
-          //sprintf(ret, "awka_arraysearch1(_lvar[%d], %s, a_ARR_CREATE, 0)",atoi(progcode[inst].val),r2);
       }
       if ((i = findvarname(lvarname, progcode[inst].val, lvar_used)) == -1)
       {
@@ -4579,7 +4577,6 @@ translate()
 	}
         p = code0ptr(cur, 15);
         sprintf(p, "int i = 0;\n");
-        //sprintf(p, "int i, _curfile;\n");
         p = code0ptr(cur, 50);
         sprintf(p, "if (*(awka_gets(a_bivar[a_FILENAME])) == '\\0')\n");
         p = code0ptr(cur, 50);
