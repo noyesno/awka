@@ -25,18 +25,20 @@
 #include "libawka.h"
 #include "builtin_priv.h"
 
+#define STREAMSZ 5
+
 extern void _awka_arrayinitargv( char **, int, char *argv[] );
 extern void _awka_arrayinitenviron( char **, int );
 extern char _a_char[256], _interactive;
 extern struct gvar_struct *_gvar;
 struct awka_fn_struct *_awkafn;
 extern struct a_VAR **_lvar;
+extern char _a_space[256];
 
 char **awka_filein = NULL;
 int awka_filein_no = 0, _awka_fileoffset = 0;
 char **_argv = NULL, **_int_argv = NULL;
 int _argc, _int_argc = 0, _orig_argc = 0;
-extern char _a_space[256];
 char _env_used = 0;
 char *patch_str, *date_str, *awk_str;
 
@@ -53,6 +55,7 @@ struct ivar_idx
   "FIELDWIDTHS", a_FIELDWIDTHS,
   "FILENAME",    a_FILENAME,
   "FNR",         a_FNR,
+  "FPAT",        a_FPAT,
   "FS",          a_FS,
   "FUNCTAB",     a_FUNCTAB,
   "NF",          a_NF,
@@ -70,7 +73,7 @@ struct ivar_idx
   "SUBSEP",      a_SUBSEP
 };
 
-#define IVAR_MAX 22
+#define IVAR_MAX 23
 
 int
 findivar(char *c)
@@ -140,10 +143,10 @@ _awka_initstreams()
 {
   int i;
 
-  _a_ioallc = 5;
-  malloc( &_a_iostream, 5 * sizeof(_a_IOSTREAM) );
+  _a_ioallc = STREAMSZ;
+  malloc( &_a_iostream, STREAMSZ * sizeof(_a_IOSTREAM) );
 
-  for (i=0; i<5; i++)
+  for (i=0; i<STREAMSZ; i++)
   {
     _a_iostream[i].name = _a_iostream[i].buf = _a_iostream[i].end = _a_iostream[i].current = NULL;
     _a_iostream[i].io = _a_IO_CLOSED;
@@ -199,7 +202,6 @@ _awka_initchar()
   _a_space[' '] = 1;
 }
 
-//#ifdef PROCINFO_READY_TO_USE
 void
 _awka_init_procinfo( a_VAR *procinfo )
 {
@@ -208,25 +210,53 @@ _awka_init_procinfo( a_VAR *procinfo )
   int slen = 0;
 
   malloc( &tmpstr, 70 );
-  awka_varinit(tmp);
-
-  /* egid */
-  /* euid */
+  awka_varinit( tmp );
 
   /* FS */
   awka_strcpy(tmp, "FS");
   ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
-  awka_strcpy(ret, "FS");
-  ret->type = a_VARSTR;
-  ret->allc = malloc( &ret->ptr, 12 );  // allow for FIELDWIDTHS
-  ret->slen = 2;
-  strcpy(ret->ptr, "FS");
+   /* allow for "FIELDWIDTHS"  */
+  awka_strcpy(ret, "FS          ");
+  ret->slen = 12;
+  ret->ptr[2] = '\0';
+
+#if defined(__unix__) || defined(__linux__)
+  /* egid */
+  awka_strcpy(tmp, "egid");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_setd(ret) = (double) getegid();
+
+  /* euid */
+  awka_strcpy(tmp, "euid");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_setd(ret) = (double) geteuid();
 
   /* gid */
+  awka_strcpy(tmp, "gid");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_setd(ret) = (double) getgid();
+
   /* pgrpid */
+  awka_strcpy(tmp, "pgrpid");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_setd(ret) = (double) getpgrp();
+
   /* pid */
+  awka_strcpy(tmp, "pid");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_setd(ret) = (double) getpid();
+
   /* ppid */
+  awka_strcpy(tmp, "ppid");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_setd(ret) = (double) getppid();
+
   /* uid */
+  awka_strcpy(tmp, "uid");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+  awka_setd(ret) = (double) getuid();
+
+#endif
 
   /* identifiers - NOT a subarray of identifiers like Gawk, but
    * the key is "identifiers,<name>"
@@ -236,111 +266,88 @@ _awka_init_procinfo( a_VAR *procinfo )
     sprintf(tmpstr, "identifiers,%s", _a_bi_vararg[i].name);
     awka_strcpy(tmp, tmpstr);
     ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
-    awka_strcpy(ret, tmpstr);
-    ret->type = a_VARSTR;
-    ret->allc = malloc( &ret->ptr, 8 );
-    ret->slen = 7;
-    strcpy(ret->ptr, "builtin");
+    awka_strcpy(ret, "builtin");
   }
   /* scalars */
   for (int i=0; i<IVAR_MAX; i++ ) {
     sprintf(tmpstr, "identifiers,%s", ivar[i].name);
     awka_strcpy(tmp, tmpstr);
     ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
-    awka_strcpy(ret, tmpstr);
-    ret->type = a_VARSTR;
-    ret->allc = malloc( &ret->ptr, 7 );
     if (!strcmp(ivar[i].name,"ENVIRON") ||
         !strcmp(ivar[i].name,"ARGV") ||
         !strcmp(ivar[i].name,"FUNCTAB") ||
         !strcmp(ivar[i].name,"PROCINFO"))
     {
-      strcpy(ret->ptr, "array");
-      ret->slen = 4;
+      awka_strcpy(ret, "array");
     }
     else {
-      strcpy(ret->ptr, "scalar");
-      ret->slen = 4;
+      awka_strcpy(ret, "scalar");
     }
   }
+
+  /* platform */
+  awka_strcpy(tmp, "platform");
+  ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
+#ifdef __DJGPP__
+  awka_strcpy(ret, "djgpp");
+#elif defined(__MINGW32__) || defined(__MINGW__)
+  awka_strcpy(ret, "mingw");
+#elif defined(__linux__) || defined(__unix__)
+  awka_strcpy(ret, "posix");
+#elif defined(VMS)
+  awka_strcpy(ret, "vms");
+#else
+  awka_strcpy(ret, "posix");
+#endif
 
   /* strftime */
   awka_strcpy(tmp, "strftime");
   ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
-  awka_strcpy(ret, "strftime");
-  ret->type = a_VARSTR;
-  ret->allc = malloc( &ret->ptr, 25 );
-  ret->slen = 24;
-  strcpy(ret->ptr, "%a %b %d %H:%M:%S %Z %Y");
-  ret->ptr[24] = '\0';
+  awka_strcpy(ret, "%a %b %d %H:%M:%S %Z %Y");
 
   /* version */
   awka_strcpy(tmp, "version");
   ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
-  awka_strcpy(ret, "version");
-  ret->type = a_VARSTR;
-  slen = strlen(patch_str);
-  ret->allc = malloc( &ret->ptr, slen + 1 );
-  ret->slen = slen;
-  strcpy(ret->ptr, patch_str);
-  ret->ptr[slen] = '\0';
+  awka_strcpy(ret, patch_str);
 
   /* awkfile  (unique to awka) */
   awka_strcpy(tmp, "awkfile");
   ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
-  awka_strcpy(ret, "awkfile");
-  ret->type = a_VARSTR;
-  slen = strlen(awk_str);
-  ret->allc = malloc( &ret->ptr, slen + 1 );
-  ret->slen = slen;
-  strcpy(ret->ptr, awk_str);
-  ret->ptr[slen] = '\0';
+  awka_strcpy(ret, awk_str);
 
   /* resyntax (unique to awka) */
   awka_strcpy(tmp, "re_syntax");
   ret = awka_arraysearch1( procinfo, tmp, a_ARR_CREATE, 0 );
-  awka_strcpy(ret, "re_syntax");
-  ret->type = a_VARSTR;
-  ret->allc = malloc( &ret->ptr, 25 + 1 );
-  ret->slen = 17;
-  strcpy(ret->ptr, "RE_SYNTAX_GNU_AWK");
-  ret->ptr[17] = '\0';
+  awka_strcpy(ret, "RE_SYNTAX_POSIX_AWK");
 
-  free(tmpstr);
+  free( tmpstr );
+  awka_killvar( tmp );
 }
-//#endif
 
+/*
+ * called if FUNCTAB is referenced in the input awk file 
+ */
 void
-_awka_init_functab( a_VAR *functab )
+awka_init_functab()
 {
-  a_VAR *tmparr;
   a_VAR *ret, *tmp = NULL;
   char *tmpstr = NULL;
   int slen;
 
   malloc( &tmpstr, 25 );
   awka_varinit( tmp );
-  awka_varinit( tmparr );
-
-  tmparr->type = a_VARARR;
-  awka_arraycreate( tmparr, a_ARR_TYPE_SPLIT );
 
   /* key and value the same in FUNCTAB */
   for (int i=0; i<A_BI_VARARG_SIZE; i++ ) {
     strcpy( tmpstr, _a_bi_vararg[i].name );
     awka_strcpy(tmp, tmpstr);
 
-    ret = awka_arraysearch1( functab, tmp, a_ARR_CREATE, 0 );
-
+    ret = awka_arraysearch1( a_bivar[a_FUNCTAB], tmp, a_ARR_CREATE, 0 );
     awka_strcpy(ret, tmpstr);
-    ret->type = a_VARSTR;
-    slen = strlen( tmpstr );
-    ret->allc = malloc( &ret->ptr, slen + 1 );
-    ret->slen = slen;
-    strcpy(ret->ptr, tmpstr);
   }
 
   free( tmpstr );
+  awka_killvar( tmp );
 }
 
 void
@@ -378,7 +385,6 @@ _awka_init_ivar(int i)
       _awka_arrayinitenviron(&(a_bivar[i]->ptr), _env_used);
       break;
 
-    case a_FILENAME:
     case a_DOL0:
       a_bivar[i]->type = a_VARUNK;
       a_bivar[i]->allc = malloc( &a_bivar[i]->ptr, 1 );
@@ -405,11 +411,14 @@ _awka_init_ivar(int i)
       a_bivar[i]->type = a_VARDBL;
       break;
 
+    case a_FPAT:
+    case a_FILENAME:
     case a_FIELDWIDTHS:
     case a_SAVEWIDTHS:
       a_bivar[i]->type = a_VARSTR;
       a_bivar[i]->allc = malloc( &a_bivar[i]->ptr, 1 );
       a_bivar[i]->ptr[0] = '\0';
+      a_bivar[i]->slen = 0;
       break;
 
     case a_RT:
@@ -438,15 +447,14 @@ _awka_init_ivar(int i)
     case a_PROCINFO:
       a_bivar[i]->type = a_VARARR;
       awka_arraycreate( a_bivar[i], a_ARR_TYPE_HSH );
-//#ifdef PROCINFO_READY_TO_USE
+      /* init is mandatory - FS, FIELDWIDTHS and SAVEWIDTHS update PROCINFO[] */
       _awka_init_procinfo( a_bivar[i] );
-//#endif
       break;
 
     case a_FUNCTAB:
       a_bivar[i]->type = a_VARARR;
-      awka_arraycreate( a_bivar[i], a_ARR_TYPE_SPLIT );
-      _awka_init_functab( a_bivar[i] );
+      awka_arraycreate( a_bivar[i], a_ARR_TYPE_HSH );
+      /* init happens only if needed */
       break;
   }
 }
@@ -461,6 +469,10 @@ _awka_kill_ivar()
     if (!(a_bivar[i]))
       continue;
 
+    if (a_bivar[i]->type == a_VARARR)
+    {
+      awka_arrayclear(a_bivar[i]);
+    }
     awka_killvar(a_bivar[i]);
     free(a_bivar[i]);
     a_bivar[i] = NULL;
@@ -470,7 +482,10 @@ _awka_kill_ivar()
   {
     for (i=0; i<awka_filein_no; i++)
       if (awka_filein[i])
+      {
         free(awka_filein[i]);
+        awka_filein[i] = NULL;
+      }
 
     free(awka_filein);
   }
@@ -482,7 +497,10 @@ _awka_kill_ivar()
   {
     for (i=0; i<_orig_argc; i++)
       if (_argv[i])
+      {
         free(_argv[i]);
+        _argv[i] = NULL;
+      }
 
     free(_argv);
   }
@@ -501,7 +519,9 @@ _awka_kill_gvar()
     while (gvar->name)
     {
       free(gvar->name);
+      gvar->name = NULL;
       awka_killvar(gvar->var);
+      gvar->var = NULL;
       gvar++;
     }
 
@@ -579,12 +599,13 @@ awka_init(int argc, char *argv[], char *patch_string, char *date_string, char* a
 
   _awka_init_ivar(a_ARGC);
   _awka_init_ivar(a_ARGV);
+  _awka_init_ivar(a_PROCINFO);  /* needed before a_FS */
 
   awka_parsecmdline(1);
 
   /* set up internal variables */
   for (i=0; i<a_BIVARS; i++)
-    if (i != a_ARGC && i != a_ARGV)
+    if (i != a_ARGC && i != a_ARGV && i != a_PROCINFO)
       _awka_init_ivar(i);
 
   /* set up output streams */

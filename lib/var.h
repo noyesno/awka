@@ -19,38 +19,41 @@
 #define a_DBLSET 7  /* indicates string var with double value set */
 #define a_STRSET 8  /* indicates double var with string value set */
 
-/* builtin variables */
+/* builtin variables  (align with ivar[] in init.c) */
 #define a_ARGC        0
 #define a_ARGIND      1
 #define a_ARGV        2
 #define a_CONVFMT     3
 #define a_ENVIRON     4
-#define a_FILENAME    5
-#define a_FNR         6
-#define a_FS          7
-#define a_NF          8
-#define a_NR          9
-#define a_OFMT        10
-#define a_OFS         11
-#define a_ORS         12
-#define a_RLENGTH     13
-#define a_RS          14
-#define a_RSTART      15
-#define a_RT          16
-#define a_SUBSEP      17
-#define a_DOL0        18
-#define a_DOLN        19
-#define a_FIELDWIDTHS 20
+#define a_FIELDWIDTHS 5
+#define a_FILENAME    6
+#define a_FNR         7
+#define a_FPAT        8
+#define a_FS          9
+#define a_FUNCTAB     10
+#define a_NF          11
+#define a_NR          12
+#define a_OFMT        13
+#define a_OFS         14
+#define a_ORS         15
+#define a_PROCINFO    16
+#define a_RLENGTH     17
+#define a_RS          18
+#define a_RSTART      19
+#define a_RT          20
 #define a_SAVEWIDTHS  21
 #define a_SORTTYPE    22
-#define a_PROCINFO    23
-#define a_FUNCTAB     24
+#define a_SUBSEP      23
+#define a_DOL0        24
+#define a_DOLN        25
 
-#define a_BIVARS      25
+#define a_BIVARS      26
 
 #define _RE_SPLIT   0
 #define _RE_MATCH   1
 #define _RE_GSUB    2
+
+#define VARARGSZ    256
 
 typedef struct {
   double dval;          /* double value, set when type & a_DBLVAR */
@@ -63,7 +66,7 @@ typedef struct {
 } a_VAR;
 
 typedef struct {
-  a_VAR *var[256];
+  a_VAR *var[VARARGSZ];
   int used;
 } a_VARARG;
 
@@ -122,6 +125,8 @@ static INLINE a_VAR * awka_NFget();
     fs_or_fw = 0; awka_NFget(); \
   } else if ((v) == a_bivar[a_FIELDWIDTHS]) {\
     fs_or_fw = 1; awka_NFget(); \
+  } else if ((v) == a_bivar[a_FPAT]) {\
+    fs_or_fw = 2; awka_NFget(); \
   }
 
 static int
@@ -247,12 +252,13 @@ awka_lcopy(a_VAR *va, a_VAR *vb)
 
 #define awka_varinit(v) { \
        malloc( (void **) &(v), sizeof(a_VAR) ); \
-       (v)->dval = 0.0; \
+       memset( (v), 0, sizeof(a_VAR) ); }
+     /*  (v)->dval = 0.0; \
        (v)->temp = (v)->type2 = 0; \
        (v)->type = a_VARNUL; \
        (v)->slen = (v)->allc = 0; \
        (v)->ptr = NULL; }
-
+*/
 a_VAR *  awka_argval(int, a_VAR *, int, int, a_VARARG *);
 void    _awka_addfnvar(int, int, a_VAR *, int);
 a_VAR * _awka_usefnvar(int, int);
@@ -274,34 +280,8 @@ awka_fn_varinit(int fn_idx, int var_idx, int type)
   return var;
 }
 
-#ifdef MEM_DEBUG
-char *awka_strcpy(a_VAR *v, char *s);
-#else
-static char *
-awka_strcpy(a_VAR *v, char *s)
-{ 
-  register int _slen = strlen(s)+1;
-  _awka_set_FW(v);
-  if (v->type == a_VARREG)
-    _awka_re2s(v);
-  if (v->type != a_VARSTR && v->type != a_VARUNK) 
-    awka_setsval(v, __FILE__, __LINE__);
-  if (v->ptr && v->allc <= _slen)
-    v->allc = realloc( (void **) &v->ptr, _slen );
-  else if (!v->ptr)
-    v->allc = malloc( (void **) &v->ptr, _slen );
-  v->slen = _slen-1;
-  memcpy(v->ptr, s, _slen);
-  v->type = a_VARSTR;
-  v->type2 = 0;
-  if (v == a_bivar[a_DOL0])
-  {
-    _rebuild0_now = _rebuild0 = FALSE;
-    _rebuildn = _awka_setdol0_len = TRUE;
-  }
-  return v->ptr;
-}
-#endif
+char *
+awka_strcpy(a_VAR *v, char *s);
 
 char *
 awka_strncpy(a_VAR *v, char *s, int _slen);
@@ -316,6 +296,7 @@ awka_setstrlen(a_VAR *v, register int slen)
     _awka_re2s(v);
   if (v->type != a_VARSTR && v->type != a_VARUNK)
     awka_setsval(v, __FILE__, __LINE__);
+
   if (v->ptr && v->allc < slen)
     v->allc = realloc( (void **) &v->ptr, slen );
   else if (!(v)->ptr)

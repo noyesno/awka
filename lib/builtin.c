@@ -57,8 +57,7 @@ int awka_fclose( int i );
   else \
   { \
     malloc( &outvar, sizeof(a_VAR)); \
-    outvar->ptr = NULL; \
-    outvar->slen = outvar->allc = 0; \
+    memset( outvar, 0, sizeof(a_VAR)); \
   } \
   outvar->type2 = 0; \
   outvar->type = a_VARSTR
@@ -132,7 +131,7 @@ awka_vararg(char keep, a_VAR *var, ...)
   if (var != NULL)
   {
     va_start(ap, var);
-    while (va->used < 255 && (va->var[++va->used] = va_arg(ap, a_VAR *)) != NULL)
+    while (va->used < VARARGSZ-1 && (va->var[++va->used] = va_arg(ap, a_VAR *)) != NULL)
       ;
     va_end(ap);
   }
@@ -311,7 +310,7 @@ a_VAR *
 awka_strconcat2( char keep, a_VAR *v1, a_VAR *v2)
 {
   int p1len, p2len;
-  char *p1, *p2, *op;
+  char *p1, *p2;
   a_VAR *outvar;
 
   /* create a variable & put the strings together */
@@ -550,7 +549,7 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
         break;
 
       outvar->dval = i;
-      pvar = awka_arraysearch1( arr, outvar, a_ARR_CREATE, 0 );
+      pvar = awka_getarrayval( arr, outvar );
       awka_strncpy( pvar, ptr + pmatch[i].rm_so, pmatch[i].rm_eo - pmatch[i].rm_so );
     }
   }
@@ -2543,6 +2542,19 @@ start:
   return (outvar);
 }
 
+int
+awka_getline_main()
+{
+  return awka_getline(
+               a_TEMP,
+               awka_dol0(a_DOL_GET),
+               awka_gets(a_bivar[a_FILENAME]),
+	       FALSE,
+	       TRUE
+	 )->dval > 0.0
+         && awka_setNF(0);
+}
+
 a_VAR *
 awka_fseek(char keep, a_VARARG *va )
 {
@@ -2948,7 +2960,7 @@ awka_globline(const char *pattern)
   int         s_size;
   int         ret;
 
-  _haystack = awka_dol0(0);
+  _haystack = awka_dol0(a_DOL_GET);
   ret = nstring_match(pattern, strlen(pattern), _haystack->ptr, _haystack->slen);
 
   return (ret == 0) ? 1 : 0;

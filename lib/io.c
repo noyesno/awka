@@ -392,7 +392,8 @@ _awka_io_opensocket(const char *name, const char *mode)
  * awka_io_2open()
  * Implements co-process file pointer creation
  */
-static FILE * _awka_io_2open( char *str, _a_IOSTREAM *s )
+static FILE *
+_awka_io_2open( char *str, _a_IOSTREAM *s )
 {
   FILE *fp = NULL;
 
@@ -1050,44 +1051,13 @@ awka_io_readline( a_VAR *var, int strm, int fill_target)
 }
 
 
-
 void
-awka_exit( double ret )
-{
-  register int i;
-
-  for (i=0; i<_a_ioused; i++)
-  {
-    if (_a_iostream[i].fp && _a_iostream[i].io != _a_IO_CLOSED)
-    {
-      if (_a_iostream[i].io == _a_IO_WRITE || _a_iostream[i].io == _a_IO_APPEND)
-        fflush(_a_iostream[i].fp);
-
-      if (_a_iostream[i].pipe == 1)
-      {
-        pclose(_a_iostream[i].fp);
-      }
-      else
-      {
-        if (strcmp(_a_iostream[i].name, "/dev/stdout") &&
-            strcmp(_a_iostream[i].name, "/dev/stderr"))
-          fclose(_a_iostream[i].fp);
-      }
-    }
-  }
-
-  _awka_kill_ivar();
-
-  exit((int) ret);
-}
-
-void
-awka_cleanup()
+_awka_cleanup_streams()
 {
   register int i;
 
   /* close open streams */
-  for (i=0; i<_a_ioused; i++)
+  for (i=0; i<_a_ioallc; i++)
   {
     if (_a_iostream[i].fp && _a_iostream[i].io != _a_IO_CLOSED)
     {
@@ -1109,17 +1079,43 @@ awka_cleanup()
 
   /* free up stream memory */
   for (i=0; i<_a_ioallc; i++)
+  {
     if (_a_iostream[i].name)
+    {
       free(_a_iostream[i].name);
+      _a_iostream[i].name = NULL;
+    }
+
+    if (_a_iostream[i].buf)
+    {
+      free(_a_iostream[i].buf);
+      _a_iostream[i].buf = NULL;
+    }
+  }
 
   free(_a_iostream);
 
   _a_iostream = NULL;
   _a_ioused = _a_ioallc = 0;
+}
 
+
+void
+awka_cleanup()
+{
+  _awka_cleanup_streams();
+  //_awka_kill_fn();
   _awka_kill_ivar();
   _awka_kill_gvar();
   _awka_gc_kill();
+}
+
+void
+awka_exit( double ret )
+{
+  awka_cleanup();
+
+  exit((int) ret);
 }
 
 static struct pid_child {

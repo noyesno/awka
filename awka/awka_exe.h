@@ -452,7 +452,7 @@ extern struct pc *progcode;
 extern FILE *fp;
 extern int curop_id, prog_allc, prog_no, curinst, curminst;
 extern char buf[4096], *curarg, *curval;
-extern char begin_used, main_used, end_used;
+extern char begin_used, main_used, end_used, functab_used;
 extern int mode;
 #endif
 

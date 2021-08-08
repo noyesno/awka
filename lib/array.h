@@ -133,4 +133,9 @@ awka_dol0(int set)
     return _awka_dol0(set);
 }
 
+static INLINE a_VAR *
+awka_getarrayval( a_VAR *v, a_VAR *key)
+{
+  return awka_arraysearch1( v, key, a_ARR_CREATE, 0 );
+}
 #endif

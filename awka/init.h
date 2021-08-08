@@ -52,8 +52,6 @@ extern PFILE *pfile_list ;
 
 extern char *sprintf_buff, *sprintf_limit ;
 
-char *awak_input_text;
-
 
 void  PROTO( initialize, (int, char **) ) ;
 void  PROTO( code_init, (void) ) ;

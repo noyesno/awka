@@ -108,7 +108,7 @@ _process_help_message()
   fprintf(stderr,"    -c fn   Awka will generate a 'fn' function rather\n") ;
   fprintf(stderr,"            than a main function\n") ;
   fprintf(stderr,"    -x      Translates, compiles and executes the program,\n") ;
-#ifdef __CYGWIN32__
+#if defined(__CYGWIN32__) || defined(__CYGWIN__)
   fprintf(stderr,"            and will produce the awka-app.exe file\n") ;
 #else
   fprintf(stderr,"            and will produce the awka-app.out file\n") ;
@@ -117,13 +117,13 @@ _process_help_message()
   fprintf(stderr,"    -t      If -x is specified, the temporary C and executable\n") ;
   fprintf(stderr,"            files will be deleted following execution.\n") ;
   fprintf(stderr,"    -X      Translates, compiles (not execute) the program, and leaves\n") ;
-#ifdef __CYGWIN32__
+#if defined(__CYGWIN32__) || defined(__CYGWIN__)
   fprintf(stderr,"            the 'awka-app.exe' executable file in the current directory.\n") ;
 #else
   fprintf(stderr,"            the 'awka-app.out' executable file in the current directory.\n") ;
 #endif
   fprintf(stderr,"    -o fil  If -x used, this will create an executable called 'fil'\n") ;
-#ifdef __CYGWIN32__
+#if defined(__CYGWIN32__) || defined(__CYGWIN__)
   fprintf(stderr,"            instead of the default 'awka_out.exe'\n") ;
 #else
   fprintf(stderr,"            instead of the default 'awka.out'\n") ;

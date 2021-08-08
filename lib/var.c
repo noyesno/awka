@@ -52,6 +52,37 @@ struct _fn {
 
 int _awka_fn_allc = 0, _awka_fn_used = 0;
 
+static a_VAR * bivarProcInfoFS = NULL;
+static a_VAR * bivarProcInfoFPAT = NULL;
+
+#define _awka_update_procinfo(v,s) \
+  if ( (v) == a_bivar[a_FS] )\
+  {\
+    if (!bivarProcInfoFS)\
+      bivarProcInfoFS = awka_getarrayval( a_bivar[a_PROCINFO], awka_tmp_str2var("FS") );\
+    strncpy( bivarProcInfoFS->ptr, "FS", 2 );\
+    bivarProcInfoFS->slen = 2;\
+  }\
+  else if ( (v) == a_bivar[a_FPAT] )\
+  {\
+    if (!bivarProcInfoFS)\
+      bivarProcInfoFS = awka_getarrayval( a_bivar[a_PROCINFO], awka_tmp_str2var("FS") );\
+    strncpy( bivarProcInfoFS->ptr, "FPAT", 4 );\
+    bivarProcInfoFS->slen = 4;\
+  }\
+  else if ( (v) == a_bivar[a_FIELDWIDTHS] || (v) == a_bivar[a_SAVEWIDTHS] )\
+  {\
+    if (!bivarProcInfoFS)\
+      bivarProcInfoFS = awka_getarrayval( a_bivar[a_PROCINFO], awka_tmp_str2var("FS") );\
+    strncpy( bivarProcInfoFS->ptr, "FIELDWIDTHS", 11 );\
+    /* sized to 12 chars originally in  init.c */ \
+    bivarProcInfoFS->slen = 11;\
+  }\
+  else if ( (v)->type == a_VARSTR && strncmp((v)->ptr, "RE_SYNTAX_", 10) == 0)\
+  {\
+    _awka_set_re_syntax((s));\
+  }
+
 a_VAR *
 awka_argval(int fn_idx, a_VAR *var, int arg_no, int arg_count, a_VARARG *va)
 {
@@ -281,10 +312,16 @@ awka_killvar( a_VAR *v )
     if (v->type == a_VARARR)
     {
       awka_arrayclear(v);
-      free(v->ptr);
+      if (v->allc)
+        free(v->ptr);
     }
-    else if (v->type != a_VARREG)
-      free(v->ptr);
+    else if (v->type == a_VARREG)
+    {
+      regfree((awka_regexp *) v->ptr);
+    }
+    else
+      if (v->allc)
+        free(v->ptr);
   }
 
   v->ptr = NULL;
@@ -427,16 +464,14 @@ _awka_getsval( a_VAR *v, char ofmt, char *file, int line )
       i = (int) (v->dval);
       if ((double) i == v->dval)
       {
-        sprintf(varbuf, "%d", i);
-        v->slen = strlen(varbuf);
+        v->slen =  sprintf(varbuf, "%d", i);
       }
       else
       {
         if (ofmt)
-          sprintf(varbuf, awka_gets1(a_bivar[a_OFMT]), v->dval);
+          v->slen = sprintf(varbuf, awka_gets1(a_bivar[a_OFMT]), v->dval);
         else
-          sprintf(varbuf, awka_gets1(a_bivar[a_CONVFMT]), v->dval);
-        v->slen = strlen(varbuf);
+          v->slen = sprintf(varbuf, awka_gets1(a_bivar[a_CONVFMT]), v->dval);
       }
       if (!v->ptr || (v->temp == 2 && v->allc <= v->slen))
         v->allc = malloc( &v->ptr, v->slen + 1 );
@@ -554,27 +589,25 @@ a_VAR *
 awka_strdcpy( a_VAR *v, double d )
 {
   char tmp[256];
-  int i = (int) d;
+  int i = (int) d, slen = 0;
 
   if ((double) i == d)
-    sprintf(tmp, "%d", i);
+    slen = sprintf(tmp, "%d", i);
   else
-    sprintf(tmp, awka_gets1(a_bivar[a_CONVFMT]), d);
-
-  i = strlen(tmp);
+    slen = sprintf(tmp, awka_gets1(a_bivar[a_CONVFMT]), d);
 
   if (v->type == a_VARSTR || v->type == a_VARUNK)
   {
     if (!v->ptr)
-      v->allc = malloc( &v->ptr, i+1 );
-    else if (i >= v->allc)
-      v->allc = realloc( &v->ptr, i+1 );
+      v->allc = malloc( &v->ptr, slen+1 );
+    else if (slen >= v->allc)
+      v->allc = realloc( &v->ptr, slen+1 );
   }
   else
-    v->allc = malloc( &v->ptr, i+1 );
+    v->allc = malloc( &v->ptr, slen+1 );
 
-  v->slen = i;
-  memcpy(v->ptr, tmp, i+1);
+  v->slen = slen;
+  memcpy(v->ptr, tmp, slen+1);
   v->type = a_VARSTR;
 
   return v;
@@ -723,6 +756,10 @@ awka_varcpy( a_VAR *va, a_VAR *vb )
 
       va->type = vb->type;
       va->type2 = vb->type2;
+
+      if (va->slen)
+        _awka_update_procinfo(va,va->ptr);
+
       break;
 
     case a_VARREG:
@@ -765,6 +802,7 @@ awka_varcpy( a_VAR *va, a_VAR *vb )
     _rebuild0_now = FALSE;
     _rebuildn = TRUE;
   }
+
 
   return va;
 }
@@ -970,7 +1008,7 @@ awka_ro_str2var(char *c)
   v->ptr = c;
   v->slen = i;
   v->allc = 0;
-  v->dval = 0;
+  v->dval = 0.0;
   v->type2 = 0;
 
   return v;
@@ -1003,7 +1041,7 @@ awka_tmp_str2var(char *c)
   v->type = a_VARSTR;
   memcpy(v->ptr, c, i+1);
   v->slen = i;
-  v->dval = 0;
+  v->dval = 0.0;
   v->type2 = 0;
 
   return v;
@@ -1023,7 +1061,7 @@ awka_tmp_re2var(awka_regexp *r)
   v->type = a_VARREG;
   v->slen = 0;
   v->allc = 0;
-  v->dval = 0;
+  v->dval = 0.0;
   v->type2 = 0;
 
   return v;
@@ -1037,11 +1075,11 @@ awka_tmp_dbl2str(double d)
   int len;
 
   if ((double) i == d)
-    sprintf(tmp, "%d", i);
+    len = sprintf(tmp, "%d", i);
   else
-    sprintf(tmp, awka_gets1(a_bivar[a_CONVFMT]), d);
+    len = sprintf(tmp, awka_gets1(a_bivar[a_CONVFMT]), d);
 
-  i = strlen(tmp)+1;
+  i = len + 1;
   len = i + (32 - (i % 32));
 
   _awka_tmpvar_c(s, len);
@@ -1050,11 +1088,10 @@ awka_tmp_dbl2str(double d)
   return s;
 }
 
-#ifdef MEM_DEBUG
 char *
 awka_strcpy(a_VAR *v, char *s)
 {
-  register int _slen = strlen(s)+1, allc_len;
+  register int _slen = strlen(s)+1;
 
   _awka_set_FW(v);
 
@@ -1076,13 +1113,20 @@ awka_strcpy(a_VAR *v, char *s)
 
   if (v == a_bivar[a_DOL0])
   {
+#ifdef MEM_DEBUG
     _rebuild0_now = FALSE;
     _rebuildn = TRUE;
+#else
+    _rebuild0_now = _rebuild0 = FALSE;
+    _rebuildn = _awka_setdol0_len = TRUE;
+#endif
   }
+
+  _awka_update_procinfo(v,s);
 
   return v->ptr;
 }
-#endif
+
 
 char *
 awka_strncpy(a_VAR *v, char *s, int _slen)
@@ -1108,22 +1152,7 @@ awka_strncpy(a_VAR *v, char *s, int _slen)
   v->type = a_VARSTR;
   v->type2 = 0;
 
-  if ( v == a_bivar[a_FS] )
-  {
-    tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
-    tmpv->slen = 2;
-    strncpy( tmpv->ptr, "FS", 3 );
-  }
-  else if ( v == a_bivar[a_FIELDWIDTHS] || v == a_bivar[a_SAVEWIDTHS] )
-  {
-    tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
-    tmpv->slen = 11;   /* sized to 12 bytes originally in  init.c */
-    strncpy( tmpv->ptr, "FIELDWIDTHS", 12 );
-  }
-  else if ( v->type == a_VARSTR && strncmp(v->ptr, "RE_SYNTAX_", 10) == 0)
-  {
-    _awka_set_re_syntax(s);
-  }
+  _awka_update_procinfo(v,s);
 
   return v->ptr;
 }
