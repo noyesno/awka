@@ -60,11 +60,11 @@ basic:		msg \
 		gensub getline getline2 getlnbuf getnr2tb getnr2tm gsubtest hh \
 		intest intprec isarray len litoct longwrds mainexit math \
 		messages mmap8k negexp next nextfile nfldstr nfset nlfldsep \
-		nlstrina nofile nors numindex numsubstr opasnidx opasnslf \
+		nlstrina nofile nors nrmax numindex numsubstr opasnidx opasnslf \
 		parsecsv pcntplus pdb_find_salt powtest prdupval print \
-		prmreuse prt1eval prtoeval rand range reindops reparse \
+		prmreuse prt1eval prtoeval rand range range2 reindops reparse \
 		resplit retest rs rsnul1nl rsre rswhite sort splitargv \
-		splitrem splitvar splitwht sprintfc subslash substr \
+		splitrem splitsemi splitvar splitwht sprintfc subslash substr \
 		swaplns tradanch tweakfld typeof unbuf zeroflag \
 		endbasic
 
@@ -115,9 +115,9 @@ prt1eval prtoeval rand retest sort splitrem splitwht subslash substr typeof zero
 	@$(CMP) $@.ok _$@ && rm -f _$@
 
 amsal amsal3 amsal5 anchgsub arynocls asgext bil clsflnam eiso eiso2 eiso4 fldchg \
-fldchgnf fpat fpat2 fsfw fsrs funstack fw getline2 getnr2tb getnr2tm nfset nlfldsep numindex \
-parsecsv pdb_find_salt posix2 prdupval range reindops reparse rsnul1nl rswhite rsnull2 \
-splitargv splitvar sprintfc swaplns tradanch ::
+fldchgnf fpat fpat2 fsfw fsrs funstack fw getline2 getnr2tb getnr2tm nfset nlfldsep \
+nrmax numindex parsecsv pdb_find_salt posix2 prdupval range range2 reindops reparse \
+rsnul1nl rswhite rsnull2 splitargv splitsemi splitvar sprintfc swaplns tradanch ::
 	@echo $@
 	@$(AWKA) -f $@.awk >$@.c
 	@$(CC) $@.c $(CFLAGS) -o xx
