@@ -100,7 +100,7 @@ extern FILE *outfp;
 extern int awka_main;
 extern char *awka_main_func;
 int cur_func = 0;
-int al_count = 0;
+int al_count = 0;  /* array loop count */
 int range_no = 0;
 int max_call_args = 0;
 char *int_argv = NULL;
@@ -916,7 +916,9 @@ awka_push(int inst, int *earliest, char *context)
       {
         if (progcode[inst].op == AE_PUSHA)
           sprintf(ret, "awka_arraysearch1(%s, %s, a_ARR_CREATE, 1)",progcode[inst].val,r2);
-        else
+	//else if (al_count)
+        //  sprintf(ret, "awka_arraynextget(&_alh%i, _alp%i)", al_count-1, al_count-1);
+	else
           sprintf(ret, "awka_getarrayval(%s, %s)",progcode[inst].val,r2);
       }
       if ((i = findvarname(varname, progcode[inst].val, var_used)) > -1)
@@ -1078,6 +1080,8 @@ awka_push(int inst, int *earliest, char *context)
       {
         if (progcode[inst].op == LAE_PUSHA)
           sprintf(ret, "awka_arraysearch1(_lvar[%d], %s, a_ARR_CREATE, 1)",atoi(progcode[inst].val),r2);
+	//else if (al_count)
+        //  sprintf(ret, "awka_arraynextget(&_alh%i, _alp%i)", al_count-1, al_count-1);
         else
           sprintf(ret, "awka_getarrayval(_lvar[%d], %s)",atoi(progcode[inst].val),r2);
       }
@@ -3198,12 +3202,12 @@ awka_range(int inst, int *earliest, char *context)
   r2 = buildstr("range", "%s", p, c1, _TRU, inst, prev2);
   free(p);
 
-  p = codeptr(inst, 10 + strlen(r2));
-  sprintf(p, "if %s\n", r2);
+  p = codeptr(inst, 30 + strlen(r2));
+  sprintf(p, "if (_range%d == 0 && %s)\n", range_no, r2);
   p = codeptr(inst, 50);
   sprintf(p, "  _range%d = 1;\n", range_no);
-  p = codeptr(inst, 20 + strlen(r3));
-  sprintf(p, "else if %s\n", r3);
+  p = codeptr(inst, 40 + strlen(r3));
+  sprintf(p, "else if (_range%d == 1 && %s)\n", range_no, r3);
   p = codeptr(inst, 50);
   sprintf(p, "  _range%d = 2;\n", range_no);
   p = codeptr(inst, 50);
@@ -3602,6 +3606,76 @@ awka_gsub(int inst, int *earliest, char *context)
     sprintf(ret, "awka_sub(a_TEMP, FALSE, FALSE, %s, %s, %s)", r2, r3, r4);
 
   free(r2); free(r3); free(r4);
+  *earliest = prev;
+  *context = _VAR;
+  return ret;
+}
+
+char *
+awka_patsplit(int inst, int *earliest, char *context)
+{
+  /* patsplit(stringToSplit, resultArray [, fieldpatternRE [, separatorsFound]])
+   * 
+   */
+
+  char *ret, *p, c1, *r2, *r3, *r4, *r5;
+  int prev, prev2, prev3;
+
+  if ((ret = test_previnst(inst, earliest, context, "patsplit")) != NULL)
+    return ret;
+
+  test_loop(inst);
+  check_gc();
+
+  if (inst < 2)
+    awka_error("patsplit error: expected at least two prior opcodes, line %d.\n",progcode[inst].line);
+  if (inst > 4)
+    awka_error("patsplit error: expected at most four prior opcodes, line %d.\n",progcode[inst].line);
+
+  /* first prior - the string variable to be acted on */
+  p = (* progcode[inst-1].func)(inst-1, &prev2, &c1);
+  r5 = buildstr("patsplit", "%s", p, c1, _VAR, inst, inst-1);
+  setvaltype(r5, _VALTYPE_STR);
+  free(p);
+
+  /* second - the output resultant array of splits */
+  p = (* progcode[prev2].func)(prev2, &prev, &c1);
+  r4 = buildstr("patsplit", "%s", p, c1, _ROVAR, inst, prev2);
+  free(p);
+
+  /* third - the optional field pattern regular expression */
+  if (inst >= 3)
+  {
+    prev2 = prev;
+    p = (* progcode[prev].func)(prev, &prev, &c1);
+    r3 = buildstr("patsplit", "%s", p, c1, _VAR, inst, prev2);
+    setvaltype(r2, _VALTYPE_RE);
+    free(p);
+  }
+  else
+  {
+    r3 = (char *) malloc(5);
+    sprintf(r3, "NULL");
+  }
+
+  /* fourth - the optional output array containing the separators */
+  if (inst == 4)
+  {
+    prev2 = prev;
+    p = (* progcode[prev].func)(prev, &prev, &c1);
+    r2 = buildstr("patsplit", "%s", p, c1, _VAR, inst, prev2);
+    free(p);
+  }
+  else
+  {
+    r2 = (char *) malloc(5);
+    sprintf(r2, "NULL");
+  }
+
+  ret = (char *) malloc(strlen(r2) + strlen(r3) + strlen(r4) + strlen(r5) + 64);
+  sprintf(ret, "awka_patsplit(%s, %s, %s, %s)", r5, r4, r3, r2);
+
+  free(r2); free(r3); free(r4); free(r5);
   *earliest = prev;
   *context = _VAR;
   return ret;
