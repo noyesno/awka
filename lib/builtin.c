@@ -496,8 +496,8 @@ awka_strconcat5( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4, a_VAR *v
 a_VAR *
 awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
 {
-  char *start, *end, *ptr;
-  a_VAR *outvar, *pvar;
+  char *start, *end, *ptr, tmp[25];
+  a_VAR *outvar, *pvar, *pindex;
   awka_regexp *r;
   int i, nmatch = arr ? 20 : (int) fcall;
   static regmatch_t pmatch[20];
@@ -518,7 +518,7 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
     rva->ptr = (char *) r;
   }
 
-  rva->type = a_VARREG;
+  //rva->type = a_VARREG;
   ptr = awka_gets1(va);
 
   if (arr)
@@ -543,6 +543,7 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
 
   if (arr)
   {
+    awka_varinit( pindex );
     for (i=0; i<r->max_sub; i++)
     {
       if (pmatch[i].rm_so == pmatch[i].rm_eo)
@@ -551,7 +552,23 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
       outvar->dval = i;
       pvar = awka_getarrayval( arr, outvar );
       awka_strncpy( pvar, ptr + pmatch[i].rm_so, pmatch[i].rm_eo - pmatch[i].rm_so );
+
+      /* arr[i, start] = n */
+      sprintf( tmp, "%i%sstart", i, awka_gets1(a_bivar[a_SUBSEP]) );
+      awka_strscpy( pindex, tmp );
+      pvar = awka_getarrayval( arr, pindex );
+      sprintf( tmp, "%i", pmatch[i].rm_so + 1 );  /* 1-indexed string start */
+      awka_strcpy( pvar, tmp );
+
+      /* arr[i, length] = n */
+      sprintf( tmp, "%i%slength", i, awka_gets1(a_bivar[a_SUBSEP]) );
+      awka_strscpy( pindex, tmp );
+      pvar = awka_getarrayval( arr, pindex );
+      sprintf( tmp, "%i", pmatch[i].rm_eo - pmatch[i].rm_so );
+      awka_strcpy( pvar, tmp );
+
     }
+    awka_killvar( pindex );
   }
 
   outvar->dval = 1.0;
@@ -2950,6 +2967,47 @@ awka_length(a_VAR *v)
   }
 
   return (outvar);
+}
+
+
+/*
+ * awka_patsplit
+ * awk builtin extended function 'patsplit'
+ * Split vstr into varr using vreg (or FPAT if vreg is NULL)
+ * and store the separators in vsep if vsep is not NULL.
+ *  vreg
+ */
+a_VAR *
+awka_patsplit(a_VAR *vstr, a_VAR *varr, a_VAR *vreg, a_VAR *vsep)
+{
+  a_VAR *outvar, *fpat = vreg;
+  awka_regexp *r;
+  static regmatch_t pmatch;
+
+  outvar = awka_tmp_dbl2var(0.0);
+  awka_gets(vstr);
+
+  if (!fpat)
+  {
+    fpat = awka_tmp_str2var(a_bivar[a_FPAT]->ptr);
+  }
+  if (fpat->type != a_VARREG)
+    _awka_getreval(fpat, __FILE__, __LINE__, _RE_MATCH);
+
+  r = (awka_regexp *) fpat->ptr;
+
+  if (r->cant_be_null)
+  {
+    r = _awka_compile_regexp_MATCH(r->origstr, r->strlen);
+    fpat->ptr = (char *) r;
+  }
+
+  outvar->dval = awka_arraysplitpat(vstr->ptr, varr, fpat, _split_max);
+
+  if (!vsep)
+  {
+    ;
+  }
 }
 
 int

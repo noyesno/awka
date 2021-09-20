@@ -326,9 +326,7 @@ awka_killvar( a_VAR *v )
 
   v->ptr = NULL;
   v->dval = 0.0;
-  v->allc = 0;
-  v->slen = 0;
-  v->type2 = 0;
+  v->allc = v->slen = v->type2 = 0;
   v->type = a_VARNUL;
 }
 

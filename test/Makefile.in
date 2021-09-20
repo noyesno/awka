@@ -58,9 +58,10 @@ basic:		msg \
 		fld1 fldchg fldchgnf fnarydel fnrtest foronsplit fpat fpat2 \
 		fsbs fsfw fsrs fstabplus fun functab funstack fw \
 		gensub getline getline2 getlnbuf getnr2tb getnr2tm gsubtest hh \
-		intest intprec isarray len litoct longwrds mainexit math \
-		messages mmap8k negexp next nextfile nfldstr nfset nlfldsep \
-		nlstrina nofile nors nrmax numindex numsubstr opasnidx opasnslf \
+		intest intprec isarray len litoct longwrds mainexit \
+		math match match2 messages mmap8k negexp next nextfile \
+		nfldstr nfset nlfldsep nlstrina nofile nors nrmax \
+		numindex numsubstr opasnidx opasnslf \
 		parsecsv pcntplus pdb_find_salt powtest prdupval print \
 		prmreuse prt1eval prtoeval rand range range2 reindops reparse \
 		resplit retest rs rsnul1nl rsre rswhite sort splitargv \
@@ -106,8 +107,9 @@ endbig::
 a_cat addcmp aloop arraycat arrayref arysubnm asort backgsub beginexit begingetline \
 bslash compl conflict convfmt cox delarprm divide dubois dynlj eiso3 eofsplit \
 extendedchars fnarydel foronsplit fun functab gensub getlnhd gnureops gsubtest intest intprec \
-isarray len math mathextra nlstrina nofile opasnidx opasnslf pcntplus powtest print prmreuse \
-prt1eval prtoeval rand retest sort splitrem splitwht subslash substr typeof zeroflag ::
+isarray len match math mathextra nlstrina nofile opasnidx opasnslf pcntplus powtest \
+print prmreuse prt1eval prtoeval rand retest sort splitrem splitwht subslash \
+substr typeof zeroflag ::
 	@echo $@
 	@$(AWKA) -f $@.awk >$@.c
 	@$(CC) $@.c $(CFLAGS) -o xx
@@ -115,7 +117,7 @@ prt1eval prtoeval rand retest sort splitrem splitwht subslash substr typeof zero
 	@$(CMP) $@.ok _$@ && rm -f _$@
 
 amsal amsal3 amsal5 anchgsub arynocls asgext bil clsflnam eiso eiso2 eiso4 fldchg \
-fldchgnf fpat fpat2 fsfw fsrs funstack fw getline2 getnr2tb getnr2tm nfset nlfldsep \
+fldchgnf fpat fpat2 fsfw fsrs funstack fw getline2 getnr2tb getnr2tm match2 nfset nlfldsep \
 nrmax numindex parsecsv pdb_find_salt posix2 prdupval range range2 reindops reparse \
 rsnul1nl rswhite rsnull2 splitargv splitsemi splitvar sprintfc swaplns tradanch ::
 	@echo $@
