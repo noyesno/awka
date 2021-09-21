@@ -118,7 +118,7 @@ substr typeof zeroflag ::
 
 amsal amsal3 amsal5 anchgsub arynocls asgext bil clsflnam eiso eiso2 eiso4 fldchg \
 fldchgnf fpat fpat2 fsfw fsrs funstack fw getline2 getnr2tb getnr2tm match2 nfset nlfldsep \
-nrmax numindex parsecsv pdb_find_salt posix2 prdupval range range2 reindops reparse \
+numindex parsecsv pdb_find_salt posix2 prdupval range range2 reindops reparse \
 rsnul1nl rswhite rsnull2 splitargv splitsemi splitvar sprintfc swaplns tradanch ::
 	@echo $@
 	@$(AWKA) -f $@.awk >$@.c
@@ -151,6 +151,14 @@ nasty::
 	@./xx >_$@
 	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 	
+nrmax::
+	@echo $@
+	@$(AWKA) -f $@.awk >$@.c
+	@$(CC) $@.c $(CFLAGS) -o xx
+	@# concat the input file 3 times into a single string
+	@$(AWK) '{a=a$$0} END{print a}' $@.in $@.in $@.in | ./xx >_$@
+	@$(CMP) $@.ok _$@ && rm -f _$@
+
 rsre::
 	@echo $@
 	@$(AWKA) -f $@.awk >$@.c
