@@ -54,7 +54,7 @@ basic:		msg \
 		argarray argtest2 arraycat arrayref arynocls arysubnm asgext back89 \
 		backgsub beginexit begingetline bil bil2 bslash childin clobber \
 		clsflnam compare compl conflict convfmt cox delarprm divide \
-		dubois dynlj eiso eiso2 eiso3 eiso4 eofsplit extendedchars \
+		dubois dynlj eiso eiso2 eiso3 eiso4 eofsplit extendedchars eq \
 		fld1 fldchg fldchgnf fnarydel fnrtest foronsplit fpat fpat2 \
 		fsbs fsfw fsrs fstabplus fun functab funstack fw \
 		gensub getline getline2 getlnbuf getnr2tb getnr2tm gsubtest hh \
@@ -116,7 +116,7 @@ substr typeof zeroflag ::
 	@./xx >_$@
 	@$(CMP) $@.ok _$@ && rm -f _$@
 
-amsal amsal3 amsal5 anchgsub arynocls asgext bil clsflnam eiso eiso2 eiso4 fldchg \
+amsal amsal3 amsal5 anchgsub arynocls asgext bil clsflnam eiso eiso2 eiso4 eq fldchg \
 fldchgnf fpat fpat2 fsfw fsrs funstack fw getline2 getnr2tb getnr2tm match2 nfset nlfldsep \
 numindex parsecsv pdb_find_salt posix2 prdupval range range2 reindops reparse \
 rsnul1nl rswhite rsnull2 splitargv splitsemi splitvar sprintfc swaplns tradanch ::
