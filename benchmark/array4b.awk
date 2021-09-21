@@ -1,7 +1,7 @@
 # string keys rather than integer
 BEGIN {
   if (!base)
-    base = 1000
+    base = 8000
 
   for (i=0; i<base; i++) {
     ind = ""i

@@ -1,7 +1,7 @@
 # Contributed by Eiso AB <eiso@chem.rug.nl>
 
 BEGIN {
-  if (!base) base = 300
+  if (!base) base = 1500
 
   Switch["123"] = " abc "
   Switch["82"] = " def "
@@ -34,6 +34,8 @@ BEGIN {
 
       # gsub, and prevent RE recompile
       gsub(Switch_R[j], Switch[j], s3)
+
+      #print Switch[j] " :: " Switch_R[j]
     }
   }
 }
