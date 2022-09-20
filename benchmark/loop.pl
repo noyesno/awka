@@ -11,32 +11,32 @@ open(LOOP_IN, 'loop.in') || die 'Cannot open file "loop.in".';
 
 # Contributed by Phil Magson <philm@netmap.com.au>
 
-$[ = 1;                        # set array base to 1
+#local $[ = 1;                    # set array base to 1
 $FS = ' ';                # set field separator
-$, = ' ';                # set output field separator
+$, = ' ';                 # set output field separator
 $\ = "\n";                # set output record separator
 
 $FS = $, = "\t";
-$pnts = 1;
-$team = 5;
-$type = 6;
-$name = 7;
-$types{'BAT'} = $BAT = 5;
-$types{'ALR'} = $ALR = 2;
-$types{'WKT'} = $WKT = 1;
-$types{'BWL'} = $BWL = 4;
-$tIdx{'AUS'} = $AUS = 1;
-$tIdx{'BDESH'} = $BDESH = 2;
-$tIdx{'ENG'} = $ENG = 3;
-$tIdx{'IND'} = $IND = 4;
-$tIdx{'KENYA'} = $KENYA = 5;
-$tIdx{'NZ'} = $NZ = 6;
-$tIdx{'PAK'} = $PAK = 7;
-$tIdx{'RSA'} = $RSA = 8;
-$tIdx{'SCOT'} = $SCOT = 9;
-$tIdx{'SL'} = $SL = 10;
-$tIdx{'WI'} = $WI = 11;
-$tIdx{'ZIM'} = $ZIM = 12;
+$pnts = 0;
+$team = 4;
+$type = 5;
+$name = 6;
+$types{'BAT'} = $BAT = 4;
+$types{'ALR'} = $ALR = 1;
+$types{'WKT'} = $WKT = 0;
+$types{'BWL'} = $BWL = 3;
+$tIdx{'AUS'} = $AUS = 0;
+$tIdx{'BDESH'} = $BDESH = 1;
+$tIdx{'ENG'} = $ENG = 2;
+$tIdx{'IND'} = $IND = 3;
+$tIdx{'KENYA'} = $KENYA = 4;
+$tIdx{'NZ'} = $NZ = 5;
+$tIdx{'PAK'} = $PAK = 6;
+$tIdx{'RSA'} = $RSA = 7;
+$tIdx{'SCOT'} = $SCOT = 8;
+$tIdx{'SL'} = $SL = 9;
+$tIdx{'WI'} = $WI = 10;
+$tIdx{'ZIM'} = $ZIM = 11;
 foreach $i (keys %tIdx) {
     $teams{$tIdx{$i}} = $i;
 }
@@ -63,27 +63,27 @@ while (($_ = &Getline2('LOOP_IN'),$getline_ok) > 0) {
 # now lets process them
 
 foreach $wk1 (keys %bWKT) {
-    for ($ar1 = 1; $ar1 <= 11; $ar1++) {
+    for ($ar1 = 0; $ar1 < 11; $ar1++) {
         if ($ar1 != $wk1) {        #???
-            for ($ar2 = $ar1 + 1; $ar2 <= 12; $ar2++) {
+            for ($ar2 = $ar1 + 1; $ar2 < 12; $ar2++) {
                 if ($ar2 != $wk1) {        #???
-                    for ($bw1 = 1; $bw1 <= 9; $bw1++) {
+                    for ($bw1 = 0; $bw1 < 9; $bw1++) {
                         if ($bw1 != $wk1 && $bw1 != $ar1 && $bw1 != $ar2) {        #???        #???        #???
-                            for ($bw2 = $bw1 + 1; $bw2 <= 10; $bw2++) {
+                            for ($bw2 = $bw1 + 1; $bw2 < 10; $bw2++) {
                                 if ($bw2 != $wk1 && $bw2 != $ar1 && $bw2 != $ar2) {        #???
-                                    for ($bw3 = $bw2 + 1; $bw3 <= 11; $bw3++) {
+                                    for ($bw3 = $bw2 + 1; $bw3 < 11; $bw3++) {
                                         if ($bw3 != $wk1 && $bw3 != $ar1 && $bw3 != $ar2) {        #???
-                                            for ($bw4 = $bw3 + 1; $bw4 <= 12; $bw4++) {
+                                            for ($bw4 = $bw3 + 1; $bw4 < 12; $bw4++) {
                                                 if ($bw4 != $wk1 && $bw4 != $ar1 && $bw4 != $ar2) {        #???
-                                                    for ($ba1 = 1; $ba1 <= 8; $ba1++) {
+                                                    for ($ba1 = 0; $ba1 < 8; $ba1++) {
                                                         if ($ba1 != $wk1 && $ba1 != $ar1 && $ba1 != $ar2 && $ba1 != $bw1 && $ba1 != $bw2 && $ba1 != $bw3 && $ba1 != $bw4) {        #???
-                                                            for ($ba2 = $ba1 + 1; $ba2 <= 9; $ba2++) {
+                                                            for ($ba2 = $ba1 + 1; $ba2 < 9; $ba2++) {
                                                                 if ($ba2 !=  $wk1 && $ba2 != $ar1  && $ba2 != $ar2 && $ba2 != $bw1 && $ba2 != $bw2 && $ba2 != $bw3 && $ba2 != $bw4) {
-                                                                    for ($ba3 = $ba2 + 1; $ba3 <= 10; $ba3++) {
+                                                                    for ($ba3 = $ba2 + 1; $ba3 < 10; $ba3++) {
                                                                         if ($ba3 != $wk1 && $ba3 !=  $ar1 && $ba3 != $ar2 && $ba3 != $bw1 && $ba3 != $bw2 && $ba3 != $bw3 && $ba3 != $bw4) {
-                                                                            for ($ba4 = $ba3 + 1; $ba4 <= 11; $ba4++) {
+                                                                            for ($ba4 = $ba3 + 1; $ba4 < 11; $ba4++) {
                                                                                 if ($ba4 != $wk1 && $ba4 != $ar1 && $ba4 != $ar2 && $ba4 != $bw1 && $ba4 != $bw2 && $ba4 != $bw3 && $ba4 != $bw4) {
-                                                                                    for ($ba5 = $ba4 + 1; $ba5 <= 12; $ba5++) {
+                                                                                    for ($ba5 = $ba4 + 1; $ba5 < 12; $ba5++) {
                                                                                         if ($ba5 != $wk1 && $ba5 != $ar1 && $ba5 != $ar2 && $ba5 != $bw1 && $ba5 != $bw2 && $ba5 != $bw3 && $ba5 !=  $bw4) {
                                                                                             # valid team!!!
                                                                                             $tot = $bWKT{$wk1} + $bALR{$ar1} + $bALR{$ar2} + $bBAT{$ba1} + $bBAT{$ba2} + $bBAT{$ba3} + $bBAT{$ba4} + $bBAT{$ba5} + $bBWL{$bw1} + $bBWL{$bw2} + $bBWL{$bw3} + $bBWL{$bw4};
