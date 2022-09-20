@@ -4426,6 +4426,25 @@ process_argv(int *argc, char *int_argv)
   return argv;
 }
 
+char *
+strrepl(char *src, char *find, char *rep)
+{ /* src must have space to extend size, if rep is bigger than find */
+  char *p = strstr(src, find);
+  if (p)
+  {
+    int len = strlen(src)+strlen(rep)-strlen(find);
+    char rbuf[len];
+    memset(rbuf, 0, len);
+    if ( p >= src ) {
+      strncpy(rbuf, src, p-src);
+      rbuf[p-src]='\0';
+      strncat(rbuf, rep, strlen(rep));
+      strncat(rbuf, p+strlen(find), p+strlen(find)-src+strlen(src));
+      strcpy(src, rbuf);
+      strrepl(p+strlen(rep), find, rep);
+    }
+  }
+}
 
 /*
  * translate
@@ -4662,7 +4681,13 @@ translate()
   if (env_used == 1)
     fprintf(outfp,"\n  awka_env_used(1);\n\n");
   
-  fprintf(outfp,"  awka_init(argc, argv, \"%s\", \"%s\", \"%s\");\n", AWKAVERSION, DATE_STRING, awk_input_files);
+  /* use a temp version with an extra 100 chars to add a C style continuation \ char to the line endings of inline scripts */
+  char *tmp_files_str = malloc( (100 + strlen(awk_input_files)) * sizeof(char));
+  strcpy(tmp_files_str, awk_input_files);
+  strrepl(tmp_files_str, "\n", " \\\n");
+
+  fprintf(outfp,"  awka_init(argc, argv, \"%s\", \"%s\", \"%s\");\n", AWKAVERSION, DATE_STRING, tmp_files_str);
+  free(tmp_files_str);
 
   if (split_max != 0 && split_max != INT_MAX)
   {
