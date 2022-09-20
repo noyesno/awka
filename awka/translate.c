@@ -4426,6 +4426,25 @@ process_argv(int *argc, char *int_argv)
   return argv;
 }
 
+char *
+strreplace(char *src, char *str, char *rep)
+{
+  char *p = strstr(src, str);
+  if (p)
+  {
+    int len = strlen(src)+strlen(rep)-strlen(str);
+    char r[len];
+    memset(r, 0, len);
+    if ( p >= src ) {
+      strncpy(r, src, p-src);
+      r[p-src]='\0';
+      strncat(r, rep, strlen(rep));
+      strncat(r, p+strlen(str), p+strlen(str)-src+strlen(src));
+      strcpy(src, r);
+      strreplace(p+strlen(rep), str, rep);
+    }
+  }
+}
 
 /*
  * translate
@@ -4662,7 +4681,13 @@ translate()
   if (env_used == 1)
     fprintf(outfp,"\n  awka_env_used(1);\n\n");
   
-  fprintf(outfp,"  awka_init(argc, argv, \"%s\", \"%s\", \"%s\");\n", AWKAVERSION, DATE_STRING, awk_input_files);
+  /* use a temp version with an extra 100 chars to add a C style continuation "\" to the end of inline scripts */
+  char *tmp_files_str = malloc( (100 + strlen(awk_input_files)) * sizeof(char));
+  strcpy(tmp_files_str, awk_input_files);
+  strreplace(tmp_files_str, "\n", " \\\n");
+
+  fprintf(outfp,"  awka_init(argc, argv, \"%s\", \"%s\", \"%s\");\n", AWKAVERSION, DATE_STRING, tmp_files_str);
+  free(tmp_files_str);
 
   if (split_max != 0 && split_max != INT_MAX)
   {
