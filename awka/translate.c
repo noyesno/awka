@@ -4427,21 +4427,21 @@ process_argv(int *argc, char *int_argv)
 }
 
 char *
-strreplace(char *src, char *str, char *rep)
-{
-  char *p = strstr(src, str);
+strrepl(char *src, char *find, char *rep)
+{ /* src must have space to extend size, if rep is bigger than find */
+  char *p = strstr(src, find);
   if (p)
   {
-    int len = strlen(src)+strlen(rep)-strlen(str);
-    char r[len];
-    memset(r, 0, len);
+    int len = strlen(src)+strlen(rep)-strlen(find);
+    char rbuf[len];
+    memset(rbuf, 0, len);
     if ( p >= src ) {
-      strncpy(r, src, p-src);
-      r[p-src]='\0';
-      strncat(r, rep, strlen(rep));
-      strncat(r, p+strlen(str), p+strlen(str)-src+strlen(src));
-      strcpy(src, r);
-      strreplace(p+strlen(rep), str, rep);
+      strncpy(rbuf, src, p-src);
+      rbuf[p-src]='\0';
+      strncat(rbuf, rep, strlen(rep));
+      strncat(rbuf, p+strlen(find), p+strlen(find)-src+strlen(src));
+      strcpy(src, rbuf);
+      strrepl(p+strlen(rep), find, rep);
     }
   }
 }
@@ -4681,10 +4681,10 @@ translate()
   if (env_used == 1)
     fprintf(outfp,"\n  awka_env_used(1);\n\n");
   
-  /* use a temp version with an extra 100 chars to add a C style continuation "\" to the end of inline scripts */
+  /* use a temp version with an extra 100 chars to add a C style continuation \ char to the line endings of inline scripts */
   char *tmp_files_str = malloc( (100 + strlen(awk_input_files)) * sizeof(char));
   strcpy(tmp_files_str, awk_input_files);
-  strreplace(tmp_files_str, "\n", " \\\n");
+  strrepl(tmp_files_str, "\n", " \\\n");
 
   fprintf(outfp,"  awka_init(argc, argv, \"%s\", \"%s\", \"%s\");\n", AWKAVERSION, DATE_STRING, tmp_files_str);
   free(tmp_files_str);
