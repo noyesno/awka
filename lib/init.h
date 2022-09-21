@@ -9,7 +9,11 @@
 #ifndef _INIT_H
 #define _INIT_H
 
+#ifndef _UNISTD_H
+#  include <unistd.h>
+#endif
 void awka_init(int argc, char *argv[], char *, char *, char *);
+void awka_init_functab();
 void _awka_kill_ivar();
 void _awka_kill_gvar();
 void _awka_kill_fn();

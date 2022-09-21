@@ -57,8 +57,7 @@ int awka_fclose( int i );
   else \
   { \
     malloc( &outvar, sizeof(a_VAR)); \
-    outvar->ptr = NULL; \
-    outvar->slen = outvar->allc = 0; \
+    memset( outvar, 0, sizeof(a_VAR)); \
   } \
   outvar->type2 = 0; \
   outvar->type = a_VARSTR
@@ -132,7 +131,7 @@ awka_vararg(char keep, a_VAR *var, ...)
   if (var != NULL)
   {
     va_start(ap, var);
-    while (va->used < 255 && (va->var[++va->used] = va_arg(ap, a_VAR *)) != NULL)
+    while (va->used < VARARGSZ-1 && (va->var[++va->used] = va_arg(ap, a_VAR *)) != NULL)
       ;
     va_end(ap);
   }
@@ -311,7 +310,7 @@ a_VAR *
 awka_strconcat2( char keep, a_VAR *v1, a_VAR *v2)
 {
   int p1len, p2len;
-  char *p1, *p2, *op;
+  char *p1, *p2;
   a_VAR *outvar;
 
   /* create a variable & put the strings together */
@@ -497,8 +496,8 @@ awka_strconcat5( char keep, a_VAR *v1, a_VAR *v2, a_VAR *v3, a_VAR *v4, a_VAR *v
 a_VAR *
 awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
 {
-  char *start, *end, *ptr;
-  a_VAR *outvar, *pvar;
+  char *start, *end, *ptr, tmp[25];
+  a_VAR *outvar, *pvar, *pindex;
   awka_regexp *r;
   int i, nmatch = arr ? 20 : (int) fcall;
   static regmatch_t pmatch[20];
@@ -519,7 +518,7 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
     rva->ptr = (char *) r;
   }
 
-  rva->type = a_VARREG;
+  //rva->type = a_VARREG;
   ptr = awka_gets1(va);
 
   if (arr)
@@ -544,15 +543,32 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
 
   if (arr)
   {
+    awka_varinit( pindex );
     for (i=0; i<r->max_sub; i++)
     {
       if (pmatch[i].rm_so == pmatch[i].rm_eo)
         break;
 
       outvar->dval = i;
-      pvar = awka_arraysearch1( arr, outvar, a_ARR_CREATE, 0 );
+      pvar = awka_getarrayval( arr, outvar );
       awka_strncpy( pvar, ptr + pmatch[i].rm_so, pmatch[i].rm_eo - pmatch[i].rm_so );
+
+      /* arr[i, start] = n */
+      sprintf( tmp, "%i%sstart", i, awka_gets1(a_bivar[a_SUBSEP]) );
+      awka_strscpy( pindex, tmp );
+      pvar = awka_getarrayval( arr, pindex );
+      sprintf( tmp, "%i", pmatch[i].rm_so + 1 );  /* 1-indexed string start */
+      awka_strcpy( pvar, tmp );
+
+      /* arr[i, length] = n */
+      sprintf( tmp, "%i%slength", i, awka_gets1(a_bivar[a_SUBSEP]) );
+      awka_strscpy( pindex, tmp );
+      pvar = awka_getarrayval( arr, pindex );
+      sprintf( tmp, "%i", pmatch[i].rm_eo - pmatch[i].rm_so );
+      awka_strcpy( pvar, tmp );
+
     }
+    awka_killvar( pindex );
   }
 
   outvar->dval = 1.0;
@@ -2543,6 +2559,19 @@ start:
   return (outvar);
 }
 
+int
+awka_getline_main()
+{
+  return awka_getline(
+               a_TEMP,
+               awka_dol0(a_DOL_GET),
+               awka_gets(a_bivar[a_FILENAME]),
+	       FALSE,
+	       TRUE
+	 )->dval > 0.0
+         && awka_setNF(0);
+}
+
 a_VAR *
 awka_fseek(char keep, a_VARARG *va )
 {
@@ -2900,7 +2929,7 @@ awka_typeof(char keep, a_VARARG *va)
       break;
 
     default:
-      awka_strscpy(outvar, "untyped");
+      awka_strscpy(outvar, "unassigned");
       break;
   }
 
@@ -2940,6 +2969,47 @@ awka_length(a_VAR *v)
   return (outvar);
 }
 
+
+/*
+ * awka_patsplit
+ * awk builtin extended function 'patsplit'
+ * Split vstr into varr using vreg (or FPAT if vreg is NULL)
+ * and store the separators in vsep if vsep is not NULL.
+ *  vreg
+ */
+a_VAR *
+awka_patsplit(a_VAR *vstr, a_VAR *varr, a_VAR *vreg, a_VAR *vsep)
+{
+  a_VAR *outvar, *fpat = vreg;
+  awka_regexp *r;
+  static regmatch_t pmatch;
+
+  outvar = awka_tmp_dbl2var(0.0);
+  awka_gets(vstr);
+
+  if (!fpat)
+  {
+    fpat = awka_tmp_str2var(a_bivar[a_FPAT]->ptr);
+  }
+  if (fpat->type != a_VARREG)
+    _awka_getreval(fpat, __FILE__, __LINE__, _RE_MATCH);
+
+  r = (awka_regexp *) fpat->ptr;
+
+  if (r->cant_be_null)
+  {
+    r = _awka_compile_regexp_MATCH(r->origstr, r->strlen);
+    fpat->ptr = (char *) r;
+  }
+
+  outvar->dval = awka_arraysplitpat(vstr->ptr, varr, fpat, _split_max);
+
+  if (!vsep)
+  {
+    ;
+  }
+}
+
 int
 awka_globline(const char *pattern)
 {
@@ -2948,7 +3018,7 @@ awka_globline(const char *pattern)
   int         s_size;
   int         ret;
 
-  _haystack = awka_dol0(0);
+  _haystack = awka_dol0(a_DOL_GET);
   ret = nstring_match(pattern, strlen(pattern), _haystack->ptr, _haystack->slen);
 
   return (ret == 0) ? 1 : 0;

@@ -46,6 +46,7 @@ struct ivar_idx ivar[] = {
  { "FIELDWIDTHS", "a_bivar[a_FIELDWIDTHS]" },
  { "FILENAME",    "a_bivar[a_FILENAME]"    },
  { "FNR",         "a_bivar[a_FNR]"         },
+ { "FPAT",        "a_bivar[a_FPAT]"        },
  { "FS",          "a_bivar[a_FS]"          },
  { "FUNCTAB",     "a_bivar[a_FUNCTAB]"     },
  { "NF",          "a_bivar[a_NF]"          },
@@ -83,6 +84,8 @@ void laddvarname(awka_varname **, char *, char);
 void addvarname_ref(awka_varname *, int, char, char *, unsigned int);
 void initlvartypes();
 
+extern char *awk_input_files;
+
 int indent = 1;
 int split_req = 0, split_max = 0, mode = NONE, dol0_used = 0, dol0_only = 1, env_used = 0;
 int doln_set = 0, dol0_get = 0;
@@ -97,7 +100,7 @@ extern FILE *outfp;
 extern int awka_main;
 extern char *awka_main_func;
 int cur_func = 0;
-int al_count = 0;
+int al_count = 0;  /* array loop count */
 int range_no = 0;
 int max_call_args = 0;
 char *int_argv = NULL;
@@ -105,11 +108,12 @@ char **functions = NULL;
 int func_no = 0;
 int which_side = _a_RHS;
 int max_base_gc = 1, max_fn_gc = 1, cur_base_gc = 1, cur_fn_gc = 1;
-extern char *awk_input_files;
 
-static int getstringsize(const char *p) {
+static int getstringsize(const char *ps) {
   int n=0;
   char c;
+  register const char *p = ps;
+
   while (c = *p++) {
     if (c=='\\' && *p && (1 || *p=='0' || *p=='n' || *p=='r' || *p=='t' || *p=='\"' || *p=='\\')) {
       p++;
@@ -912,8 +916,10 @@ awka_push(int inst, int *earliest, char *context)
       {
         if (progcode[inst].op == AE_PUSHA)
           sprintf(ret, "awka_arraysearch1(%s, %s, a_ARR_CREATE, 1)",progcode[inst].val,r2);
-        else
-          sprintf(ret, "awka_arraysearch1(%s, %s, a_ARR_CREATE, 0)",progcode[inst].val,r2);
+	//else if (al_count)
+        //  sprintf(ret, "awka_arraynextget(&_alh%i, _alp%i)", al_count-1, al_count-1);
+	else
+          sprintf(ret, "awka_getarrayval(%s, %s)",progcode[inst].val,r2);
       }
       if ((i = findvarname(varname, progcode[inst].val, var_used)) > -1)
       {
@@ -934,16 +940,16 @@ awka_push(int inst, int *earliest, char *context)
         if (inst < prog_no-1 && (progcode[inst+1].op == _GSUB || progcode[inst+1].op == _SUB_BI || progcode[inst+2].op == _GETLINE))
         {
           if (i == 0)
-            sprintf(ret, "awka_dol0(2)");
+            sprintf(ret, "awka_dol0(a_DOL_REBLDN)");
           else
-            sprintf(ret, "awka_doln(%d, 2)",i);
+            sprintf(ret, "awka_doln(%d, a_DOL_REBLDN)",i);
         }
         else
         {
           if (i == 0)
-            sprintf(ret, "awka_dol0(1)");
+            sprintf(ret, "awka_dol0(a_DOL_SET)");
           else
-            sprintf(ret, "awka_doln(%d, 1)",i);
+            sprintf(ret, "awka_doln(%d, a_DOL_SET)",i);
         }
         if (i > 0)
         {
@@ -978,9 +984,9 @@ awka_push(int inst, int *earliest, char *context)
         i = atoi(progcode[inst].val);
         ret = (char *) malloc( strlen(progcode[inst].val) + 20 );
         if (i == 0)
-          sprintf(ret, "awka_dol0(0)");
+          sprintf(ret, "awka_dol0(a_DOL_GET)");
         else
-          sprintf(ret, "awka_doln(%d, 0)",i);
+          sprintf(ret, "awka_doln(%d, a_DOL_GET)",i);
         if (i > 0)
         {
           split_req = 1;
@@ -1011,7 +1017,7 @@ awka_push(int inst, int *earliest, char *context)
       if (inst < 1)
         awka_error("fe_pusha error: expected a prior opcode, line %d.\n",progcode[inst].line);
       p = (* progcode[inst-1].func)(inst-1, &prev, &c1);
-      ret = buildstr("fe_pusha", "awka_doln(%s, 1)", p, c1, _DBL, inst, inst-1);
+      ret = buildstr("fe_pusha", "awka_doln(%s, a_DOL_SET)", p, c1, _DBL, inst, inst-1);
       split_req = dol0_used = 1;
       dol0_only = 0;
       split_max = INT_MAX;
@@ -1023,7 +1029,7 @@ awka_push(int inst, int *earliest, char *context)
       if (inst < 1)
         awka_error("fe_pushi error: expected a prior opcode, line %d.\n",progcode[inst].line);
       p = (* progcode[inst-1].func)(inst-1, &prev, &c1);
-      ret = buildstr("fe_pushi", "awka_doln(%s, 0)", p, c1, _DBL, inst, inst-1);
+      ret = buildstr("fe_pushi", "awka_doln(%s, a_DOL_GET)", p, c1, _DBL, inst, inst-1);
       split_req = dol0_used = 1;
       dol0_only = 0;
       split_max = INT_MAX;
@@ -1074,8 +1080,10 @@ awka_push(int inst, int *earliest, char *context)
       {
         if (progcode[inst].op == LAE_PUSHA)
           sprintf(ret, "awka_arraysearch1(_lvar[%d], %s, a_ARR_CREATE, 1)",atoi(progcode[inst].val),r2);
+	//else if (al_count)
+        //  sprintf(ret, "awka_arraynextget(&_alh%i, _alp%i)", al_count-1, al_count-1);
         else
-          sprintf(ret, "awka_arraysearch1(_lvar[%d], %s, a_ARR_CREATE, 0)",atoi(progcode[inst].val),r2);
+          sprintf(ret, "awka_getarrayval(_lvar[%d], %s)",atoi(progcode[inst].val),r2);
       }
       if ((i = findvarname(lvarname, progcode[inst].val, lvar_used)) == -1)
       {
@@ -1327,8 +1335,10 @@ awka_assign(int inst, int *earliest, char *context)
            sprintf(ret, "awka_NFget(); awka_strcpy(%s, %s) /* 1 */", r2, getstringvalue(p));
         } else {
            const char *string_value = getstringvalue(p);
-           if (string_value[0]=='\"') {
+           if (strcmp(r2, "a_bivar[a_FS]") == 0 && string_value[0] == '\"') {
              sprintf(ret, "awka_strncpy(%s, %s, %d) /* 1 */", r2, string_value, getstringsize(string_value)-2);
+	   } else if (strcmp(string_value, "\"\\0\"") == 0) {
+             sprintf(ret, "awka_strncpy(%s, %s, 1) /* 1 */", r2, string_value);
            } else {
              sprintf(ret, "awka_strcpy(%s, %s) /* 1 */", r2, string_value);
            }
@@ -1834,9 +1844,12 @@ awka_exit0(int inst, int *earliest, char *context)
     else
       strcpy(ret, "awka_exit((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
   }
+  else if (mode == BEGIN) {
+      strcpy(ret, "awka_exit_val = 0;\n  return;\n");
+  }
   else {
     if (end_used == TRUE && mode != END)
-      strcpy(ret, "awka_exit_val = 0;  return;\n");
+      strcpy(ret, "awka_exit_val = 0;\n  return;\n");
     else
       strcpy(ret, "awka_exit((awka_exit_val < 0) ? 0 : awka_exit_val);\n");
   }
@@ -2081,7 +2094,7 @@ awka_match(int inst, int *earliest, char *context)
   {
     case _MATCH0:
       ret = (char *) malloc( strlen(r3) + 100);
-      sprintf(ret, "awka_match(a_TEMP, FALSE, awka_dol0(0), %s, NULL)",r3);
+      sprintf(ret, "awka_match(a_TEMP, FALSE, awka_dol0(a_DOL_GET), %s, NULL)",r3);
       setvaltype(r3, _VALTYPE_RE);
       dol0_used = 1;
       break;
@@ -2870,7 +2883,7 @@ awka_printf(int inst, int *earliest, char *context)
     switch (j)
     {
       case 0:
-        sprintf(ret, "%s, awka_arg1(a_TEMP, awka_dol0(0)));\n", ret);
+        sprintf(ret, "%s, awka_arg1(a_TEMP, awka_dol0(a_DOL_GET)));\n", ret);
         dol0_used = 1;
         *earliest = prev;
         return ret;
@@ -3189,12 +3202,12 @@ awka_range(int inst, int *earliest, char *context)
   r2 = buildstr("range", "%s", p, c1, _TRU, inst, prev2);
   free(p);
 
-  p = codeptr(inst, 10 + strlen(r2));
-  sprintf(p, "if %s\n", r2);
+  p = codeptr(inst, 30 + strlen(r2));
+  sprintf(p, "if (_range%d == 0 && %s)\n", range_no, r2);
   p = codeptr(inst, 50);
   sprintf(p, "  _range%d = 1;\n", range_no);
-  p = codeptr(inst, 20 + strlen(r3));
-  sprintf(p, "else if %s\n", r3);
+  p = codeptr(inst, 40 + strlen(r3));
+  sprintf(p, "else if (_range%d == 1 && %s)\n", range_no, r3);
   p = codeptr(inst, 50);
   sprintf(p, "  _range%d = 2;\n", range_no);
   p = codeptr(inst, 50);
@@ -3593,6 +3606,76 @@ awka_gsub(int inst, int *earliest, char *context)
     sprintf(ret, "awka_sub(a_TEMP, FALSE, FALSE, %s, %s, %s)", r2, r3, r4);
 
   free(r2); free(r3); free(r4);
+  *earliest = prev;
+  *context = _VAR;
+  return ret;
+}
+
+char *
+awka_patsplit(int inst, int *earliest, char *context)
+{
+  /* patsplit(stringToSplit, resultArray [, fieldpatternRE [, separatorsFound]])
+   * 
+   */
+
+  char *ret, *p, c1, *r2, *r3, *r4, *r5;
+  int prev, prev2, prev3;
+
+  if ((ret = test_previnst(inst, earliest, context, "patsplit")) != NULL)
+    return ret;
+
+  test_loop(inst);
+  check_gc();
+
+  if (inst < 2)
+    awka_error("patsplit error: expected at least two prior opcodes, line %d.\n",progcode[inst].line);
+  if (inst > 4)
+    awka_error("patsplit error: expected at most four prior opcodes, line %d.\n",progcode[inst].line);
+
+  /* first prior - the string variable to be acted on */
+  p = (* progcode[inst-1].func)(inst-1, &prev2, &c1);
+  r5 = buildstr("patsplit", "%s", p, c1, _VAR, inst, inst-1);
+  setvaltype(r5, _VALTYPE_STR);
+  free(p);
+
+  /* second - the output resultant array of splits */
+  p = (* progcode[prev2].func)(prev2, &prev, &c1);
+  r4 = buildstr("patsplit", "%s", p, c1, _ROVAR, inst, prev2);
+  free(p);
+
+  /* third - the optional field pattern regular expression */
+  if (inst >= 3)
+  {
+    prev2 = prev;
+    p = (* progcode[prev].func)(prev, &prev, &c1);
+    r3 = buildstr("patsplit", "%s", p, c1, _VAR, inst, prev2);
+    setvaltype(r2, _VALTYPE_RE);
+    free(p);
+  }
+  else
+  {
+    r3 = (char *) malloc(5);
+    sprintf(r3, "NULL");
+  }
+
+  /* fourth - the optional output array containing the separators */
+  if (inst == 4)
+  {
+    prev2 = prev;
+    p = (* progcode[prev].func)(prev, &prev, &c1);
+    r2 = buildstr("patsplit", "%s", p, c1, _VAR, inst, prev2);
+    free(p);
+  }
+  else
+  {
+    r2 = (char *) malloc(5);
+    sprintf(r2, "NULL");
+  }
+
+  ret = (char *) malloc(strlen(r2) + strlen(r3) + strlen(r4) + strlen(r5) + 64);
+  sprintf(ret, "awka_patsplit(%s, %s, %s, %s)", r5, r4, r3, r2);
+
+  free(r2); free(r3); free(r4); free(r5);
   *earliest = prev;
   *context = _VAR;
   return ret;
@@ -4561,19 +4644,23 @@ translate()
         mode = MAIN;
         revert_gc();
         fprintf(outfp, "\nstatic void\nMAIN()\n{\n");
-        p = code0ptr(cur, 100);
-        sprintf(p, "if (awka_exit_val >= 0) return;  /* awka_exit() from BEGIN */\n\n");
+	if (begin_used)       /* exit MAIN() if BEGIN() has requested an exit */
+	{
+          p = code0ptr(cur, 40);
+          sprintf(p, "if (awka_exit_val >= 0)\n    return;\n\n");
+	}
+        p = code0ptr(cur, 15);
+        sprintf(p, "int i = 0;\n");
         p = code0ptr(cur, 50);
-        sprintf(p, "int i, _curfile;\n");
-        p = code0ptr(cur, 100);
         sprintf(p, "if (*(awka_gets(a_bivar[a_FILENAME])) == '\\0')\n");
         p = code0ptr(cur, 50);
         sprintf(p, "  awka_strcpy(a_bivar[a_FILENAME], \"\");\n");
-
-        p = code0ptr(cur, 50);
+        p = code0ptr(cur, 25);
         sprintf(p, "i = setjmp(context);\n");
-        p = code0ptr(cur, 170);
-        sprintf(p, "while (awka_getline(a_TEMP, awka_dol0(0), awka_gets(a_bivar[a_FILENAME]), FALSE, TRUE)->dval > 0 && awka_setNF())\n  {\n");
+        p = code0ptr(cur, 50);
+        sprintf(p, "while (awka_getline_main())\n  {\n");
+        //p = code0ptr(cur, 170);
+        //sprintf(p, "while (awka_getline(a_TEMP, awka_dol0(a_DOL_GET), awka_gets(a_bivar[a_FILENAME]), FALSE, TRUE)->dval > 0 && awka_setNF())\n  {\n");
         indent = 1;
         prev = cur;
         progcode[cur].func = awka_nullfunc;
@@ -4664,6 +4751,9 @@ translate()
   
   fprintf(outfp,"  awka_init(argc, argv, \"%s\", \"%s\", \"%s\");\n", AWKAVERSION, DATE_STRING, awk_input_files);
 
+  if (functab_used)
+    fprintf(outfp,"  awka_init_functab();\n\n");
+
   if (split_max != 0 && split_max != INT_MAX)
   {
     if (dol0_get && doln_set)
@@ -4687,6 +4777,7 @@ translate()
     fprintf(outfp,"  END();\n");
 
   fprintf(outfp, "\n");
+  fprintf(outfp,"\n  if (_lvar) free(_lvar);\n");
   for (i=0; i<litd_used; i++)
     fprintf(outfp,"  free(_litd%d_awka);\n",i);
   

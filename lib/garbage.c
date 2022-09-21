@@ -60,23 +60,32 @@ _awka_gc_initvarbin(int binsize)
 void
 _awka_gc_killvarbin(_a_VARBIN *base)
 {
-  _a_VARBIN *this;
+  _a_VARBIN *this, *b;
   int i, binsize;
   
   if (!base) return;
   binsize = base->binsize;
-  for (i=0; i<binsize; i++)
+  b = base->next;
+  base->binsize = 0;
+  for (i=1; i<binsize; i++)
   {
-    if (!base) return;
-    if (base->var)
+    if (!b) return;
+    if (!b->next) break;
+    if (b->var && b->var->allc)
     {
-      awka_killvar(base->var);
-      free(base->var);
+      b->var->ptr[0] = '\0';
+      free(b->var->ptr);
+      b->var->ptr = NULL;
+      free(b->var);
+      b->var = NULL;
     }
-    this = base;
-    base = base->next;
+    this = b;
+    b = b->next;
+    this->binsize = 0;
+    b->next = NULL;
     free(this);
   }
+  free(base);
 }
 
 _a_VABIN *
@@ -94,7 +103,8 @@ _awka_gc_initvabin(int binsize)
   {
     malloc( &this, sizeof(_a_VABIN));
     malloc( &this->va, sizeof(a_VARARG));
-    this->va->used = 0;
+    memset( this->va, 0, sizeof(a_VARARG));
+    this->binsize = 0;
     prev->next = this;
     prev = this;
   }
@@ -106,20 +116,23 @@ _awka_gc_initvabin(int binsize)
 void
 _awka_gc_killvabin(_a_VABIN *base)
 {
-  _a_VABIN *this;
+  _a_VABIN *this, *b;
   int i, binsize;
   
   if (!base) return;
   binsize = base->binsize;
-  for (i=0; i<binsize; i++)
+  b = base->next;
+  for (i=1; i<binsize; i++)
   {
-    if (!base) return;
-    if (base->va)
-      free(base->va);
-    this = base;
-    base = base->next;
+    if (!b) return;
+    free(b->va);
+    this = b;
+    b = b->next;
     free(this);
   }
+  free(base->va);
+  free(base);
+  base = NULL;
 }
 
 _a_STRBIN *
@@ -252,4 +265,3 @@ _awka_gc_deeper()
     _a_c_gc[i].bin = _awka_gc_initstrbin(_max_fn_gc);
   }
 }
-

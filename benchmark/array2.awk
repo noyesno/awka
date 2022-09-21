@@ -1,6 +1,6 @@
 BEGIN {
   if (!base)
-    base = 500
+    base = 800
 
   for (i=0; i<50; i++)
     X[i] = i"."i

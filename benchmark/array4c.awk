@@ -1,7 +1,7 @@
 # an alternate to array4b string keys
 BEGIN {
   if (!base)
-    base = 1000
+    base = 8000
 
   for (i=0; i<base; i++) {
     arr1[""i] = base - i

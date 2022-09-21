@@ -77,11 +77,13 @@ a_VAR *      awka_arraysearch( a_VAR *v, a_VARARG *va, char create );
 double       awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char );
 int          awka_arrayloop( a_ListHdr *ah, a_VAR *v, char );
 int          awka_arraynext( a_VAR *v, a_ListHdr *, int );
+a_VAR *      awka_arraynextget( a_ListHdr *, int );
 void         awka_alistfree( a_ListHdr * );
 void         awka_alistfreeall( a_ListHdr * );
 a_VAR *      awka_doln(int, int);
 a_VAR *      _awka_dol0(int);
 double       awka_asort( a_VAR *src, a_VAR *dst );
+double       awka_arraysplitpat( char *str, a_VAR *v, a_VAR *fpat, int max );
 
 #ifndef _ARRAY_C
 extern char _awka_setdoln;
@@ -133,4 +135,9 @@ awka_dol0(int set)
     return _awka_dol0(set);
 }
 
+static INLINE a_VAR *
+awka_getarrayval( a_VAR *v, a_VAR *key)
+{
+  return awka_arraysearch1( v, key, a_ARR_CREATE, 0 );
+}
 #endif

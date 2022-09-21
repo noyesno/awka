@@ -49,7 +49,7 @@ struct pc *progcode = NULL;
 FILE *outfp;
 int curop_id, prog_allc, prog_no, curinst, curminst;
 char buf[4096], *curarg, *curval;
-char begin_used=FALSE, main_used=FALSE, end_used=FALSE;
+char begin_used=FALSE, main_used=FALSE, end_used=FALSE, functab_used=FALSE;
 
 extern int var_used;
 extern awka_varname *varname;
@@ -162,7 +162,7 @@ static int awka_output_file(int awka_tmp, char *uoutfile, char **c_file, char **
   char *outfile_prefix = NULL;
   char *outfile_suffix;
 
-#if defined(__CYGWIN32__) || defined(__DJGPP__)
+#if defined(__CYGWIN32__) || defined(__CYGWIN__) || defined(__DJGPP__)
   outfile_suffix = ".exe";
 #else
   outfile_suffix = ".out";

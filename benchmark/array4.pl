@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-$base = 1000;
+$base = 15000;
 
 for ($i=0; $i<$base; $i++) {
 	$arr1{$i} = $base - $i;

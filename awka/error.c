@@ -41,6 +41,7 @@ static void  PROTO( missing, (int, char *, int) ) ;
 static char *PROTO( type_to_str, (int) ) ;
 
 extern char *awk_input_files ;
+extern int  line_pos;
 
 #ifdef  NO_VFPRINTF
 #define  vfprintf  simple_vfprintf

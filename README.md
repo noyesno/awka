@@ -33,7 +33,7 @@ Actually, the mixing use of Awk and C provide provide an interesting way of writ
 
 Awka is an "old" project. Its last change 0.7.5 was on June 20 2001.
 
-And to fill my usage requirement, some of my update to the code go much furhter than traditional "Awk".
+And to fill my usage requirement, some of my update to the code go much further than traditional "Awk".
 
 ### What's new in "Revive Awka"?
 

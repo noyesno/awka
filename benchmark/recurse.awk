@@ -6,7 +6,8 @@ function rec(a, b) {
 }
 
 BEGIN {
-  for (i=1; i<20; i++)
+  base = 20
+  for (i=1; i<base; i++)
     x += rec(1,400)
   #print x
 }

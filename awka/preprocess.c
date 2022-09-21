@@ -482,6 +482,9 @@ preprocess()
       case _PUSHA:
         if ((i = findivar(progcode[cur].val)) != -1)
         {
+          if (strcmp(ivar[i].vname, "a_bivar[a_FUNCTAB]") == 0)
+            functab_used = TRUE;
+
           if (!strcmp(ivar[i].vname, "a_bivar[a_ARGV]") && progcode[cur].op != AE_PUSHI)
           {
             progcode[cur].val = (char *) malloc(15);

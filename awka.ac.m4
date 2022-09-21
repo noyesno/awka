@@ -146,6 +146,12 @@ SHAREDFLAG=''
 if test "$cygnus" = no
 then
   AC_TRY_COMPILE(
+  [int this() { return __CYGWIN__; }] ,
+  [return this();],cygnus=".exe",cygnus=no)
+fi
+if test "$cygnus" = no
+then
+  AC_TRY_COMPILE(
   [int this() { return __DJGPP__; }] ,
   [return this();],djgpp=".exe",djgpp=no)
   AC_MSG_RESULT($djgpp)
@@ -263,6 +269,12 @@ define(WHICH_CMP,
 if test "$cmp" = "cmp"
 then
   AC_TRY_COMPILE(
+  [int this() { return __CYGWIN__; }] ,
+  [return this();],cmp="diff",cmp="cmp")
+fi
+if test "$cmp" = "cmp"
+then
+  AC_TRY_COMPILE(
   [int this() { return __DJGPP__; }] ,
   [return this();],cmp="diff",cmp="cmp")
 fi
@@ -304,7 +316,7 @@ echo "X awka_shell \"$SH\"" >> defines.out
 [if [ "${ac_cv_header_fcntl_h}" = "yes" ]; then echo "#define HAVE_FCNTL_H"; fi];
 [sed 's/^X/#define/' defines.out]
 CONFIG_H_TRAILER
-) | tee config.h
+) | sed 's/SYS\//SYS_/' | sed 's/INET\//INET_/' | sed 's/NO_"/NO_/' | sed 's/_H"/_H/' | tee config.h
 rm defines.out])dnl
 dnl
 dnl

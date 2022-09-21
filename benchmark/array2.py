@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-base = 500
+base = 800
 
 X = {}
 for i in range(50):

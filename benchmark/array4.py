@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-base = 1000
+base = 15000
 
 arr1 = {} 
 for i in range(base):

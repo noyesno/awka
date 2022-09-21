@@ -39,8 +39,6 @@ the GNU General Public License, version 2, 1991.
 #include  "parse.h"
 #endif
 
-int line_pos;
-
 extern  char scan_code[256] ;
 
 /*  the scan codes to compactify the main switch */

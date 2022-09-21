@@ -9,12 +9,16 @@
 #ifndef _BUILTIN_H
 #define _BUILTIN_H
 
-#define a_KEEP 0
-#define a_TEMP 1
+#define a_KEEP        0    /* persistent var, malloc'ed */
+#define a_TEMP        1    /* temp var using GC */
 
-#define a_BI_TOUPPER 1
-#define a_BI_TOLOWER 2
-#define a_BI_TOTITLE 3
+#define a_DOL_GET     0   /* flag for procs like awka_getdoln() */
+#define a_DOL_SET     1
+#define a_DOL_REBLDN  2
+
+#define a_BI_TOUPPER  1
+#define a_BI_TOLOWER  2
+#define a_BI_TOTITLE  3
 
 #ifndef _IN_LIBRARY
 
@@ -104,6 +108,7 @@ a_VAR *    awka_min(char, a_VARARG *);
 a_VAR *    awka_max(char, a_VARARG *);
 a_VAR *    awka_sprintf(char, a_VARARG *);
 a_VAR *    awka_getline(char, a_VAR *, char *, int, char);
+int        awka_getline_main();
 a_VAR *    awka_fflush(char, a_VARARG *);
 a_VAR *    awka_close(char, a_VARARG *);
 void       awka_printf( char *, int, int, a_VARARG * );
@@ -122,7 +127,7 @@ a_VAR *    awka_typeof(char keep, a_VARARG *va );
 double     awka_length(a_VAR *v );
 int        awka_globline(const char *pattern);
 
-#define awka_length0   awka_length(awka_doln(0,0))
+#define awka_length0   awka_length(awka_doln(0,a_DOL_GET))
 
 extern int _dol0_used;
 extern char _dol0_only;

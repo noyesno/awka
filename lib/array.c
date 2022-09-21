@@ -22,11 +22,15 @@
 #include <limits.h>
 
 #define _ARRAY_C
+
+#define SLOT_GROWTH  20
+#define STR_GROWTH   20
+
 char _awka_setdol0_len = 0;
 char _awka_setdoln = 0;
 char _dol0_only = 0;
 char _rebuild0 = 0, _rebuildn = 0, _rebuild0_now = 0;
-char fs_or_fw = 0;
+char fs_or_fw = 0;  /* fs=0, fw=1, fpat=2 */
 
 #define _IN_LIBRARY
 #include "libawka.h"
@@ -42,6 +46,8 @@ int _split_max;
 
 int *fw_loc, fw_allc = 0, fw_used = 0;
 int *sw_loc, sw_allc = 0, sw_used = 0;
+
+static a_VAR *emptyvar = NULL;
 
 static a_HSHNode * _awka_hshfindint( _a_HSHarray *, unsigned int, char, char );
 
@@ -139,6 +145,16 @@ _awka_hashstr( char *str, register int len )
   return (unsigned int) c;
 }
 
+#define check_emptyvar() { \
+  if (!emptyvar) { \
+	  malloc( &emptyvar, sizeof(a_VAR) ); \
+	  emptyvar->ptr = (char *) NULL; \
+  	  emptyvar->allc = emptyvar->slen = emptyvar->temp = emptyvar->type2 = 0; \
+	  emptyvar->dval = 0.0; \
+	  emptyvar->type = a_VARNUL; \
+  } \
+}
+
 /*
  * _awka_hshinitnode
  * prepares a new a_HSHNode for life in the outside world
@@ -148,13 +164,8 @@ _awka_hashstr( char *str, register int len )
   (node)->next = NULL; \
   (node)->key = NULL; \
   (node)->hval = 0; \
-  (node)->var->ptr = NULL; \
-  (node)->var->dval = 0; \
-  (node)->var->slen = 0; \
-  (node)->var->allc = 0; \
-  (node)->var->type2 = 0; \
-  (node)->var->type = a_VARNUL; \
-  (node)->var->temp = 0; \
+  check_emptyvar(); \
+  memcpy( (node)->var, emptyvar, sizeof(a_VAR) ); \
 }
 
 /*
@@ -165,11 +176,8 @@ _awka_hashstr( char *str, register int len )
 { \
   (node)->next = NULL; \
   (node)->hval = 0; \
-  (node)->var->dval = 0; \
-  (node)->var->slen = 0; \
-  (node)->var->type2 = 0; \
-  (node)->var->type = a_VARNUL; \
-  (node)->var->temp = 0; \
+  check_emptyvar(); \
+  memcpy( (node)->var, emptyvar, sizeof(a_VAR) ); \
 }
 
 void
@@ -331,11 +339,9 @@ _awka_hshfindstr(
 
   malloc( &node->var, sizeof(a_VAR));
   node->var->ptr = NULL;
-  node->var->type2 = 0;
   node->var->dval = 0.0;
   node->var->type = a_VARNUL;
-  node->var->temp = 0;
-  node->var->allc = node->var->slen = 0;
+  node->var->type2 = node->var->temp = node->var->allc = node->var->slen = 0;
 
   if (array->flag & _a_ARR_INT)
   {
@@ -359,7 +365,7 @@ _awka_hshfindint(
 {
   register unsigned int idx, i;
   a_HSHNode *node, *node2 = NULL, *prevnode = NULL;
-  static char buf[20];
+  static char buf[24];
 
   idx = hval & array->hashmask;
   node = array->slot[idx];
@@ -435,11 +441,9 @@ _awka_hshfindint(
 
   malloc( &node->var, sizeof(a_VAR));
   node->var->ptr = NULL;
-  node->var->type2 = 0;
   node->var->dval = 0.0;
   node->var->type = a_VARNUL;
-  node->var->temp = 0;
-  node->var->allc = node->var->slen = 0;
+  node->var->type2 = node->var->temp = node->var->allc = node->var->slen = 0;
 
   if (array->flag & _a_ARR_STR)
   {
@@ -491,7 +495,7 @@ _awka_hashtostr( _a_HSHarray *array )
 {
   a_HSHNode *node, *node2;
   register int i, j;
-  static char buf[20];
+  static char buf[24];
 
   if (array->nodeno > _a_HSH_MAXDEPTH)
     _awka_hshdouble(array);
@@ -622,7 +626,7 @@ _awka_hshdestroyarray( _a_HSHarray *array )
       len += thislen + slen; \
       if (len >= s->alloc) \
       { \
-        s->alloc += len + ((used-i-1) * 20) + 1; \
+        s->alloc += len + ((used-i-1) * STR_GROWTH) + 1; \
         s->alloc = realloc( &s->str, s->alloc); \
         op = (s->str + (oldlen > 0 ? oldlen : 1)) - 1; \
       } \
@@ -679,7 +683,7 @@ _awka_arraymergesubscripts( _a_Subscript *s, a_VARARG *va, int *thelen )
 
   if (!s->str)
   {
-    s->alloc = malloc( &s->str, 20);
+    s->alloc = malloc( &s->str, STR_GROWTH);
     op = s->str;
   }
 
@@ -766,6 +770,7 @@ _awka_arrayinitargv( char **ptr, int argc, char *argv[] )
 {
   int len, i;
   _a_HSHarray *array;
+  register a_HSHNode *a_s = NULL;
 
   malloc( &a_bivar[a_ARGV]->ptr, sizeof(_a_HSHarray) );
   array = (_a_HSHarray *) a_bivar[a_ARGV]->ptr;
@@ -778,25 +783,26 @@ _awka_arrayinitargv( char **ptr, int argc, char *argv[] )
   for (i=0; i<argc; i++)
   {
     malloc( &array->slot[i], sizeof(a_HSHNode));
-    array->slot[i]->next = NULL;
-    array->slot[i]->hval = 0;
+    a_s = array->slot[i];
+    a_s->next = NULL;
+    a_s->hval = 0;
 
-    malloc( &array->slot[i]->var, sizeof(a_VAR));
-    array->slot[i]->var->slen = array->slot[i]->var->allc = len = strlen(argv[i]);
-    malloc( &array->slot[i]->var->ptr, len+1);
-    memcpy(array->slot[i]->var->ptr, argv[i], len+1);
-    array->slot[i]->var->type = a_VARUNK;
+    malloc( &a_s->var, sizeof(a_VAR));
+    a_s->var->slen = a_s->var->allc = len = strlen(argv[i]);
+    malloc( &a_s->var->ptr, len+1);
+    memcpy(a_s->var->ptr, argv[i], len+1);
+    a_s->var->type = a_VARUNK;
 
     if (_awka_isnumber(argv[i]) == TRUE)
     {
-      array->slot[i]->var->type2 = a_DBLSET;
-      array->slot[i]->var->dval = strtod(argv[i], NULL);
+      a_s->var->type2 = a_DBLSET;
+      a_s->var->dval = strtod(argv[i], NULL);
     }
     else
-      array->slot[i]->var->type2 = -1;
+      a_s->var->type2 = -1;
 
-    array->slot[i]->key = _a_SPLT_LOCALSTR;
-    array->slot[i]->type = _a_ARR_INT;
+    a_s->key = _a_SPLT_LOCALSTR;
+    a_s->type = _a_ARR_INT;
   }
 }
 
@@ -879,7 +885,7 @@ _awka_createsubscript()
 void
 awka_arraycreate( a_VAR *var, char type )
 {
-  _a_HSHarray *array;
+  register _a_HSHarray *array;
 
   if (var->ptr)
     free(var->ptr);
@@ -1057,18 +1063,14 @@ _awka_growarray(_a_HSHarray *array, int i)
     malloc( &node, sizeof(a_HSHNode) );
     array->slot[j] = node;
     malloc( &node->var, sizeof(a_VAR));
-    node->var->ptr = NULL;
-    node->key = _a_SPLT_LOCALSTR;
-    node->var->type = a_VARNUL;
     _awka_splitinitnode(node);
-    node->var->slen = node->var->allc = 0;
-    node->var->dval = 0;
-    node->var->type2 = 0;
-    array->slot[j]->var->ptr = NULL;
+    node->key = _a_SPLT_LOCALSTR;
   }
 
   array->nodeallc = i + GROWSZ;
 }
+
+/***************** array searching *************************/
 
 /*
  * _awka_arraysearchsplit
@@ -1079,6 +1081,7 @@ _awka_arraysearchsplit(_a_HSHarray *array, int i, char create, int set)
 {
   char *x;
   register int j;
+  register a_HSHNode *a_s = NULL;
 
   /* split array - is v->type a double? */
   if (i >= array->nodeno)
@@ -1091,51 +1094,51 @@ _awka_arraysearchsplit(_a_HSHarray *array, int i, char create, int set)
     {
       for (j=array->nodeno; j<=i; j++)
       {
-        if (!array->slot[j])
+        a_s = array->slot[j];
+
+        if (!a_s)
         {
           malloc( &array->slot[j], sizeof(a_HSHNode));
-          malloc( &array->slot[j]->var, sizeof(a_VAR));
-          array->slot[j]->key = _a_SPLT_LOCALSTR;
-          array->slot[j]->var->allc = 0;
-          _awka_splitinitnode(array->slot[j]);
-          array->slot[j]->var->type = a_VARNUL;
-          array->slot[j]->var->ptr = NULL;
+          a_s = array->slot[j];
+          malloc( &a_s->var, sizeof(a_VAR));
         }
         else
         {
-          if (array->slot[j]->key == _a_SPLT_LOCALSTR &&
-              array->slot[j]->var->ptr)
-            awka_killvar(array->slot[j]->var);
-
-          array->slot[j]->key = _a_SPLT_LOCALSTR;
-          array->slot[j]->var->allc = 0;
-          _awka_splitinitnode(array->slot[j]);
-          array->slot[j]->var->type = a_VARNUL;
-          array->slot[j]->var->ptr = NULL;
+          if (a_s->key == _a_SPLT_LOCALSTR &&
+              a_s->var->ptr)
+            awka_killvar(a_s->var);
         }
+
+        _awka_splitinitnode(a_s);
+        a_s->key = _a_SPLT_LOCALSTR;
       }
     }
     array->nodeno = i+1;
   }
-  if (set == 0 ||
-     (array->slot[i]->key == _a_SPLT_LOCALSTR &&
-      array->slot[i]->var->type2 == a_DBLSET))
-    return array->slot[i]->var;
 
-  if (array->slot[i]->key == _a_SPLT_BASESTR)
+  a_s = array->slot[i];
+
+  if (set == 0 ||
+     (a_s->key == _a_SPLT_LOCALSTR &&
+      a_s->var->type2 == a_DBLSET))
+    return a_s->var;
+
+  if (a_s->key == _a_SPLT_BASESTR)
   {
-    if (array->slot[i]->var->type == a_VARUNK ||
-        array->slot[i]->var->type == a_VARSTR)
+    if (a_s->var->type == a_VARUNK ||
+        a_s->var->type == a_VARSTR)
     {
-      array->slot[i]->var->allc = malloc( &x, array->slot[i]->var->slen + 1);
-      strcpy(x, array->slot[i]->var->ptr);
-      array->slot[i]->var->ptr = x;
+      a_s->var->allc = malloc( &x, a_s->var->slen + 1);
+      strcpy(x, a_s->var->ptr);
+      a_s->var->ptr = x;
     }
     else
-      array->slot[i]->var->ptr = NULL;
-    array->slot[i]->key = _a_SPLT_LOCALSTR;
+      a_s->var->ptr = NULL;
+
+    a_s->key = _a_SPLT_LOCALSTR;
   }
-  return array->slot[i]->var;
+
+  return a_s->var;
 }
 
 /*
@@ -1162,11 +1165,8 @@ _awka_lowerbase( _a_HSHarray *array )
 
   malloc( &array->slot[0], sizeof(a_HSHNode));
   malloc( &array->slot[0]->var, sizeof(a_VAR));
-  array->slot[0]->key = _a_SPLT_LOCALSTR;
-  array->slot[0]->var->allc = 0;
-  array->slot[0]->var->ptr = NULL;
   _awka_splitinitnode(array->slot[0]);
-  array->slot[0]->var->type = a_VARNUL;
+  array->slot[0]->key = _a_SPLT_LOCALSTR;
 
   array->nodeno++;
   array->base = 0;
@@ -1209,8 +1209,7 @@ awka_arraysearch1( a_VAR *v, a_VAR *element, char create, int set )
          (element->type == a_VARUNK && element->type2 == a_DBLSET))
       {
         i = (int) element->dval;
-        if ((double) i == element->dval)
-          is_an_int = TRUE;
+        is_an_int = ((double) i == element->dval);
       }
       else
       {
@@ -1218,6 +1217,7 @@ awka_arraysearch1( a_VAR *v, a_VAR *element, char create, int set )
         if ((is_an_int = _awka_isanint(ptr)) == TRUE)
           i = atoi(ptr);
       }
+
       if (create != a_ARR_DELETE && is_an_int == TRUE && i >= 0)
       {
         if (i == 0 && array->base)
@@ -1245,9 +1245,9 @@ awka_arraysearch1( a_VAR *v, a_VAR *element, char create, int set )
         if (is_an_int == FALSE)
         {
           i = (int) element->dval;
-          if ((double) i == element->dval)
-            is_an_int = TRUE;
+          is_an_int = ((double) i == element->dval);
         }
+
         if (is_an_int == TRUE)
         {
           if (!(array->flag & _a_ARR_INT))
@@ -1260,6 +1260,7 @@ awka_arraysearch1( a_VAR *v, a_VAR *element, char create, int set )
           break;
         }
       }
+
       if (!ptr)
         ptr = awka_gets(element);
       if (!(array->flag & _a_ARR_STR))
@@ -1270,7 +1271,7 @@ awka_arraysearch1( a_VAR *v, a_VAR *element, char create, int set )
       }
       hval = _awka_hashstr(ptr, element->slen);
       node = _awka_hshfindstr(array, ptr, element->slen, hval, create, FALSE );
-  }
+  } /* switch */
 
   if (node)
   {
@@ -1286,6 +1287,11 @@ awka_arraysearch1( a_VAR *v, a_VAR *element, char create, int set )
           if (i > _a_HSH_MAXDEPTH)
             _awka_hshdouble(array);
         }
+
+	/* set unknown for typeof() */
+	if (node->var->type == a_VARNUL)
+          node->var->type = a_VARUNK;
+
         return node->var;
 
       case a_ARR_QUERY:
@@ -1380,20 +1386,40 @@ awka_arraysearch( a_VAR *v, a_VARARG *va, char create )
   return _awka_arraynullvar();
 }
 
+#define ADD_SPLIT_NODE(i) { \
+    if (!array->slot[(i)]) \
+    {\
+      malloc( &node, sizeof(a_HSHNode)); \
+      array->slot[(i)] = node; \
+      malloc( &node->var, sizeof(a_VAR)); \
+      _awka_splitinitnode(node); \
+      node->key = _a_SPLT_BASESTR; \
+      array->slot[(i)] = node; \
+    } \
+    else \
+      node = array->slot[(i)]; \
+}
+
+/*********** FS splitting utility functions ******************/
+/*
+ * Split by identifying delimeters that match an regexp
+ */
 int
 _awka_splitre( _a_HSHarray *array, a_VAR *fs, int max, int oldnodeno )
 {
   awka_regexp *r = (awka_regexp *) fs->ptr;
   a_HSHNode *node;
-  register int i = 0, alloc = 20, len, j;
-  char *start, *end, *s, *earlystart;
+  register int i = 0, alloc = SLOT_GROWTH, len, j;
+  char *start, *end, *s, *earlystart, termchar;
   static regmatch_t pmatch;
 
-  s = array->splitstr; earlystart = array->splitstr;
+  s = earlystart = array->splitstr;
   if (!array->nodeallc || !array->slot)
   {
     malloc( &array->slot, alloc * sizeof(a_HSHNode *) );
-    for (i=0; i<alloc; i++) array->slot[i] = NULL;
+    memset( array->slot, 0, alloc * sizeof(a_HSHNode *) );
+    //for (i=0; i<alloc; i++) 
+    //  array->slot[i] = NULL;
     i = 0;
   }
   else
@@ -1407,29 +1433,25 @@ _awka_splitre( _a_HSHarray *array, a_VAR *fs, int max, int oldnodeno )
       malloc( &node, sizeof(a_HSHNode));
       array->slot[0] = node;
       malloc( &node->var, sizeof(a_VAR));
-      node->var->ptr = node->key = NULL;
-      _awka_splitinitnode(node);
+      node->var->type = a_VARNUL;
+      /* initialise below */
     }
     else
+    {
       node = array->slot[0];
-    if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
+
+      if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
         awka_killvar(node->var);
+    }
+
+    _awka_splitinitnode(node);
     node->key = _a_SPLT_BASESTR;
     node->var->type = a_VARUNK;
-    node->var->type2 = 0;
-    node->var->slen = 0;
-    node->var->allc = 0;
-    node->var->dval = 0.0;
     node->var->ptr = nullstr;
     node->type = _a_ARR_INT;
     if (array->nodeallc == 0) array->nodeallc = alloc;
-    return 1;
-  }
 
-  if (r->fs != TRUE)
-  {
-    r = _awka_compile_regexp_SPLIT(r->origstr, r->strlen);
-    fs->ptr = (char *) r;
+    return 1;
   }
 
   len = strlen(array->splitstr);
@@ -1439,22 +1461,13 @@ _awka_splitre( _a_HSHarray *array, a_VAR *fs, int max, int oldnodeno )
     start = s + pmatch.rm_so;
     end   = s + pmatch.rm_eo;
 
-    if (!array->slot[i])
-    {
-      malloc( &node, sizeof(a_HSHNode));
-      malloc( &node->var, sizeof(a_VAR));
-      node->var->ptr = node->key = NULL;
-      node->key = _a_SPLT_BASESTR;
-      array->slot[i++] = node;
-      _awka_splitinitnode(node);
-    }
-    else
-      node = array->slot[i++];
-    if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
-      awka_killvar(node->var);
+    ADD_SPLIT_NODE(i);
+    i++;
+
     node->var->type = a_VARUNK;
     node->type = _a_ARR_INT;
     node->var->type2 = 0;
+
     if (node->key == _a_SPLT_BASESTR)
       node->var->ptr = s;
     else
@@ -1463,43 +1476,40 @@ _awka_splitre( _a_HSHarray *array, a_VAR *fs, int max, int oldnodeno )
         node->var->allc = malloc( &node->var->ptr, (start - s) + 1 );
       else if (node->var->allc < (start - s) + 1)
         node->var->allc = realloc( &node->var->ptr, (start - s) + 1 );
+
       memcpy(node->var->ptr, s, start - s);
     }
+
     node->var->slen = (start - s);
+    termchar = *(node->var->ptr + (start - s));
     *(node->var->ptr + (start - s)) = '\0';
 
     if (i >= alloc)
     {
       j = alloc;
-      alloc += 20;
+      alloc += SLOT_GROWTH;
       realloc( &array->slot, alloc * sizeof(a_HSHNode *));
       for (; j<alloc; j++) array->slot[j] = NULL;
     }
 
     s = earlystart = end;
-    if (!*s) break;
-  }
+    if (!*s)
+      break;
 
-  if (i < max && *earlystart)
+  } /* while match */
+
+  if ((i < max && *earlystart) || termchar != '\0')
   {
     /* got a trailing field */
     s = array->splitstr + len;
-    if (!array->slot[i])
-    {
-      malloc( &node, sizeof(a_HSHNode));
-      malloc( &node->var, sizeof(a_VAR));
-      node->var->ptr = node->key = NULL;
-      node->key = _a_SPLT_BASESTR;
-      array->slot[i++] = node;
-      _awka_splitinitnode(node);
-    }
-    else
-      node = array->slot[i++];
-    if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
-      awka_killvar(node->var);
+
+    ADD_SPLIT_NODE(i);
+    i++;
+
     node->var->type = a_VARUNK;
     node->type = _a_ARR_INT;
     node->var->type2 = 0;
+
     if (node->key == _a_SPLT_BASESTR)
       node->var->ptr = earlystart;
     else
@@ -1510,6 +1520,7 @@ _awka_splitre( _a_HSHarray *array, a_VAR *fs, int max, int oldnodeno )
         node->var->allc = realloc( &node->var->ptr, (s - earlystart) + 1 );
       memcpy(node->var->ptr, earlystart, s - earlystart);
     }
+
     node->var->slen = (s - earlystart);
     *(node->var->ptr + (s - earlystart)) = '\0';
 
@@ -1524,24 +1535,198 @@ _awka_splitre( _a_HSHarray *array, a_VAR *fs, int max, int oldnodeno )
 
   for (j=i; j<oldnodeno; j++)
   {
-    array->slot[j]->var->slen = 0;
-    array->slot[j]->var->dval = 0;
     if (array->slot[j]->key == _a_SPLT_BASESTR)
+    {
+      check_emptyvar();
+      memcpy( array->slot[j]->var, emptyvar, sizeof(a_VAR) );
       array->slot[j]->var->ptr = nullstr;
+    }
     else
     {
       awka_killvar(array->slot[j]->var);
       array->slot[j]->key = _a_SPLT_BASESTR;
     }
-    array->slot[j]->var->dval = 0;
-    array->slot[j]->var->type2 = 0;
-    array->slot[j]->var->type = a_VARNUL;
   }
+
   array->nodeno = i;
   array->nodeallc = (array->nodeallc < array->nodeno ? array->nodeno : array->nodeallc);
+
   return i;
 }
 
+#define FPATSZ  256
+/*
+ * Split by identifying content that matches an regexp
+ * fpat is an _RE_MATCH compiled a_VARREG
+ */
+int
+_awka_splitcontentre( _a_HSHarray *array, a_VAR *fpat, int max, int oldnodeno, char **delims )
+{
+  awka_regexp *r;
+  a_HSHNode *node;
+  register int i = 0, j;
+  int alloc = SLOT_GROWTH, len;
+  char *start, *end, *s, *earlystart, mlen;
+  static regmatch_t pmatch;
+
+  memset(&pmatch, 0, sizeof(pmatch));
+
+  s = earlystart = end = array->splitstr;
+
+  if (!array->nodeallc || !array->slot)
+  {
+    malloc( &array->slot, alloc * sizeof(a_HSHNode *) );
+    memset(array->slot, 0, alloc * sizeof(a_HSHNode *) );
+    //for (i=0; i<alloc; i++) 
+    //  array->slot[i] = NULL;
+    i = 0;
+  }
+  else
+    alloc = array->nodeallc;
+
+  if (array->splitstr[0] == '\0')
+  {
+    array->nodeno = 1;
+    if (!array->slot[0])
+    {
+      malloc( &node, sizeof(a_HSHNode));
+      array->slot[0] = node;
+      malloc( &node->var, sizeof(a_VAR));
+      node->var->type = a_VARNUL;
+      /* initialised below */
+    }
+    else
+    {
+      node = array->slot[0];
+
+      if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
+        awka_killvar(node->var);
+    }
+
+    _awka_splitinitnode(node);
+    node->key = _a_SPLT_BASESTR;
+    node->var->type = a_VARUNK;
+    node->var->ptr = nullstr;
+    node->type = _a_ARR_INT;
+
+    if (array->nodeallc == 0)
+      array->nodeallc = alloc;
+
+    return 1;
+  }
+
+  /* setup the regexp */
+  if (fpat->type != a_VARREG)
+    _awka_getreval(fpat, __FILE__, __LINE__, _RE_MATCH);
+
+  r = (awka_regexp *) fpat->ptr;
+
+  len = strlen(array->splitstr);
+
+  while (i < max && awka_regexec(r, s, 1, &pmatch, 0) == 0)
+  {
+    if (!*end)
+      break;
+
+    if (pmatch.rm_so == pmatch.rm_eo)
+    { /* skip a delimeter that is not a recognized field contents pattern */
+      s = earlystart = ++end;
+      continue;
+    }
+
+    start = s + pmatch.rm_so;
+    end   = s + pmatch.rm_eo;
+    mlen = end - start;
+
+    ADD_SPLIT_NODE(i);
+    i++;
+
+    node->var->type = a_VARUNK;
+    node->type = _a_ARR_INT;
+    node->var->type2 = 0;
+    if (!node->var->ptr)
+      node->var->allc = malloc( &node->var->ptr, mlen + 1 );
+    else if (node->var->allc < mlen + 1)
+      node->var->allc = realloc( &node->var->ptr, mlen + 1 );
+    memcpy(node->var->ptr, start, mlen);
+    node->var->slen = mlen;
+    *(node->var->ptr + mlen) = '\0';
+
+    if (i >= alloc)
+    {
+      /* extend slot if have just filled the last slot */
+      j = alloc;
+      alloc += SLOT_GROWTH;
+      realloc( &array->slot, alloc * sizeof(a_HSHNode *));
+      for (; j<alloc; j++) 
+        array->slot[j] = NULL;
+    }
+
+    s = earlystart = end;
+    if (!*end) 
+      break;
+  } /* while match */
+
+  if (i < max && *earlystart)
+  {
+    /* got a trailing field */
+    s = array->splitstr + len;
+
+    ADD_SPLIT_NODE(i);
+    i++;
+
+    node->var->type = a_VARUNK;
+    node->type = _a_ARR_INT;
+    node->var->type2 = 0;
+
+    if (node->key == _a_SPLT_BASESTR)
+      node->var->ptr = earlystart;
+    else
+    {
+      if (!node->var->ptr)
+        node->var->allc = malloc( &node->var->ptr, (s - earlystart) + 1 );
+      else if (node->var->allc <= s - earlystart)
+        node->var->allc = realloc( &node->var->ptr, (s - earlystart) + 1 );
+      memcpy(node->var->ptr, earlystart, s - earlystart);
+    }
+
+    node->var->slen = (s - earlystart);
+    *(node->var->ptr + (s - earlystart)) = '\0';
+
+    if (i >= alloc)
+    {
+      j = alloc;
+      alloc = i + 1;
+      realloc( &array->slot, alloc * sizeof(a_HSHNode *));
+      for (; j<alloc; j++)
+        array->slot[j] = NULL;
+    }
+  }
+
+  for (j=i; j<oldnodeno; j++)
+  {
+    if (array->slot[j]->key == _a_SPLT_BASESTR)
+    {
+      check_emptyvar();
+      memcpy( array->slot[j]->var, emptyvar, sizeof(a_VAR) );
+      array->slot[j]->var->ptr = nullstr;
+    }
+    else
+    {
+      awka_killvar(array->slot[j]->var);
+      array->slot[j]->key = _a_SPLT_BASESTR;
+    }
+  }
+
+  array->nodeno = i;
+  array->nodeallc = (array->nodeallc < array->nodeno ? array->nodeno : array->nodeallc);
+
+  return i;
+}
+
+/*
+ * Split using a null FS (split input into each individual char)
+ */
 int
 _awka_split_null( _a_HSHarray *array, int max, int oldnodeno )
 {
@@ -1553,19 +1738,18 @@ _awka_split_null( _a_HSHarray *array, int max, int oldnodeno )
   alloc = (alloc < max ? alloc : max);
   for (j=alloc; j<oldnodeno; j++)
   {
-    array->slot[j]->var->slen = 0;
-    array->slot[j]->var->dval = 0;
     if (array->slot[j]->key == _a_SPLT_BASESTR)
-      array->slot[j]->var->ptr = NULL;
+    {
+      check_emptyvar();
+      memcpy( array->slot[j]->var, emptyvar, sizeof(a_VAR) );
+    }
     else
     {
       awka_killvar(array->slot[j]->var);
       array->slot[j]->key = _a_SPLT_BASESTR;
     }
-    array->slot[j]->var->dval = 0;
-    array->slot[j]->var->type2 = 0;
-    array->slot[j]->var->type = a_VARNUL;
   }
+
   array->nodeno = alloc;
   if (array->slot)
   {
@@ -1580,8 +1764,7 @@ _awka_split_null( _a_HSHarray *array, int max, int oldnodeno )
   else
   {
     malloc( &array->slot, array->nodeno * sizeof(a_HSHNode *) );
-    for (i=0; i<array->nodeno; i++)
-      array->slot[i] = NULL;
+    memset(array->slot, 0, array->nodeno * sizeof(a_HSHNode *) );
     array->nodeallc = alloc;
   }
 
@@ -1591,32 +1774,40 @@ _awka_split_null( _a_HSHarray *array, int max, int oldnodeno )
     {
       malloc( &node, sizeof(a_HSHNode) );
       malloc( &node->var, sizeof(a_VAR));
-      node->var->ptr = node->key = NULL;
+      _awka_splitinitnode(node);
       node->key = _a_SPLT_LOCALSTR;
       array->slot[i] = node;
-      _awka_splitinitnode(node);
     }
     else
+    {
       node = array->slot[i];
-    if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
-      awka_killvar(node->var);
+
+      if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
+        awka_killvar(node->var);
+    }
+
     node->var->type = a_VARUNK;
     node->type = _a_ARR_INT;
     node->var->type2 = 0;
+
     if (node->var->ptr == NULL)
       node->var->allc = malloc(&node->var->ptr, 2);
+
     node->var->ptr[0] = array->splitstr[i];
     node->var->ptr[1] = '\0';
     node->var->type2 = 0;
+
     if (isdigit(array->splitstr[i]))
     {
       node->var->type2 = a_DBLSET;
       node->var->dval = node->var->ptr[0] - '0';
     }
+
     node->var->slen = 1;
   }
 
   array->nodeallc = (array->nodeallc < array->nodeno ? array->nodeno : array->nodeallc);
+
   return array->nodeno;
 }
 
@@ -1626,10 +1817,14 @@ _awka_split_null( _a_HSHarray *array, int max, int oldnodeno )
 #define SWALLOW_WORD \
   while (*p && !_a_space[(unsigned char) *p]) p++
 
+/*
+ * Fields are separated by runs of whitespace. Leading and trailing whitespace are ignored.
+ * This is the default FS setting
+ */
 int
 _awka_split_space( _a_HSHarray *array, int max, int oldnodeno )
 {
-  register int i = 0, alloc = 20, j;
+  register int i = 0, alloc = SLOT_GROWTH, j;
   register char *p, *q;
   a_HSHNode *node;
 
@@ -1638,8 +1833,9 @@ _awka_split_space( _a_HSHarray *array, int max, int oldnodeno )
   if (!array->nodeallc)
   {
     malloc( &array->slot, alloc * sizeof(a_HSHNode *) );
-    for (i=0; i<alloc; i++)
-      array->slot[i] = NULL;
+    memset(array->slot, 0, alloc * sizeof(a_HSHNode *) );
+    //for (i=0; i<alloc; i++)
+    //  array->slot[i] = NULL;
     i = 0;
   }
   else
@@ -1654,9 +1850,10 @@ _awka_split_space( _a_HSHarray *array, int max, int oldnodeno )
     if (i >= alloc)
     {
       j = alloc;
-      alloc += 20;
+      alloc += SLOT_GROWTH;
       realloc( &array->slot, alloc * sizeof(a_HSHNode *));
-      for (; j<alloc; j++) array->slot[j] = NULL;
+      for (; j<alloc; j++)
+        array->slot[j] = NULL;
     }
 
     q = p;
@@ -1668,15 +1865,18 @@ _awka_split_space( _a_HSHarray *array, int max, int oldnodeno )
     {
       malloc( &node, sizeof(a_HSHNode) );
       malloc( &node->var, sizeof(a_VAR));
-      node->var->ptr = NULL;
+      _awka_splitinitnode(node);
+      //node->var->ptr = NULL;
       node->key = _a_SPLT_BASESTR;
       array->slot[i++] = node;
-      _awka_splitinitnode(node);
     }
     else
+    {
       node = array->slot[i++];
-    if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
-      awka_killvar(node->var);
+
+      if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
+        awka_killvar(node->var);
+    }
 
     node->var->type = a_VARUNK;
     node->type = _a_ARR_INT;
@@ -1731,6 +1931,9 @@ _awka_split_space( _a_HSHarray *array, int max, int oldnodeno )
   return array->nodeno;
 }
 
+/*
+ * splitting by a single char (that isn't a spce - which is handled uniquely)
+ */
 int
 _awka_split_single_char( _a_HSHarray *array, char fs, int max, int oldnodeno )
 {
@@ -1763,19 +1966,9 @@ _awka_split_single_char( _a_HSHarray *array, char fs, int max, int oldnodeno )
     while (*p != fs && *p) p++;
 
     /* copy this to a node */
-    if (!array->slot[i])
-    {
-      malloc( &node, sizeof(a_HSHNode) );
-      malloc( &node->var, sizeof(a_VAR));
-      node->var->ptr = NULL;
-      node->key = _a_SPLT_BASESTR;
-      array->slot[i++] = node;
-      _awka_splitinitnode(node);
-    }
-    else
-      node = array->slot[i++];
-    if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
-      awka_killvar(node->var);
+    ADD_SPLIT_NODE(i);
+    i++;
+
     node->var->type = a_VARUNK;
     node->type = _a_ARR_INT;
     node->var->type2 = 0;
@@ -1818,20 +2011,9 @@ _awka_split_single_char( _a_HSHarray *array, char fs, int max, int oldnodeno )
     }
 
     /* got a trailing null field */
-    if (!array->slot[i])
-    {
-      malloc( &node, sizeof(a_HSHNode) );
-      malloc( &node->var, sizeof(a_VAR));
-      node->var->ptr = NULL;
-      node->key = _a_SPLT_BASESTR;
-      array->slot[i++] = node;
-      _awka_splitinitnode(node);
-    }
-    else
-      node = array->slot[i++];
+    ADD_SPLIT_NODE(i);
+    i++;
 
-    if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
-      awka_killvar(node->var);
     node->var->type = a_VARUNK;
     node->type = _a_ARR_INT;
     node->var->type2 = 0;
@@ -1858,23 +2040,26 @@ _awka_split_single_char( _a_HSHarray *array, char fs, int max, int oldnodeno )
 
   for (j=i; j<oldnodeno; j++)
   {
-    array->slot[j]->var->slen = 0;
     if (array->slot[j]->key == _a_SPLT_BASESTR)
+    {
+      check_emptyvar();
+      memcpy( array->slot[j]->var, emptyvar, sizeof(a_VAR) );
       array->slot[j]->var->ptr = nullstr;
+    }
     else
     {
       awka_killvar(array->slot[j]->var);
       array->slot[j]->key = _a_SPLT_BASESTR;
     }
-    array->slot[j]->var->dval = 0;
-    array->slot[j]->var->type2 = 0;
-    array->slot[j]->var->type = a_VARNUL;
   }
+
   array->nodeno = i;
   array->nodeallc = (array->nodeallc < array->nodeno ? array->nodeno : array->nodeallc);
+
   return array->nodeno;
 }
 
+/*********** FIELDWIDTHS splitting ************************/
 /*
  * _awka_parse_width_format
  * splits a FIELDWIDTHS format string into an array of ints
@@ -1901,7 +2086,7 @@ _awka_parse_width_format( char *format, int fw )
 
   if (!allc)
   {
-    allc = 20;
+    allc = STR_GROWTH;
     malloc( &loc, allc * sizeof(int) );
   }
 
@@ -1981,11 +2166,13 @@ _awka_arraysplitwidth( char *str, a_VAR *v, int max )
   if (!format)
   {
     format_allc = malloc(&format, a_bivar[a_FIELDWIDTHS]->slen+1);
-    fw_allc = 20;
-    malloc(&fw_loc, 20 * sizeof(int));
+    fw_allc = STR_GROWTH;
+    malloc(&fw_loc, STR_GROWTH * sizeof(int));
     strcpy(format, a_bivar[a_FIELDWIDTHS]->ptr);
     _awka_parse_width_format(format, TRUE);
-    if (!fw_used) return -1;
+
+    if (!fw_used)
+      return -1;
   }
   else if (strcmp(format, a_bivar[a_FIELDWIDTHS]->ptr))
   {
@@ -1993,7 +2180,9 @@ _awka_arraysplitwidth( char *str, a_VAR *v, int max )
       format_allc = realloc( &format, a_bivar[a_FIELDWIDTHS]->slen+1 );
     strcpy(format, a_bivar[a_FIELDWIDTHS]->ptr);
     _awka_parse_width_format(format, TRUE);
-    if (!fw_used) return -1;
+
+    if (!fw_used)
+      return -1;
   }
 
   if (len && str[len-1] == '\n')
@@ -2003,8 +2192,9 @@ _awka_arraysplitwidth( char *str, a_VAR *v, int max )
   if (!array->nodeallc)
   {
     malloc( &array->slot, fw_used * sizeof(a_HSHNode *) );
-    for (j=0; j<fw_used; j++)
-      array->slot[j] = NULL;
+    memset(array->slot, 0, fw_used * sizeof(a_HSHNode *) );
+    //for (j=0; j<fw_used; j++)
+    //  array->slot[j] = NULL;
     array->nodeallc = fw_used;
   }
   else if (array->nodeallc < fw_used)
@@ -2031,23 +2221,25 @@ _awka_arraysplitwidth( char *str, a_VAR *v, int max )
     {
       malloc( &node, sizeof(a_HSHNode) );
       malloc( &node->var, sizeof(a_VAR));
-      node->var->ptr = NULL;
+      _awka_splitinitnode(node);
       node->key = _a_SPLT_LOCALSTR;
       array->slot[i] = node;
-      _awka_splitinitnode(node);
     }
     else
       node = array->slot[i];
 
     if (node->var->type != a_VARUNK && node->var->type != a_VARNUL)
       awka_gets(node->var);
+
     node->var->type = a_VARUNK;
     node->type = _a_ARR_INT;
     node->var->type2 = 0;
+
     if (node->key == _a_SPLT_BASESTR || !node->var->ptr)
       node->var->allc = malloc( &node->var->ptr, flen+1 );
     else if (node->var->allc <= flen)
       node->var->allc = realloc( &node->var->ptr, flen+1 );
+
     memcpy(node->var->ptr, str + curlen, flen);
     *(node->var->ptr + flen) = '\0';
     node->var->slen = flen;
@@ -2056,19 +2248,22 @@ _awka_arraysplitwidth( char *str, a_VAR *v, int max )
 
   for (j=i; j<array->nodeno; j++)
   {
-    array->slot[j]->var->slen = 0;
     if (array->slot[j]->key == _a_SPLT_BASESTR)
+    {
+      check_emptyvar();
+      memcpy( array->slot[j]->var, emptyvar, sizeof(a_VAR) );
       array->slot[j]->var->ptr = nullstr;
+    }
     else
     {
       awka_gets(array->slot[j]->var);
       array->slot[j]->var->ptr[0] = '\0';
-      array->slot[j]->var->slen = 0;
+      array->slot[j]->var->slen = array->slot[j]->var->type2 = 0;
+      array->slot[j]->var->dval = 0.0;
+      array->slot[j]->var->type = a_VARNUL;
     }
-    array->slot[j]->var->dval = 0;
-    array->slot[j]->var->type2 = 0;
-    array->slot[j]->var->type = a_VARNUL;
   }
+
   array->nodeno = count;
 
   tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
@@ -2078,10 +2273,70 @@ _awka_arraysplitwidth( char *str, a_VAR *v, int max )
 }
 
 /*
+ * _awka_arraysplitpat
+ * awk builtin 'split' function, here because it is essentially
+ * an array function.
+ * Given a string str, splits it into smaller strings
+ * using a_bivar[a_FPAT] which is a pattern to determine the contents of each field, 
+ * then builds v into a 'split' array to hold the results.
+ */
+double
+awka_arraysplitpat( char *str, a_VAR *v, a_VAR *fpat, int max )
+{
+  register char *ptr;
+  _a_HSHarray *array;
+  int i, oldnodeno;
+  double ret;
+  a_VAR *tmpv;
+
+  if (!fpat)
+    awka_error("runtime error: No pattern passed to ArraySplitPat\n");
+
+  if (fpat->type == a_VARARR)
+    awka_error("runtime error: Array used as scalar in call to ArraySplitPat\n");
+
+  array = (_a_HSHarray *) v->ptr;
+  oldnodeno = array->nodeno;
+
+  if (array->nodeno)
+  {
+    if (array->type == a_ARR_TYPE_HSH)
+    {
+      awka_arrayclear(v);
+      oldnodeno = 0;
+    }
+    else
+      array->nodeno = 0;
+  }
+  array->type = a_ARR_TYPE_SPLIT;
+
+  i = strlen(str);
+
+  if (!array->splitstr)
+    array->splitallc = malloc( &array->splitstr, i+1);
+  else if (array->splitallc < i+1)
+    array->splitallc = realloc( &array->splitstr, i+1);
+
+  memcpy(array->splitstr, str, i+1);
+
+  array->type = a_ARR_TYPE_SPLIT;
+  array->base = 1;
+
+  tmpv = awka_getarrayval( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"));
+  strcpy(tmpv->ptr, "FPAT");
+
+  /* split the string */
+  return i ? _awka_splitcontentre( array, fpat, max, oldnodeno, NULL ) : 0.0;
+}
+
+/*
  * awka_arraysplitstr
  * awk builtin 'split' function, here because it is essentially
- * an array function.  Given a string, splits it into smaller strings
- * using fs, then builds a 'split' array to hold them.
+ * an array function.
+ *
+ * Given a string str, splits it into smaller strings
+ * using fs, 
+ * then builds a 'split' array v to hold the splits.
  */
 double
 awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char main_split )
@@ -2089,8 +2344,7 @@ awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char main_split )
   register char *ptr;
   _a_HSHarray *array;
   int i, oldnodeno;
-  double ret;
-  a_VAR *tmpv;
+  double ret = -1;
 
   /* check arguments */
   if (v->type != a_VARARR && v->type != a_VARNUL && !(v->type == a_VARSTR && v->ptr[0] == '\0'))
@@ -2103,13 +2357,19 @@ awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char main_split )
 
   if (!fs)
   {
-    if (fs_or_fw && main_split)
+    if (main_split) 
     {
-      ret = _awka_arraysplitwidth( str, v, max );
+      if (fs_or_fw == 1)
+        ret = _awka_arraysplitwidth( str, v, max );
+      else if (fs_or_fw == 2)
+        ret = awka_arraysplitpat( str, v, awka_vardup(a_bivar[a_FPAT]), max );
+
       if (ret > -1)
         return ret;
+
       fs_or_fw = 0;
     }
+
     fs = a_bivar[a_FS];
   }
 
@@ -2120,9 +2380,8 @@ awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char main_split )
   {
     fs->allc = malloc( &fs->ptr, 1 );
     fs->ptr[0] = '\0';
-    fs->slen = 0;
+    fs->slen = fs->type2 = 0;
     fs->type = a_VARSTR;
-    fs->type2 = 0;
   }
 
   array = (_a_HSHarray *) v->ptr;
@@ -2141,10 +2400,12 @@ awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char main_split )
   array->type = a_ARR_TYPE_SPLIT;
 
   i = strlen(str);
+
   if (!array->splitstr)
     array->splitallc = malloc( &array->splitstr, i+1);
   else if (array->splitallc < i+1)
     array->splitallc = realloc( &array->splitstr, i+1);
+
   memcpy(array->splitstr, str, i+1);
 
   array->type = a_ARR_TYPE_SPLIT;
@@ -2158,11 +2419,11 @@ awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char main_split )
       _awka_getreval(fs, __FILE__, __LINE__, _RE_SPLIT);
   }
 
-  tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
-  strcpy(tmpv->ptr, "FS");
+  if (i)
+  { 
+    if (fs->type == a_VARREG)
+      return _awka_splitre( array, fs, max, oldnodeno );
 
-  if (i && fs->type != a_VARREG)
-  {
     switch (ptr[0])
     {
       case '\0':
@@ -2173,11 +2434,11 @@ awka_arraysplitstr( char *str, a_VAR *v, a_VAR *fs, int max, char main_split )
         return _awka_split_single_char( array, ptr[0], max, oldnodeno );
     }
   }
-  else if (i)
-    return _awka_splitre( array, fs, max, oldnodeno );
-  else
-    return 0.0;
+
+  return 0.0;
 }
+
+/********************** $0 splitting/assigning *******************/
 
 a_VAR *
 _awka_NF()
@@ -2213,7 +2474,7 @@ _awka_dol0(int set)
 
   switch (set)
   {
-    case 1:
+    case a_DOL_SET:  /* 1 */
       if (_rebuild0)
         _rebuild0_now = TRUE;
       else
@@ -2223,29 +2484,29 @@ _awka_dol0(int set)
       dol0->type2 = 0;
       return dol0;
 
-    case 0:
+    case a_DOL_GET:  /* 0 */
     case -1:
       if (_rebuildn == TRUE && _split_req==1)
       {
-	    if (!fs_or_fw)
-	    {
-	       /* use fieldwidths = savewidths to process savewidths */
-	       char *tfw = awka_gets(a_bivar[a_FIELDWIDTHS]);
-	       char *tsavew = awka_gets(a_bivar[a_SAVEWIDTHS]);
+	 if (!fs_or_fw)
+	 {
+	   /* use fieldwidths = savewidths to process savewidths */
+	   char *tfw = awka_gets(a_bivar[a_FIELDWIDTHS]);
+	   char *tsavew = awka_gets(a_bivar[a_SAVEWIDTHS]);
 
-	       strcpy(a_bivar[a_FIELDWIDTHS]->ptr, tsavew);
-	       strcpy(a_bivar[a_SAVEWIDTHS]->ptr, "");
+	   strcpy(a_bivar[a_FIELDWIDTHS]->ptr, tsavew);
+	   strcpy(a_bivar[a_SAVEWIDTHS]->ptr, "");
 
            awka_setd(a_bivar[a_NF]) = awka_arraysplitstr(awka_gets1(dol0), a_bivar[a_DOLN], NULL, _split_max, TRUE);
 
-	       strcpy(a_bivar[a_FIELDWIDTHS]->ptr, tfw);
-	       strcpy(a_bivar[a_SAVEWIDTHS]->ptr, tsavew);
-	    }
-	    else
-	    {
+	   strcpy(a_bivar[a_FIELDWIDTHS]->ptr, tfw);
+	   strcpy(a_bivar[a_SAVEWIDTHS]->ptr, tsavew);
+	 }
+	 else
+	 {
            awka_setd(a_bivar[a_NF]) = awka_arraysplitstr(awka_gets1(dol0), a_bivar[a_DOLN], NULL, _split_max, TRUE);
-	    }
-        _rebuildn = FALSE;
+	 }
+         _rebuildn = FALSE;
       }
       /* fall thru */
     default:
@@ -2289,10 +2550,11 @@ _awka_dol0(int set)
               }
               else
                 array->slot[i]->var->ptr = nullstr;
-              array->slot[i]->var->type2 = 0;
+
+              array->slot[i]->var->slen = array->slot[i]->var->type2 = 0;
               array->slot[i]->var->dval = 0.0;
-              array->slot[i]->var->slen = 0;
             }
+
             array->nodeallc = (j > array->nodeallc ? j : array->nodeallc);
             array->nodeno = j;
           }
@@ -2326,19 +2588,23 @@ _awka_dol0(int set)
             {
               array->slot[i]->key = _a_SPLT_LOCALSTR;
             }
+
             ptr = awka_gets1(var);
             j += var->slen + ofs->slen;
+
             if (j >= dol0->allc)
             {
               dol0->allc = realloc( &dol0->ptr, j+1 );
               op = dol0->ptr + oldlen;
             }
+
             memcpy(op, ofs->ptr, ofs->slen);
             op += ofs->slen;
             memcpy(op, ptr, var->slen+1);
             op += var->slen;
             oldlen += var->slen + ofs->slen;
           }
+
           dol0->slen = _awka_dol0_len = oldlen;
           dol0->type = a_VARUNK;
 
@@ -2348,7 +2614,7 @@ _awka_dol0(int set)
             _awka_dol0_len = dol0->slen = 0;
           }
 
-          tmpv = awka_arraysearch1( a_bivar[a_PROCINFO], awka_tmp_str2var("FS"), a_ARR_CREATE, 0 );
+          tmpv = awka_getarrayval( a_bivar[a_PROCINFO], awka_tmp_str2var("FS") );
 	  strcpy(tmpv->ptr, "FS");
         }
         else
@@ -2368,14 +2634,18 @@ _awka_dol0(int set)
         _awka_setdol0_len = _awka_setdoln = FALSE;
         _rebuildn = TRUE;
       }
+
       return dol0;
   }
 }
 
+/********************** $n field retrieval ********************/
 /*
  * awka_doln
  * this takes care of accessing & modifying awk $n variables.
  * its here because the field array is an array.
+ *
+ * set is a_DOL_GET for readonly, a_DOL_SET to set the field value
  */
 a_VAR *
 awka_doln(int idx, int set)
@@ -2383,11 +2653,12 @@ awka_doln(int idx, int set)
   static char *x;
   register int i, j, nf = (int) awka_NFget()->dval;
   _a_HSHarray *array = (_a_HSHarray *) a_bivar[a_DOLN]->ptr;
+  a_VAR *a_s_v = NULL;
   static a_VAR *nullvar = NULL;
 
   a_HSHNode *node;
 
-  if (!idx)
+  if (idx == 0)
   {
     return awka_dol0(set);
   }
@@ -2406,20 +2677,19 @@ awka_doln(int idx, int set)
 
   switch (set)
   {
-    case 0:
+    case a_DOL_GET:  /* 0 */
       /* if (idx >= array->nodeno) */
       if (idx >= nf || idx >= array->nodeno)
       {
-  	    if (!nullvar)
-  	    {
-	      malloc( &nullvar, sizeof(a_VAR) );
-	      nullvar->allc = malloc( &nullvar->ptr, 1 );
-	      nullvar->ptr[0] = '\0';
-  	      nullvar->slen = 0;
-	      nullvar->type = a_VARUNK;
-	      nullvar->temp = nullvar->type2 = 0;
-	      nullvar->dval = 0.0;
-	    }
+        if (!nullvar)
+  	{
+	  malloc( &nullvar, sizeof(a_VAR) );
+	  nullvar->allc = malloc( &nullvar->ptr, 1 );
+	  nullvar->ptr[0] = '\0';
+  	  nullvar->slen = nullvar->temp = nullvar->type2 = 0;
+	  nullvar->type = a_VARUNK;
+	  nullvar->dval = 0.0;
+	}
         return nullvar;
       }
       break;
@@ -2447,8 +2717,8 @@ awka_doln(int idx, int set)
           _awka_hshinitnode(node);
           node->key = _a_SPLT_LOCALSTR;
           node->var->type = a_VARUNK;
-          node->var->type2 = 0;
-          node->var->dval = 0.0;
+          //node->var->type2 = 0;
+          //node->var->dval = 0.0;
           node->var->allc = malloc( &node->var->ptr, 1 );
           node->var->ptr[0] = '\0';
           node->var->slen = 0;
@@ -2458,25 +2728,26 @@ awka_doln(int idx, int set)
         awka_setd(a_bivar[a_NF]) = j;
       }
       break;
-  }
+  } /* switch */
 
-  if (set == 0 || array->slot[idx]->key == _a_SPLT_LOCALSTR)
+  if (set == a_DOL_GET || array->slot[idx]->key == _a_SPLT_LOCALSTR)
     return array->slot[idx]->var;
 
-  if (array->slot[idx]->var->type == a_VARUNK ||
-      array->slot[idx]->var->type == a_VARSTR)
+  a_s_v = array->slot[idx]->var;
+  if (a_s_v->type == a_VARUNK || a_s_v->type == a_VARSTR)
   {
-    array->slot[idx]->var->allc = malloc( &x, array->slot[idx]->var->slen + 1);
-    strcpy(x, array->slot[idx]->var->ptr);
-    array->slot[idx]->var->ptr = x;
+    a_s_v->allc = malloc( &x, a_s_v->slen + 1);
+    strcpy(x, a_s_v->ptr);
+    a_s_v->ptr = x;
   }
   else
-    array->slot[idx]->var->ptr = NULL;
+    a_s_v->ptr = NULL;
 
   array->slot[idx]->key = _a_SPLT_LOCALSTR;
-  return array->slot[idx]->var;
+  return a_s_v;
 }
 
+/*************************** array SORT functions ******************/
 /*
  * awka_alistcmp
  * compares two nodes to see which is higher in sort order
@@ -2725,6 +2996,18 @@ awka_arraynext( a_VAR *v, a_ListHdr *ah, int pos )
   return pos+1;
 }
 
+/*
+ * Get the var from the listHdr based on arraynext "next" position
+ * which is the int returned by awka_arraynext()
+ */
+a_VAR *
+awka_arraynextget(a_ListHdr *ah, int pos )
+{
+  a_List *alist = &(ah->list[ah->used-1]);
+
+  return alist->node[pos-1]->var;
+}
+
 void
 awka_alistfree( a_ListHdr *ah )
 {
@@ -2794,12 +3077,19 @@ awka_asort( a_VAR *src, a_VAR *dest )
   /* kludgy hack.  but easily coded and understood  ;-)
    * this iterates through src and inserts each element
    * into dest, using the index in the sorted loop as
-   * the array index */
+   * the array index * /
   for ( idx=0; (idx = awka_arraynext(ivar, &listhdr, idx)) > 0; )
   {
     awka_vardblset( idxvar, (double) idx );
     newnode = awka_arraysearch1( dest, idxvar, a_ARR_CREATE, 0 );
     awka_varcpy( newnode, awka_arraysearch1( src, ivar, a_ARR_CREATE, 0 ) );
+  }
+  */
+  for ( idx=0; (idx = awka_arraynext(ivar, &listhdr, idx)) > 0; )
+  {
+    awka_vardblset( idxvar, (double) idx );
+    newnode = awka_arraysearch1( dest, idxvar, a_ARR_CREATE, 0 );
+    awka_varcpy( newnode, awka_arraynextget(&listhdr, idx ) );
   }
   awka_alistfree( &listhdr );
 
@@ -2807,15 +3097,8 @@ awka_asort( a_VAR *src, a_VAR *dest )
   {
     /* oops, dest not provided.  We kill src and make it dest. */
     awka_killvar( src );
-    src->dval = dest->dval;
-    src->ptr = dest->ptr;
-    src->slen = dest->slen;
-    src->allc = dest->allc;
-    src->type = dest->type;
-    src->type2 = dest->type2;
-    src->temp = dest->temp;
+    memcpy(src, dest, sizeof(a_VAR));
   }
 
   return ret;
 }
-
