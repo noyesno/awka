@@ -31,6 +31,7 @@ CC  = @CC@ -O3
 EXE = @EXE@
 MLIB = @MATHLIB@
 SLIB = @SOCKET_LIBS@
+SORT = sort
 
 AWKA = ../awka/awka
 
@@ -57,7 +58,7 @@ basic:		msg \
 		eiso eiso2 eiso3 eiso4 eofsplit extendedchars fldchg fldchgnf fnarydel \
 		fnrtest foronsplit fsbs fsfw fsrs fstabplus fun funstack fw gensub \
 		getline getline2 getlnbuf getnr2tb getnr2tm gsubtest hh intest \
-		intprec isarray len litoct longwrds mainexit math messages mmap8k \
+		intprec isarray len litoct longwrds mainexit matcharr math messages mmap8k \
 		negexp next nextfile nfldstr nfset nlfldsep nlstrina nofile \
 		nors numindex numsubstr opasnidx opasnslf parsecsv pcntplus \
 		pdb_find_salt powtest prdupval print prmreuse prt1eval prtoeval \
@@ -123,20 +124,27 @@ splitargv splitvar sprintfc swaplns tradanch ::
 	@./xx $@.in >_$@
 	@$(CMP) $@.ok _$@ && rm -f _$@
 
+matcharr::
+	@echo $@
+	@$(AWKA) -f $@.awk >x.c
+	@$(CC)  x.c  $(CFLAGS) -o xx
+	@./xx | sort >_$@
+	@$(CMP) $@.ok _$@ && rm -f _$@
+
 next::
 	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC)  x.c  $(CFLAGS) -o xx
 	@./xx nextfile.in1 >_$@
 	@$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-	
+
 nextfile::
 	@echo $@
 	@$(AWKA) -f $@.awk >x.c
 	@$(CC)  x.c  $(CFLAGS) -o xx
 	@./xx $@.in1 $@.in2 $@.in3 >_$@
 	@$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-	
+
 nasty::
 	@echo $@
 	@echo '-> nasty test: sometimes fails, producing a string of 123123123 etc'
@@ -147,7 +155,7 @@ nasty::
 	@$(CC) x.c $(CFLAGS) -o xx
 	@./xx >_$@
 	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-	
+
 rsre::
 	@echo $@
 	@$(AWKA) -f $@.awk >x.c

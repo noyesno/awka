@@ -48,6 +48,8 @@ int _dol0_used = 0;
 
 int awka_fclose( int i );
 
+#define  MATCH_SZ  20
+
 #define _awka_getstringvar \
   if (keep == a_TEMP) \
   { \
@@ -498,12 +500,12 @@ a_VAR *
 awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
 {
   char *start, *end, *ptr;
-  a_VAR *outvar, *pvar;
+  a_VAR *outvar, *pvar, *tvar;
   awka_regexp *r;
-  int i, nmatch = arr ? 20 : (int) fcall;
-  static regmatch_t pmatch[20];
+  int i, nmatch = arr ? MATCH_SZ : (int) fcall;
+  static regmatch_t pmatch[MATCH_SZ];
 
-  /* create a variable */
+  /* create outvar as a double variable */
   _awka_getdoublevar;
   memset(pmatch, 0, sizeof(pmatch));
 
@@ -542,26 +544,52 @@ awka_match( char keep, char fcall, a_VAR *va, a_VAR *rva, a_VAR *arr )
   start = ptr + pmatch->rm_so;
   end   = ptr + pmatch->rm_eo;
 
+  outvar->dval = 1.0;
+
   if (arr)
   {
+    tvar = awka_getstringvar(a_TEMP);
+
     for (i=0; i<r->max_sub; i++)
     {
       if (pmatch[i].rm_so == pmatch[i].rm_eo)
         break;
 
-      outvar->dval = i;
+      /* outvar tracks how many matches have been found */
+      awka_setd(outvar) = i;
       pvar = awka_arraysearch1( arr, outvar, a_ARR_CREATE, 0 );
       awka_strncpy( pvar, ptr + pmatch[i].rm_so, pmatch[i].rm_eo - pmatch[i].rm_so );
+
+      /* gawkr- compatible array entries */
+      awka_strcpy( tvar, awka_gets1(outvar) );   /* form the index: "0,start" */
+      strcat( tvar->ptr, awka_gets1(a_bivar[a_SUBSEP]) );
+      strcat( tvar->ptr, "start" );
+      tvar->slen = strlen( tvar->ptr );
+
+      pvar = awka_arraysearch1( arr, tvar, a_ARR_CREATE, 0 );
+      awka_strcpy( pvar, awka_tmp_dbl2str( 1.0 + (double) pmatch[i].rm_so) );
+      pvar->slen = strlen( pvar->ptr );
+
+      awka_strcpy( tvar, awka_gets1(outvar) );   /* form the index: "0,length" */
+      strcat( tvar->ptr, awka_gets1(a_bivar[a_SUBSEP]) );
+      strcat( tvar->ptr, "length" );
+      tvar->slen = strlen( tvar->ptr );
+
+      pvar = awka_arraysearch1( arr, tvar, a_ARR_CREATE, 0 );
+      awka_strcpy( pvar, awka_tmp_dbl2str((double) (pmatch[i].rm_eo - pmatch[i].rm_so)) );
+      pvar->slen = strlen( pvar->ptr );
+
     }
   }
 
-  outvar->dval = 1.0;
 
   if (fcall == TRUE)
   {
     awka_setd(a_bivar[a_RSTART]) = (start - ptr) + 1;
     awka_setd(a_bivar[a_RLENGTH]) = (end - start < 1 ? 1 : end - start);
-    outvar->dval = (start - ptr) + 1;
+
+    if (nmatch != MATCH_SZ)
+      outvar->dval = (start - ptr) + 1;
   }
 
   return (outvar);

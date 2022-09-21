@@ -236,6 +236,7 @@ awka_lcopy(a_VAR *va, a_VAR *vb)
 #define awka_getre(v) (awka_getreval((v),__FILE__,__LINE__))
 
 #define awka_gets1(v) ((v)->ptr && ((v)->type == a_VARSTR || (v)->type == a_VARUNK) ? (v)->ptr : _awka_getsval((v),0,__FILE__,__LINE__)) 
+/* gets1P is for printing and uses OFMT rather than CONVFMT */
 #define awka_gets1P(v) ((v)->ptr && ((v)->type == a_VARSTR || (v)->type == a_VARUNK) ? (v)->ptr : _awka_getsval((v),1,__FILE__,__LINE__)) 
 #define awka_getd1(v) ((v)->type == a_VARDBL || (v)->type2 == a_DBLSET ? (v)->dval : _awka_getdval((v),__FILE__,__LINE__)->dval)
 
